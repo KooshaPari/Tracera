@@ -1,8 +1,23 @@
 name: Deploy Cloudflare Worker (tracera-edge)
+
+# Environment delineation: docs/04-guides/ENVIRONMENTS.md
+#
+# main deploys the `dev` worker (tracera-edge-dev); only a v* tag, or an explicit
+# workflow_dispatch with environment: prod, deploys the production worker.
+
 on:
-  workflow_call:
   push:
     branches: [main, ci/infisical-deploys]
+    tags: ["v*"]
+    paths:
+      - "crates/tracera-edge/**"
+      - ".github/workflows/deploy-cloudflare.yml"
+      - "wrangler.toml"
+  # Without this the preview branch in the plan step below was unreachable, so
+  # cloudflare-preview could never be produced despite ENVIRONMENTS.md describing
+  # it. Fork PRs simply have no credentials and are skipped by the guard.
+  pull_request:
+    branches: [main]
     paths:
       - "crates/tracera-edge/**"
       - ".github/workflows/deploy-cloudflare.yml"
@@ -11,21 +26,57 @@ on:
     inputs:
       environment:
         description: "Target environment"
-        required: false
-        default: production
+        required: true
         type: choice
-        options: [production, staging]
+        default: dev
+        options: [dev, preview, prod]
   workflow_call:
+    inputs:
+      environment:
+        description: "Target environment; empty derives it from the caller's event"
+        required: false
+        type: string
+        default: ""
 permissions:
   contents: read
 jobs:
+  # Single derivation point for the target environment, shared by the job that
+  # needs it for its GitHub environment name and for the wrangler --env flag.
+  plan:
+    runs-on: ubuntu-latest
+    permissions: {}
+    outputs:
+      env: ${{ steps.derive.outputs.env }}
+    steps:
+      - id: derive
+        run: |
+          set -euo pipefail
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            target=preview
+          elif [ "${GITHUB_REF#refs/tags/}" != "${GITHUB_REF}" ]; then
+            # A release tag is always production; an input must not downgrade it.
+            target=prod
+          elif [ -n "${{ inputs.environment }}" ]; then
+            target="${{ inputs.environment }}"
+          else
+            target=dev
+          fi
+          case "$target" in
+            dev|preview|prod) ;;
+            *) echo "::error::unsupported environment '$target'"; exit 1 ;;
+          esac
+          echo "env=$target" >> "$GITHUB_OUTPUT"
+          echo "Target environment: $target"
+
   deploy:
     name: Deploy to Cloudflare Workers
+    needs: plan
     runs-on: ubuntu-latest
     timeout-minutes: 15
     environment:
-      name: ${{ inputs.environment || 'cloudflare-production' }}
+      name: cloudflare-${{ needs.plan.outputs.env }}
     env:
+      DEPLOY_ENV: ${{ needs.plan.outputs.env }}
       CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
       CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
     steps:
@@ -161,10 +212,27 @@ jobs:
         # red CI run, not a silent skip. The pre-flight probe above is the
         # only place that may exit gracefully on missing scope.
         run: |
-          npx wrangler deploy \
+          set -euo pipefail
+          # Production custom domain lives in [env.prod] (see wrangler.toml).
+          # dev and preview deploy their own named workers from [env.*] blocks
+          # so a main-branch deploy cannot overwrite production routes.
+          env_flag="--env $DEPLOY_ENV"
+          # shellcheck disable=SC2086  # deliberate word splitting: empty or --env <name>
+          npx wrangler deploy $env_flag \
             --config wrangler.deploy.toml \
             --compatibility-date 2025-04-01 \
             --minify
+
+      - name: Sync FLEET_ENROLL_TOKEN secret
+        if: steps.cf_scope_check.outputs.cf_creds_ok == 'true'
+        continue-on-error: true
+        run: |
+          if [ -n "${{ secrets.FLEET_ENROLL_TOKEN }}" ]; then
+            printf '%s' "${{ secrets.FLEET_ENROLL_TOKEN }}" | \
+              npx wrangler secret put FLEET_ENROLL_TOKEN $( [ "$DEPLOY_ENV" = "prod" ] && echo --name tracera-edge || echo --name tracera-edge-$DEPLOY_ENV )
+          else
+            echo "::notice::FLEET_ENROLL_TOKEN repo secret not set; fleet endpoints stay 401 (fail-closed)."
+          fi
 
       - name: Verify deployment
         if: steps.cf_scope_check.outputs.cf_creds_ok == 'true'
@@ -172,7 +240,23 @@ jobs:
         run: |
           set +e
           sleep 10
-          BASE="${CF_ZONE:-tracera-edge.workers.dev}"
+          # A workers.dev host is <worker>.<account-subdomain>.workers.dev. The
+          # subdomain is per account, so it must be read from the API. Assuming it
+          # was absent produced a host like tracera-edge-dev.workers.dev, which does
+          # not resolve, so this step reported 000 on every run and - because it is
+          # continue-on-error - verified nothing while appearing to run.
+          WORKER="tracera-edge"
+          if [ "$DEPLOY_ENV" != "prod" ]; then
+            WORKER="tracera-edge-$DEPLOY_ENV"
+          fi
+          subdomain=$(curl -sS -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+            "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/workers/subdomain" \
+            2>/dev/null | jq -r '.result.subdomain // empty' 2>/dev/null)
+          if [ -z "$subdomain" ]; then
+            echo "::warning::Could not read the workers.dev subdomain; skipping the probe."
+            exit 0
+          fi
+          BASE="$WORKER.$subdomain.workers.dev"
           STATUS=$(curl -sS -o /dev/null -w "%{http_code}" "https://$BASE/healthz" 2>/dev/null || echo "000")
           if [ "$STATUS" = "200" ]; then
             echo "Worker health check passed: $BASE/healthz -> 200"

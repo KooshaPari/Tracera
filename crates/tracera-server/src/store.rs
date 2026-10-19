@@ -14,12 +14,19 @@ use std::pin::Pin;
 #[derive(Debug)]
 pub enum StoreError {
     Database(String),
+    // MCP adapters use this through the library; the server binary also
+    // compiles this module independently and does not construct this variant.
+    #[allow(dead_code)]
+    UnsupportedOperation(&'static str),
 }
 
 impl std::fmt::Display for StoreError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             StoreError::Database(msg) => write!(f, "database error: {msg}"),
+            StoreError::UnsupportedOperation(operation) => {
+                write!(f, "unsupported store operation: {operation}")
+            }
         }
     }
 }
@@ -153,7 +160,7 @@ pub fn project_display_name(project_id: &str) -> String {
             && lower[5..]
                 .chars()
                 .all(|c| c.is_ascii_lowercase() || c.is_ascii_digit() || c == '_')
-            && (lower.ends_with('s') == false || lower.len() > 6);
+            && (!lower.ends_with('s') || lower.len() > 6);
         is_slug
     };
     if slug_re {
@@ -229,6 +236,27 @@ pub struct Problem {
 pub type BoxFuture<'a, T> = Pin<Box<dyn Future<Output = T> + Send + 'a>>;
 
 pub trait Store: Send + Sync {
+    /// Literal title substring search. Backends without this capability fail closed.
+    fn search_items(
+        &self,
+        _query: String,
+        _project_id: Option<String>,
+        _limit: i64,
+        _offset: i64,
+    ) -> BoxFuture<'_, StoreResult<crate::item::ItemPage>> {
+        Box::pin(async { Err(StoreError::UnsupportedOperation("search_items")) })
+    }
+
+    fn list_items(
+        &self,
+        filter: crate::item::ItemFilter,
+        limit: i64,
+        offset: i64,
+    ) -> BoxFuture<'_, StoreResult<crate::item::ItemPage>>;
+    fn get_item(&self, id: String) -> BoxFuture<'_, StoreResult<Option<crate::item::Item>>>;
+    // Wired to HTTP mutation routes in a later package; implemented by the sqlite/pg stores.
+    #[allow(dead_code)]
+    fn create_item(&self, item: crate::item::Item) -> BoxFuture<'_, StoreResult<()>>;
     // Evidence
     fn list_evidence(&self) -> BoxFuture<'_, StoreResult<Vec<EvidenceItem>>>;
     fn create_evidence(
@@ -312,6 +340,9 @@ pub trait Store: Send + Sync {
         -> BoxFuture<'_, StoreResult<Option<ProjectSummary>>>;
 
     // Metrics
+    // Retain this public repository operation for SDK callers. The HTTP org
+    // metrics route cannot infer coverage/gaps from it and now returns 501.
+    #[allow(dead_code)]
     fn count_evidence(&self) -> BoxFuture<'_, StoreResult<i64>>;
 
     /// Verify that the backing store can accept a minimal query.

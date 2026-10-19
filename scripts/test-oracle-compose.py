@@ -13,7 +13,9 @@ import tempfile
 from pathlib import Path
 
 VALIDATOR_PATH = Path(__file__).resolve().with_name("validate-oracle-compose.py")
-VALIDATOR_SPEC = importlib.util.spec_from_file_location("oracle_compose_validator", VALIDATOR_PATH)
+VALIDATOR_SPEC = importlib.util.spec_from_file_location(
+    "oracle_compose_validator", VALIDATOR_PATH
+)
 if VALIDATOR_SPEC is None or VALIDATOR_SPEC.loader is None:
     raise RuntimeError(f"could not load validator module: {VALIDATOR_PATH}")
 VALIDATOR_MODULE = importlib.util.module_from_spec(VALIDATOR_SPEC)
@@ -54,7 +56,9 @@ def main() -> int:
         conf_d = root / "conf.d"
         conf_d.mkdir()
         nginx = root / "nginx.conf"
-        nginx.write_text("http { include /etc/nginx/conf.d/*.conf; }\n", encoding="utf-8")
+        nginx.write_text(
+            "http { include /etc/nginx/conf.d/*.conf; }\n", encoding="utf-8"
+        )
         (conf_d / "routes.conf").write_text(
             "upstream api {\n    server unresolved-oracle-backend:8000;\n}\n",
             encoding="utf-8",

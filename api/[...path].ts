@@ -1,0 +1,176 @@
+import { honestFallback } from "./honest-fallback.js";
+import type { VercelRequest, VercelResponse } from "@vercel/node";
+
+// Proxy genuine backend responses; unavailable capabilities use honest-fallback.
+const CORS_HEADERS = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "GET, POST, PUT, PATCH, DELETE, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type, Authorization, X-CSRF-Token",
+  "Access-Control-Max-Age": "86400",
+} as const;
+
+function handleCors(req: VercelRequest, res: VercelResponse): boolean {
+  if (req.method === "OPTIONS") {
+    for (const [k, v] of Object.entries(CORS_HEADERS)) res.setHeader(k, v);
+    res.status(204).end();
+    return true;
+  }
+  for (const [k, v] of Object.entries(CORS_HEADERS)) res.setHeader(k, v);
+  return false;
+}
+
+// Parse /api/<segments> out of the original request URL (query stripped).
+function segmentsFromRequestUrl(req: VercelRequest): string[] {
+  const url = req.url ?? "";
+  const q = url.indexOf("?");
+  const pathOnly = (q >= 0 ? url.slice(0, q) : url).replace(/^\/+/, "");
+  const withoutPrefix = pathOnly.startsWith("api/") ? pathOnly.slice("api/".length) : pathOnly;
+  return withoutPrefix.split("/").filter(Boolean);
+}
+
+// `path` is the catch-all under /api/, e.g. ["v1", "projects", "abc", "export"].
+// We normalize: empty segments, query, etc.
+async function route(req: VercelRequest, res: VercelResponse): Promise<void> {
+  if (handleCors(req, res)) return;
+
+  // Segments come from the REQUEST URL first. Filesystem-routed requests
+  // populate req.query.path, but requests that arrive via the vercel.json
+  // rewrite (/api/:path* -> /api/[...path]) do NOT carry the catch-all
+  // param (observed live: every multi-segment route fell through to
+  // fallback with an empty/foreign path param). req.url is the original
+  // request path in both cases, so it is the single source of truth.
+  const fromUrl = segmentsFromRequestUrl(req);
+  const queryPath = req.query.path;
+  const rawSegments =
+    fromUrl.length > 0
+      ? fromUrl
+      : Array.isArray(queryPath)
+        ? (queryPath as string[])
+        : typeof queryPath === "string" && queryPath.length > 0
+          ? [queryPath]
+          : [];
+
+  const segs = rawSegments.map((s) => decodeURIComponent(s)).filter(Boolean);
+
+  // If a live backend is configured and the request was forwarded, we are
+  // done. Network failures use the explicit unavailable-capability fallback.
+  // Upstream error status codes are preserved. NOTE: the result is a
+  // string union — compare explicitly; truthiness would treat the literal
+  // "fallthrough" as handled and end the response with nothing written
+  // (observed live as FUNCTION_INVOCATION_FAILED 500s).
+  if ((await tryProxy(req, res, segs)) === "forwarded") return;
+  return honestFallback(req, res);
+}
+
+const BACKEND_URL = process.env.TRACERA_BACKEND_URL?.replace(/\/$/, "") ?? "";
+const BACKEND_TIMEOUT_MS = 8_000;
+
+// Headers we forward from the incoming request to the backend. Everything
+// else is either hop-by-hop (host, content-length) or set by fetch itself.
+const FORWARDED_REQUEST_HEADERS = [
+  "authorization",
+  "cookie",
+  "x-csrf-token",
+  "x-request-id",
+  "x-tracera-workspace",
+  "accept",
+  "accept-language",
+  "user-agent",
+] as const;
+
+// Headers we copy from the backend response to the Vercel response.
+// We deliberately skip transfer-encoding, content-encoding (Vercel handles
+// compression), and connection.
+const FORWARDED_RESPONSE_HEADERS = [
+  "content-type",
+  "cache-control",
+  "etag",
+  "x-tracera-deprecated",
+  "x-tracera-trace-id",
+  "x-tracera-not-implemented",
+  "x-tracera-source",
+] as const;
+
+type ProxyResult = "forwarded" | "fallthrough";
+
+async function tryProxy(
+  req: VercelRequest,
+  res: VercelResponse,
+  segs: string[],
+): Promise<ProxyResult> {
+  if (!BACKEND_URL) return "fallthrough";
+
+  const path = segs.join("/");
+  const qs = originalQueryString(req);
+  const target = `${BACKEND_URL}/${path}${qs}`;
+
+  const headers: Record<string, string> = {};
+  for (const name of FORWARDED_REQUEST_HEADERS) {
+    const v = req.headers[name];
+    if (typeof v === "string" && v.length > 0) headers[name] = v;
+    else if (Array.isArray(v) && v.length > 0) headers[name] = v.join(", ");
+  }
+  // Body forward: Vercel may have parsed it; for raw fidelity we prefer
+  // the raw body when present.
+  const rawBody = await readRawBody(req);
+  const init: RequestInit = {
+    method: req.method ?? "GET",
+    headers,
+    redirect: "manual",
+  };
+  if (rawBody && req.method !== "GET" && req.method !== "HEAD") {
+    // Buffer is a Uint8Array; fetch accepts it directly.
+    init.body = new Uint8Array(rawBody);
+  }
+
+  const ac = new AbortController();
+  const timer = setTimeout(() => ac.abort(), BACKEND_TIMEOUT_MS);
+  let upstream: Response;
+  try {
+    upstream = await fetch(target, { ...init, signal: ac.signal });
+  } catch {
+    clearTimeout(timer);
+    // Backend unreachable — fall through to stubs.
+    return "fallthrough";
+  }
+  clearTimeout(timer);
+
+  for (const name of FORWARDED_RESPONSE_HEADERS) {
+    const v = upstream.headers.get(name);
+    if (v !== null) res.setHeader(name, v);
+  }
+  if (!upstream.headers.has("x-tracera-source"))
+    res.setHeader("x-tracera-source", "tracera-backend");
+  res.status(upstream.status);
+  const buf = Buffer.from(await upstream.arrayBuffer());
+  res.send(buf);
+  return "forwarded";
+}
+
+// Vercel hands us the URL in `req.url` as the path-with-query. We pull
+// the query string out so we can re-attach it to the upstream request.
+function originalQueryString(req: VercelRequest): string {
+  const url = req.url ?? "";
+  const q = url.indexOf("?");
+  return q >= 0 ? url.slice(q) : "";
+}
+
+// Read the raw body if any. Vercel may have already parsed JSON, but for
+// proxy fidelity we want bytes.
+async function readRawBody(req: VercelRequest): Promise<Buffer | undefined> {
+  // Vercel exposes the raw body in non-JSON scenarios; for content-type
+  // application/json the parsed body is on `req.body`, which we re-stringify
+  // here. That preserves the same wire shape the backend expects.
+  const ctype = (req.headers["content-type"] ?? "").toString();
+  if (typeof req.body === "string") return Buffer.from(req.body);
+  if (Buffer.isBuffer(req.body)) return req.body;
+  if (req.body !== undefined && req.body !== null) {
+    if (ctype.includes("application/json")) {
+      return Buffer.from(JSON.stringify(req.body));
+    }
+    return Buffer.from(String(req.body));
+  }
+  return undefined;
+}
+
+export default route;

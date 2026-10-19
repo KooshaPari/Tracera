@@ -202,8 +202,9 @@ jobs:
       - run: uv python install ${{ matrix.python-version }}
       - run: uv sync --all-extras
       # Keep CI deterministic: third-party pytest entrypoints (notably
-      # schemathesis/jsonschema_rs) can stall collection on constrained runners.
-      - run: PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 uv run pytest --cov --cov-report=xml --cov-report=term-missing -v
+      # schemathesis/jsonschema_rs) can stall collection. Autoload stays off,
+      # so plugins we actually rely on must be named explicitly.
+      - run: PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 uv run pytest -p pytest_cov --cov --cov-report=xml --cov-report=term-missing -v
       - uses: codecov/codecov-action@b9fd7d16f6d7d1b5d2bec1a2887e65ceed900238 # v4
         if: matrix.python-version == '3.12'
         with:
@@ -223,10 +224,25 @@ jobs:
       - uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff # v5
         with:
           go-version: "stable"
-      - uses: golangci/golangci-lint-action@55c2c1448f86e01eaae002a5a3a9624417608d84 # v6
+      # golangci-lint v1.x binaries are built with go1.24 and refuse to lint
+      # modules that declare a newer Go (sidecar/go targets go 1.25.13).
+      # The v7 action supports golangci-lint v2; v2.4.0 is the first release
+      # whose official binary is built with go1.25, so pin it explicitly and
+      # run once per module.
+      - uses: golangci/golangci-lint-action@9fae48acfc02a90574d7c304a1758ef9895495fa # v7
         with:
-          version: latest
-      - run: go vet ./...
+          version: v2.4.0
+          working-directory: sidecar/go
+      - uses: golangci/golangci-lint-action@9fae48acfc02a90574d7c304a1758ef9895495fa # v7
+        with:
+          version: v2.4.0
+          working-directory: crates/tracera-go-cli
+      - name: Vet sidecar/go
+        working-directory: sidecar/go
+        run: go vet ./...
+      - name: Vet crates/tracera-go-cli
+        working-directory: crates/tracera-go-cli
+        run: go vet ./...
 
   go-test:
     name: Go Test
@@ -240,10 +256,15 @@ jobs:
       - uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff # v5
         with:
           go-version: "stable"
-      - run: go test -v -race -coverprofile=coverage.out ./...
+      - name: Test sidecar/go
+        working-directory: sidecar/go
+        run: go test -v -race -coverprofile=coverage.out ./...
+      - name: Test crates/tracera-go-cli
+        working-directory: crates/tracera-go-cli
+        run: go test -v -race -coverprofile=coverage.out ./...
       - uses: codecov/codecov-action@b9fd7d16f6d7d1b5d2bec1a2887e65ceed900238 # v4
         with:
-          file: coverage.out
+          files: sidecar/go/coverage.out,crates/tracera-go-cli/coverage.out
           fail_ci_if_error: false
 
   # --- TYPESCRIPT ---
@@ -256,12 +277,18 @@ jobs:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           persist-credentials: false
-      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+      - uses: oven-sh/setup-bun@f4d14e03ff726c06358e5557344e1da148b56cf7 # v1
         with:
-          node-version: "22"
-      - run: npm ci || true
-      - run: npx biome lint . || true
-      - run: npx biome format --check . || true
+          bun-version: latest
+      - name: Install frontend deps
+        run: bun install --frozen-lockfile --ignore-scripts
+        working-directory: frontend
+      - name: Lint frontend workspace
+        run: bun run lint
+        working-directory: frontend
+      - name: Check frontend formatting
+        run: bun run format:check
+        working-directory: frontend
 
   typescript-test:
     name: TS/JS Test
@@ -272,11 +299,15 @@ jobs:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           persist-credentials: false
-      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+      - uses: oven-sh/setup-bun@f4d14e03ff726c06358e5557344e1da148b56cf7 # v1
         with:
-          node-version: "22"
-      - run: npm ci || true
-      - run: npm test || true
+          bun-version: latest
+      - name: Install frontend deps
+        run: bun install --frozen-lockfile --ignore-scripts
+        working-directory: frontend
+      - name: Run frontend tests
+        run: bun run test
+        working-directory: frontend
 
   # ===========================================================================
   # STAGE 3: Security & quality gates (always run)
@@ -295,6 +326,9 @@ jobs:
         uses: gitleaks/gitleaks-action@ff98106e4c7b2bc287b24eaf42907196329070c7 # v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Explicit so the scan is deterministic instead of relying on
+          # config auto-discovery.
+          GITLEAKS_CONFIG: ${{ github.workspace }}/.gitleaks.toml
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@d2a0b60797ff03db6132bd4e2b293f9b37081297 # master
         with:

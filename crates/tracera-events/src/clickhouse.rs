@@ -165,13 +165,12 @@ impl ClickHouseClient {
 // Analytics — query builders + typed result rows.
 // ---------------------------------------------------------------------------
 
-/// Analytics query helpers.
-///
-/// All functions in this module are pure SQL builders — they do not perform any
-/// network I/O. They return the [`String`] SQL that should be passed to
-/// [`ClickHouseClient::query`] or [`clickhouse::Client::query`].
 pub mod analytics {
     //! ClickHouse analytics queries over the Tracera event streams.
+    //!
+    //! All functions in this module are pure SQL builders — they do not perform
+    //! any network I/O. They return the [`String`] SQL that should be passed to
+    //! [`super::ClickHouseClient::query`] or [`clickhouse::Client::query`].
     //!
     //! Every public function in this module returns a `String` SQL query. The
     //! queries use only standard ClickHouse SQL with `?` and `??` placeholders

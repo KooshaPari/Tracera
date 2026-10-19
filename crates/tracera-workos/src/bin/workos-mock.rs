@@ -34,11 +34,8 @@ use chrono::{Duration, Utc};
 use jsonwebtoken::{encode, EncodingKey, Header};
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
-use sha2::{Digest, Sha256};
 use std::net::SocketAddr;
 use std::sync::Arc;
-
-type HmacSha256 = ();
 
 #[derive(Clone)]
 struct MockState {
@@ -117,12 +114,12 @@ fn hmac_sha256(key: &[u8], msg: &[u8]) -> [u8; 32] {
     }
     // 3. H(opad || H(ipad || msg))
     let mut h1 = sha2::Sha256::default();
-    sha2::Digest::update(&mut h1, &ipad);
+    sha2::Digest::update(&mut h1, ipad);
     sha2::Digest::update(&mut h1, msg);
     let inner = sha2::Digest::finalize(h1);
     let mut h2 = sha2::Sha256::default();
-    sha2::Digest::update(&mut h2, &opad);
-    sha2::Digest::update(&mut h2, &inner);
+    sha2::Digest::update(&mut h2, opad);
+    sha2::Digest::update(&mut h2, inner);
     sha2::Digest::finalize(h2).into()
 }
 
@@ -313,8 +310,8 @@ async fn main() {
     let addr: SocketAddr = format!("{bind}:{port}").parse().expect("valid bind addr");
     println!(
         "workos-mock listening on http://{addr} (jwt secret: {}…, webhook secret: {}…)",
-        &jwt_secret.chars().take(8).collect::<String>(),
-        &webhook_secret.chars().take(8).collect::<String>(),
+        jwt_secret.chars().take(8).collect::<String>(),
+        webhook_secret.chars().take(8).collect::<String>(),
     );
 
     let listener = tokio::net::TcpListener::bind(addr)

@@ -1,6 +1,0 @@
-[2m2026-09-15T20:08:28.541335Z[0m [32m INFO[0m [2mtracera_server[0m[2m:[0m Backend: Postgres (server tier)
-[2m2026-09-15T20:08:30.212058Z[0m [32m INFO[0m [2mtracera_server[0m[2m:[0m Postgres migrations applied successfully
-[2m2026-09-15T20:08:30.213465Z[0m [33m WARN[0m [2mneo4rs::connection[0m[2m:[0m URI contained auth credentials, which are ignored.Credentials are passed outside of the URI
-[2m2026-09-15T20:08:30.213534Z[0m [32m INFO[0m [2mneo4rs::pool[0m[2m:[0m creating connection pool with max size 16
-[2m2026-09-15T20:08:30.213631Z[0m [32m INFO[0m [2mtracera_server::neo4j[0m[2m:[0m Neo4j Bolt sync enabled (endpoint bolt://neo4j:tracera_dev@localhost:7687)
-[2m2026-09-15T20:08:30.237981Z[0m [32m INFO[0m [2mtracera_server[0m[2m:[0m tracera-server listening on 0.0.0.0:8090

@@ -1,14 +1,14 @@
 // System status API stub
 import { client } from "./client";
-import { getMcpConfig } from "./mcp-config";
+import { requireAvailable, invalidResponse } from "./availability";
 
 const { apiClient, getAuthHeaders, API_BASE_URL } = client;
 
 export interface SystemStatus {
   status: "healthy" | "degraded" | "unhealthy";
   uptime: number;
-  queuedJobs: number;
-  version?: string;
+  queuedJobs?: number | undefined;
+  version?: string | undefined;
   mcp?:
     | {
         baseUrl?: string | undefined;
@@ -44,50 +44,30 @@ export const fetchDashboardSummary = async (signal?: AbortSignal): Promise<Dashb
     signal: signal ?? null,
   });
   if (!res.ok) {
-    throw new Error(`Dashboard summary fetch failed: ${res.status}`);
+    throw new client.ApiError(
+      res.status,
+      res.status === 501 ? "Not implemented yet" : "Service unavailable",
+    );
   }
   return res.json() as Promise<DashboardSummary>;
 };
 
 export const fetchSystemStatus = async (): Promise<SystemStatus> => {
-  // Try to fetch from health endpoint, fallback to mock data
-  try {
-    const [response, mcpConfig] = await Promise.all([
-      apiClient.GET("/api/v1/health", {}),
-      getMcpConfig().catch(() => null),
-    ]);
-    if (response.data) {
-      const baseStatus: SystemStatus = {
-        queuedJobs: 0,
-        status: "healthy",
-        uptime: 99.9,
-      };
-      const merged: SystemStatus = {
-        queuedJobs: baseStatus.queuedJobs,
-        status: baseStatus.status,
-        uptime: baseStatus.uptime,
-      };
-      const responseData = response.data as Record<string, unknown>;
-      for (const [key, value] of Object.entries(responseData)) {
-        (merged as unknown as Record<string, unknown>)[key] = value;
-      }
-      if (mcpConfig) {
-        merged.mcp = {
-          authMode: mcpConfig.auth_mode ?? undefined,
-          baseUrl: mcpConfig.mcp_base_url ?? undefined,
-          requiresAuth: mcpConfig.requires_auth ?? false,
-        };
-      } else {
-        merged.mcp = undefined;
-      }
-      return merged;
-    }
-  } catch {
-    // Return mock data if endpoint doesn't exist
-  }
+  const data = (await requireAvailable(apiClient.GET("/api/v1/health", {}))) as Record<
+    string,
+    unknown
+  >;
+  const status = data["status"];
+  const uptime = data["uptime_seconds"] ?? data["uptime"];
+  if (
+    typeof uptime !== "number" ||
+    !["ok", "ready", "healthy", "degraded", "unhealthy"].includes(String(status))
+  )
+    return invalidResponse();
   return {
-    queuedJobs: 0,
-    status: "healthy",
-    uptime: 99.9,
+    status: status === "ok" || status === "ready" ? "healthy" : (status as SystemStatus["status"]),
+    uptime,
+    queuedJobs: typeof data["queuedJobs"] === "number" ? data["queuedJobs"] : undefined,
+    version: typeof data["version"] === "string" ? data["version"] : undefined,
   };
 };

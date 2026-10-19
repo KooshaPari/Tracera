@@ -48,15 +48,12 @@ async function ensureElectrobunBinary(): Promise<void> {
   // download the CLI binary and exit.  The wrapper exits 0 even if
   // the spawned binary fails (which it will — it's unsigned).
   // We only need the download side-effect.
-  const proc = Bun.spawn(
-    ["node", CJS_WRAPPER, "download-only-__noop__"],
-    {
-      cwd: DESKTOP_DIR,
-      stdout: "pipe",
-      stderr: "pipe",
-      env: { ...process.env },
-    },
-  );
+  const proc = Bun.spawn(["node", CJS_WRAPPER, "download-only-__noop__"], {
+    cwd: DESKTOP_DIR,
+    stdout: "pipe",
+    stderr: "pipe",
+    env: { ...process.env },
+  });
   const [stdout, stderr] = await Promise.all([
     new Response(proc.stdout as ReadableStream).text(),
     new Response(proc.stderr as ReadableStream).text(),
@@ -74,10 +71,10 @@ async function ensureElectrobunBinary(): Promise<void> {
 
 async function resign(binPath: string): Promise<boolean> {
   log(`ad-hoc codesign: ${binPath}`);
-  const proc = Bun.spawn(
-    ["codesign", "--sign", "-", "--force", binPath],
-    { stdout: "pipe", stderr: "pipe" },
-  );
+  const proc = Bun.spawn(["codesign", "--sign", "-", "--force", binPath], {
+    stdout: "pipe",
+    stderr: "pipe",
+  });
   const [_out, stderr, code] = await Promise.all([
     new Response(proc.stdout as ReadableStream).text(),
     new Response(proc.stderr as ReadableStream).text(),
@@ -120,8 +117,8 @@ async function main(): Promise<void> {
     // with SIGKILL on macOS.  Print a clear diagnostic.
     log(
       "WARNING: electrobun binary not found after download attempt.\n" +
-      "[postinstall] On macOS, run: codesign --sign - --force node_modules/electrobun/bin/electrobun\n" +
-      "[postinstall] after the binary is present (after first `bunx electrobun build` attempt).",
+        "[postinstall] On macOS, run: codesign --sign - --force node_modules/electrobun/bin/electrobun\n" +
+        "[postinstall] after the binary is present (after first `bunx electrobun build` attempt).",
     );
   }
 }

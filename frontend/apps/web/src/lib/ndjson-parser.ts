@@ -127,9 +127,11 @@ export async function* parseNDJSONWithProgress<T = any>(
   };
 
   for await (const item of parseNDJSON<T | NDJSONMetadata>(response)) {
-    // Update stats
+    // Bytes are counted for every frame that arrives off the wire, but
+    // itemsReceived counts only real data items. Counting the transport
+    // metadata frames (progress/complete/error/section) would inflate the
+    // "items" counter and the throughput derived from it.
     stats.bytesReceived += JSON.stringify(item).length;
-    stats.itemsReceived++;
 
     // Handle metadata events
     if (typeof item === "object" && item !== null && "type" in item) {
@@ -170,10 +172,12 @@ export async function* parseNDJSONWithProgress<T = any>(
 
         default:
           // Regular data item, yield it
+          stats.itemsReceived++;
           yield item as T;
       }
     } else {
       // Regular data item without type field
+      stats.itemsReceived++;
       yield item as T;
     }
   }

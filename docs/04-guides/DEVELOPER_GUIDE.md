@@ -68,9 +68,10 @@ git push origin feature/my-feature
 # src/tracertm/models.py
 from pydantic import BaseModel, Field
 
+
 class MyModel(BaseModel):
     """My model description."""
-    
+
     id: int = Field(gt=0, description="Unique ID")
     name: str = Field(min_length=1, description="Name")
 ```
@@ -81,9 +82,10 @@ class MyModel(BaseModel):
 # src/tracertm/services/my_service.py
 from loguru import logger
 
+
 class MyService:
     """My service description."""
-    
+
     def process(self, data: MyModel) -> Result:
         """Process data."""
         logger.info(f"Processing {data.id}")
@@ -99,6 +101,7 @@ from fastapi import APIRouter
 
 router = APIRouter()
 
+
 @router.post("/my-endpoint")
 async def my_endpoint(data: MyModel) -> Result:
     """My endpoint description."""
@@ -113,6 +116,7 @@ async def my_endpoint(data: MyModel) -> Result:
 import pytest
 from tracertm.models import MyModel
 from tracertm.services import MyService
+
 
 def test_my_service() -> None:
     """Test my service."""
@@ -187,13 +191,19 @@ uv run ty check src/ --error-on-warning
 def my_function(x: int) -> str:
     return str(x)
 
+
 # Use Optional for nullable values
 from typing import Optional
+
+
 def get_user(id: int) -> Optional[User]:
     return user if found else None
 
+
 # Use Union for multiple types
 from typing import Union
+
+
 def process(data: Union[str, int]) -> str:
     return str(data)
 ```
@@ -239,9 +249,10 @@ logger.bind(user_id=123).info("User action")
 ```python
 from pydantic import BaseModel, Field
 
+
 class UserInput(BaseModel):
     """User input with validation."""
-    
+
     email: str = Field(regex=r"^[\w\.-]+@[\w\.-]+\.\w+$")
     password: str = Field(min_length=8)
 ```
@@ -346,7 +357,9 @@ logger.debug(f"Variable: {variable}")
 ### Breakpoints
 
 ```python
-import pdb; pdb.set_trace()
+import pdb
+
+pdb.set_trace()
 ```
 
 ### IDE Debugging

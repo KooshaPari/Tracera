@@ -20,6 +20,7 @@ def test_rate_limit_is_isolated_by_authenticated_principal() -> None:
     with pytest.raises(HTTPException) as error:
         limiter.enforce(request("/api/v1/impact"), {"sub": "alice"})
     assert error.value.status_code == 429
+    assert error.value.headers is not None
     assert int(error.value.headers["Retry-After"]) >= 1
 
 

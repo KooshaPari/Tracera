@@ -8,9 +8,7 @@ const __dirname = fileURLToPath(new URL(".", import.meta.url));
 const root = resolve(__dirname, "..");
 const tscBin = resolve(root, "node_modules", ".bin", "tsc");
 
-const packageJson = JSON.parse(
-  await readFile(resolve(root, "package.json"), "utf8"),
-);
+const packageJson = JSON.parse(await readFile(resolve(root, "package.json"), "utf8"));
 
 // ---------------------------------------------------------------------------
 // 1. Assert that the per-project typecheck scripts are factually correct
@@ -32,10 +30,7 @@ assert.equal(
   ].join(" && "),
 );
 
-assert.equal(
-  packageJson.scripts.pretypecheck,
-  "node scripts/test-native-typecheck-contract.mjs",
-);
+assert.equal(packageJson.scripts.pretypecheck, "node scripts/test-native-typecheck-contract.mjs");
 
 // Anti-regression assertions for F02/F03: the multi-`-p` form silently drops
 // all but the last project.  Only `&&`-chained per-project invocations are
@@ -60,25 +55,22 @@ assert.doesNotMatch(packageJson.scripts.typecheck, /--build/);
 //    For each project in typecheck:packages, inject a deliberate type error,
 //    verify tsc exits non-zero, then remove the error and verify tsc passes.
 // ---------------------------------------------------------------------------
-const PACKAGES = [
-  "api-client",
-  "config",
-  "env-manager",
-  "state",
-  "types",
-  "ui",
-];
+const PACKAGES = ["api-client", "config", "env-manager", "state", "types", "ui"];
 
 function runTsc(pkg) {
   return spawnSync(
     tscBin,
-    [
-      "--noEmit",
-      "--pretty", "false",
-      "-p", resolve(root, "packages", pkg, "tsconfig.json"),
-    ],
+    ["--noEmit", "--pretty", "false", "-p", resolve(root, "packages", pkg, "tsconfig.json")],
     { cwd: root, encoding: "utf8", timeout: 30_000 },
   );
+}
+
+/**
+ * tsc writes diagnostics to stdout; stderr carries only fatal errors, so both
+ * streams have to be inspected when asserting on reported diagnostics.
+ */
+function tscOutput(result) {
+  return `${result.stdout ?? ""}${result.stderr ?? ""}`;
 }
 
 /**
@@ -91,19 +83,28 @@ async function proveProjectTypecheckFails(pkg) {
 
   await writeFile(probeFile, probeContent, "utf8");
 
-  const result = runTsc(pkg);
-  assert.notEqual(
-    result.status,
-    0,
-    `tsc -p packages/${pkg} must FAIL with deliberate type error (exit=${result.status}):\n${(result.stderr ?? "").slice(0, 200)}`,
-  );
-  assert.ok(
-    (result.stderr ?? "").includes("_probe_tc_gate"),
-    `tsc stderr for packages/${pkg} must reference the injected probe:\n${result.stderr.slice(0, 300)}`,
-  );
-
-  // Cleanup: error file, plus any .tsbuildinfo that may have been written
-  try { await unlink(probeFile); } catch { /* ok */ }
+  try {
+    const result = runTsc(pkg);
+    const diagnostics = tscOutput(result);
+    assert.notEqual(
+      result.status,
+      0,
+      `tsc -p packages/${pkg} must FAIL with deliberate type error (exit=${result.status}):\n${diagnostics.slice(0, 200)}`,
+    );
+    assert.ok(
+      diagnostics.includes("_probe_tc_gate"),
+      `tsc output for packages/${pkg} must reference the injected probe:\n${diagnostics.slice(0, 300)}`,
+    );
+  } finally {
+    // Cleanup: error file, plus any .tsbuildinfo that may have been written.
+    // Runs even when an assertion above throws, so a failed run never leaves
+    // the probe behind in the workspace.
+    try {
+      await unlink(probeFile);
+    } catch {
+      /* ok */
+    }
+  }
 }
 
 /**
@@ -114,7 +115,7 @@ function assertProjectTypecheckPasses(pkg) {
   assert.equal(
     result.status,
     0,
-    `tsc -p packages/${pkg} must pass cleanly (exit=${result.status}):\n${(result.stderr ?? "").slice(0, 300)}`,
+    `tsc -p packages/${pkg} must pass cleanly (exit=${result.status}):\n${tscOutput(result).slice(0, 300)}`,
   );
 }
 

@@ -1,7 +1,7 @@
 use chrono::{DateTime, Utc};
 use sqlx::{Row, SqlitePool};
 
-use crate::store::{BoxFuture, Story, StoreError, StoreResult};
+use crate::store::{BoxFuture, StoreError, StoreResult, Story};
 
 use super::ts_to_str;
 
@@ -35,6 +35,7 @@ pub(super) fn list_stories(pool: &SqlitePool) -> BoxFuture<'_, StoreResult<Vec<S
     })
 }
 
+#[allow(clippy::too_many_arguments)]
 pub(super) fn create_story(
     pool: &SqlitePool,
     id: String,

@@ -1,6 +1,7 @@
 import { Outlet, createFileRoute, useLocation, useParams } from "@tanstack/react-router";
 import { useCallback, Suspense, lazy } from "react";
 
+import { Unavailable } from "@/components/Availability";
 import { ErrorBoundary } from "@/components/layout/ErrorBoundary";
 import { FullScreenPage } from "@/components/layout/FullScreenPage";
 import { LoadingSpinner } from "@/components/layout/LoadingSpinner";
@@ -61,10 +62,8 @@ const ErrorComponent = ({ error }: { error?: Error }) => {
   return (
     <FullScreenPage>
       <div className="bg-background text-foreground flex min-h-screen flex-col items-center justify-center">
-        <h1 className="text-destructive mb-4 text-2xl font-bold">Project Not Found</h1>
-        <p className="text-muted-foreground mb-6">
-          The project you're looking for doesn't exist or you don't have access.
-        </p>
+        <Unavailable error={error} />
+        <p className="text-muted-foreground mb-6">The project could not be loaded.</p>
         {error && <p className="text-muted-foreground mb-4 text-sm">Error: {error.message}</p>}
         {projectId && <p className="text-muted-foreground mb-4 text-xs">Project ID: {projectId}</p>}
         <button

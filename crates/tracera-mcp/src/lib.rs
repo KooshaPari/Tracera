@@ -26,7 +26,6 @@
 
 #![forbid(unsafe_code)]
 #![warn(missing_docs)]
-// Relaxed for MCP arg structs (rmcp derives schemars docs from the field names).
 
 pub mod tools;
 
@@ -37,7 +36,7 @@ use rmcp::handler::server::ServerHandler;
 use rmcp::model::InitializeResult;
 use rmcp::ErrorData as McpError;
 // rmcp 3.2 re-exports the macros when feature="macros" is enabled.
-use rmcp::{tool_handler, tool_router};
+use rmcp::tool_handler;
 use tracera_server::store::Store;
 
 /// A type alias for our JSON tool output. The macro serializes whatever this
@@ -74,10 +73,10 @@ impl TraceraMcpServer {
     }
 
     /// Convenience: the standard info advertised during `initialize`. The MCP
-    /// spec uses `ServerInfo` as a type alias for `InitializeResult` in rmcp 3.2.
+    /// spec uses `ServerConfig` as a type alias for `InitializeResult` in rmcp 3.5.
     pub fn server_info() -> InitializeResult {
-        use rmcp::model::{Implementation, ServerCapabilities, ServerInfo};
-        ServerInfo::new(ServerCapabilities::default()).with_server_info(Implementation::new(
+        use rmcp::model::{Implementation, ServerCapabilities, ServerConfig};
+        ServerConfig::new(ServerCapabilities::default()).with_server_info(Implementation::new(
             "tracera-mcp",
             env!("CARGO_PKG_VERSION"),
         ))

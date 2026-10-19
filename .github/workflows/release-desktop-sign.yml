@@ -1,8 +1,37 @@
-name: release-desktop
+name: release-desktop-sign (retired)
+
+# RETIRED - do not re-enable the v* tag trigger until the build below is made real.
+#
+# Why it is retired:
+#   This workflow ran `cargo build --release --target <t> --bin tracera-desktop`
+#   and then signed/exported `target/<t>/release/tracera-desktop[.exe]`. There is
+#   no such bin target in the root workspace; `cargo build --release --bin
+#   tracera-desktop` fails with "error: no bin target named `tracera-desktop`".
+#   The only crate named `tracera-desktop` is frontend/apps/tauri-desktop/
+#   Cargo.toml, which is intentionally NOT a root-workspace member (its own
+#   header says it is built standalone via --manifest-path), and that Tauri app
+#   is not wired up: it has no package.json, no tauri CLI script, no build.rs,
+#   no frontendDist (tauri.conf.json points at ../dist, which does not exist),
+#   and no icons. So every matrix leg of this workflow provably cannot run.
+#
+# What it used to do:
+#   Build a raw tracera-desktop binary for macOS/Windows/Linux, import an Apple
+#   certificate, codesign + notarize the macOS binary, AzureSignTool-sign the
+#   Windows binary, zip/tar the result, and attach it to a GitHub Release.
+#
+# The canonical desktop is the Electrobun app in frontend/apps/desktop, built
+# and released by .github/workflows/release-desktop.yml (which currently ships
+# unsigned bundles; signing there is explicitly out of scope).
+#
+# How to re-enable:
+#   1. Point the build step at a real, wired desktop binary. Either
+#      (a) wire up frontend/apps/tauri-desktop (add package.json + tauri CLI
+#          script + a frontend build + the missing icons/dist), then build it
+#          with `cargo build --manifest-path frontend/apps/tauri-desktop/Cargo.toml ...`,
+#          or (b) sign the Electrobun bundle produced by release-desktop.yml.
+#   2. Restore the `push: tags: ["v*"]` trigger below.
 
 on:
-  push:
-    tags: ["v*"]
   workflow_dispatch:
     inputs:
       tag:

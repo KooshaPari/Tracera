@@ -7,6 +7,30 @@
 # a warning until upstream publishes a compatible dependency update.
 yanked = "warn"
 
+# Targeted, reviewed exceptions. cargo-deny reports each of these as
+# `unmaintained` - a maintenance signal with no known exploit against us, not a
+# vulnerability. All four arrive through one dependency, neo4rs 0.8.0, which is
+# the newest *stable* release of the Neo4j driver this service uses:
+#
+#   neo4rs 0.8.0 -> backoff 0.4.0   (RUSTSEC-2025-0012)
+#               -> instant 0.1.13   (RUSTSEC-2024-0384, via backoff)
+#               -> paste 1.0.15     (RUSTSEC-2024-0436)
+#               -> rustls-native-certs 0.7.3 -> rustls-pemfile 2.2.0
+#                                                      (RUSTSEC-2025-0134)
+#
+# They are not fixable without moving to neo4rs 0.9.0-rc.x. The 0.9 line
+# rewrites the bolt protocol implementation, so adopting it is a deliberate
+# change to the database driver rather than a CI fix - and it is still a release
+# candidate. It does drop all four at once (backoff -> backon, paste -> pastey,
+# rustls-native-certs 0.7 -> 0.8), so revisit this block when 0.9.0 ships stable
+# and remove every entry that no longer fires.
+ignore = [
+  "RUSTSEC-2025-0012",
+  "RUSTSEC-2024-0384",
+  "RUSTSEC-2024-0436",
+  "RUSTSEC-2025-0134",
+]
+
 [bans]
 multiple-versions = "warn"
 wildcards = "deny"

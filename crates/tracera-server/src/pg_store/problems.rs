@@ -11,9 +11,8 @@ pub(super) async fn list_problems(
     params: ListParams,
 ) -> StoreResult<Vec<Problem>> {
     let rows = match status_filter {
-        Some(status) => {
-            sqlx::query(
-                "SELECT id, project_id::text, problem_number, title, description, status, \
+        Some(status) => sqlx::query(
+            "SELECT id, project_id::text, problem_number, title, description, status, \
                  resolution_type, category, sub_category, tags::text, impact_level, urgency, \
                  priority, rca_performed, root_cause_identified, workaround_available, \
                  permanent_fix_available, assigned_to, assigned_team, owner, known_error_id, \
@@ -21,18 +20,16 @@ pub(super) async fn list_problems(
                  FROM problems \
                  WHERE project_id = $1 AND status = $2 AND deleted_at IS NULL \
                  ORDER BY created_at DESC, id ASC LIMIT $3 OFFSET $4",
-            )
-            .bind(&project_id)
-            .bind(&status)
-            .bind(params.page_size as i64)
-            .bind(params.offset() as i64)
-            .fetch_all(pool)
-            .await
-            .map_err(StoreError::from)?
-        }
-        None => {
-            sqlx::query(
-                "SELECT id, project_id::text, problem_number, title, description, status, \
+        )
+        .bind(&project_id)
+        .bind(&status)
+        .bind(params.page_size as i64)
+        .bind(params.offset() as i64)
+        .fetch_all(pool)
+        .await
+        .map_err(StoreError::from)?,
+        None => sqlx::query(
+            "SELECT id, project_id::text, problem_number, title, description, status, \
                  resolution_type, category, sub_category, tags::text, impact_level, urgency, \
                  priority, rca_performed, root_cause_identified, workaround_available, \
                  permanent_fix_available, assigned_to, assigned_team, owner, known_error_id, \
@@ -40,14 +37,13 @@ pub(super) async fn list_problems(
                  FROM problems \
                  WHERE project_id = $1 AND deleted_at IS NULL \
                  ORDER BY created_at DESC, id ASC LIMIT $2 OFFSET $3",
-            )
-            .bind(&project_id)
-            .bind(params.page_size as i64)
-            .bind(params.offset() as i64)
-            .fetch_all(pool)
-            .await
-            .map_err(StoreError::from)?
-        }
+        )
+        .bind(&project_id)
+        .bind(params.page_size as i64)
+        .bind(params.offset() as i64)
+        .fetch_all(pool)
+        .await
+        .map_err(StoreError::from)?,
     };
 
     Ok(rows.into_iter().map(pg_row_to_problem).collect())
@@ -172,10 +168,7 @@ pub(super) async fn count_problems_filtered(
     if let Some(status) = status {
         request = request.bind(status);
     }
-    let row = request
-        .fetch_one(pool)
-        .await
-        .map_err(StoreError::from)?;
+    let row = request.fetch_one(pool).await.map_err(StoreError::from)?;
     Ok(row.try_get("cnt").unwrap_or(0))
 }
 

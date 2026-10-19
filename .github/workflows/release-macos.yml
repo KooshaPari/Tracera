@@ -1,13 +1,34 @@
-name: Release macOS (Tracera)
+name: Release macOS (Tracera) (retired)
 
-# Calls the reusable workflow at kooshapari/phenotype-fleet-ops.
-# Self-hosted runners only (zero billed minutes).
-# All Apple Developer secrets live in Infisical project 8efe392e-56a6-4c3c-89f9-8141183dd7e8.
+# RETIRED - do not re-enable the v*.*.* tag trigger until the build below is made real.
+#
+# Why it is retired:
+#   This workflow assumed a pnpm + Tauri macOS build that does not exist in the
+#   repo: there is no pnpm-lock.yaml and no root package.json, `apps/desktop/`
+#   contains exactly one tracked file (src-tauri/Entitlements.plist), and the
+#   copy step `cp -R apps/desktop/src-tauri/target/.../Tracera.app dist/macos/`
+#   references an output that is never produced. It also calls an external
+#   reusable workflow (kooshapari/phenotype-fleet-ops/.github/workflows/
+#   macos-release.yml@main) and requires self-hosted runners plus INFISICAL_TOKEN.
+#
+# What it used to do:
+#   Build, codesign, notarize, and DMG a Tracera.app via the phenotype-fleet-ops
+#   reusable macOS release workflow, then attach it to a GitHub Release.
+#
+# The canonical macOS desktop is the Electrobun app in frontend/apps/desktop,
+# built and released by .github/workflows/release-desktop.yml (macos-14 arm64
+# job). The Tauri 2 app in frontend/apps/tauri-desktop exists as source but is
+# NOT wired up: no package.json, no tauri CLI script, no frontend build/dist,
+# no icons, and the crate is not a root-workspace member.
+#
+# How to re-enable:
+#   1. Wire up frontend/apps/tauri-desktop (package.json + tauri script +
+#      frontend build + icons/dist), correct build-cmd/entitlements-file/
+#      artifact-dir to those paths, and confirm the self-hosted runner and
+#      INFISICAL_TOKEN secret are available.
+#   2. Restore the `push: tags: ["v*.*.*"]` trigger below.
 
 on:
-  push:
-    tags:
-      - "v*.*.*"
   workflow_dispatch:
 
 concurrency:

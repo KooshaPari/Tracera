@@ -1,13 +1,31 @@
 name: Deploy Tracera to Vercel
 
+# Environment delineation: docs/04-guides/ENVIRONMENTS.md
+#
+# A push to main is a `dev` deploy, never production. Production happens only on
+# a v* tag, or on an explicit workflow_dispatch with environment: prod.
+
 on:
-  workflow_call:
   push:
     branches: [main]
+    tags: ["v*"]
   pull_request:
     branches: [main]
   workflow_dispatch:
+    inputs:
+      environment:
+        description: Target environment
+        required: true
+        type: choice
+        default: dev
+        options: [dev, preview, prod]
   workflow_call:
+    inputs:
+      environment:
+        description: Target environment; empty derives it from the caller's event
+        required: false
+        type: string
+        default: ""
     secrets:
       VERCEL_TOKEN:
         required: false
@@ -16,41 +34,69 @@ permissions:
   contents: read
 
 jobs:
+  # The one place the target environment is derived, so no step has to repeat
+  # the logic and no trigger can quietly mean "production".
+  plan:
+    runs-on: ubuntu-latest
+    permissions: {}
+    outputs:
+      env: ${{ steps.derive.outputs.env }}
+    steps:
+      - id: derive
+        run: |
+          set -euo pipefail
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            target=preview
+          elif [ "${GITHUB_REF#refs/tags/}" != "${GITHUB_REF}" ]; then
+            # A release tag is always production; an input must not downgrade it.
+            target=prod
+          elif [ -n "${{ inputs.environment }}" ]; then
+            target="${{ inputs.environment }}"
+          else
+            target=dev
+          fi
+          case "$target" in
+            dev|preview|prod) ;;
+            *) echo "::error::unsupported environment '$target'"; exit 1 ;;
+          esac
+          echo "env=$target" >> "$GITHUB_OUTPUT"
+          echo "Target environment: $target"
+
   deploy:
+    needs: plan
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    # Configure these environments in repository settings with required
-    # reviewers/branch protections.  The workflow keeps preview and production
-    # approvals separate while preventing overlapping deploy races.
+    # Give the *-production environments required reviewers in repository
+    # settings; dev and preview intentionally carry no gate.
     environment:
-      name: ${{ github.event_name == 'pull_request' && 'vercel-preview' || 'vercel-production' }}
+      name: vercel-${{ needs.plan.outputs.env }}
     concurrency:
-      group: vercel-${{ github.event_name == 'pull_request' && github.event.pull_request.number || github.ref }}
+      group: vercel-${{ needs.plan.outputs.env }}-${{ github.event.pull_request.number || github.ref }}
       cancel-in-progress: false
     env:
+      DEPLOY_ENV: ${{ needs.plan.outputs.env }}
       HAS_VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
       HAS_VERCEL_ORG: ${{ vars.VERCEL_ORG_ID }}
       HAS_VERCEL_PROJECT: ${{ vars.VERCEL_PROJECT_ID }}
-      VITE_API_URL: ${{ vars.TRACERA_API_BASE }}
+      # dev and preview can point at a different API; falling back to the
+      # production base keeps this correct while no dev override is configured.
+      VITE_API_URL: ${{ needs.plan.outputs.env == 'prod' && vars.TRACERA_API_BASE || vars.TRACERA_API_BASE_DEV || vars.TRACERA_API_BASE }}
     steps:
-      - name: Skip when Vercel secrets are unavailable
-        if: ${{ github.event_name == 'pull_request' && (env.HAS_VERCEL_TOKEN == '' || env.HAS_VERCEL_ORG == '' || env.HAS_VERCEL_PROJECT == '') }}
-        run: echo "Vercel secrets unavailable on pull request; deployment skipped."
-
-      - name: Skip when Vercel secrets are unavailable (production)
-        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && (env.HAS_VERCEL_TOKEN == '' || env.HAS_VERCEL_ORG == '' || env.HAS_VERCEL_PROJECT == '') }}
-        continue-on-error: true
+      # Production fails closed: a missing credential must be loud, not a silent
+      # success. This step name is part of the contract enforced by
+      # scripts/verify-workflow-security.sh.
+      - name: Fail production deployment when Vercel secrets are unavailable
+        if: ${{ needs.plan.outputs.env == 'prod' && (env.HAS_VERCEL_TOKEN == '' || env.HAS_VERCEL_ORG == '' || env.HAS_VERCEL_PROJECT == '') }}
         run: |
-          set +e
-          echo "::notice title='Vercel deploy skipped'::VERCEL_TOKEN, VERCEL_ORG_ID, or VERCEL_PROJECT_ID is missing. Add them in https://github.com/KooshaPari/Tracera/settings/secrets/actions"
+          echo "::error title='Vercel production deploy blocked'::VERCEL_TOKEN, VERCEL_ORG_ID, or VERCEL_PROJECT_ID is missing."
+          echo "Add them in https://github.com/KooshaPari/Tracera/settings/secrets/actions"
           echo "Get a token at https://vercel.com/account/tokens"
-          echo "Then use the GitHub CLI to set VERCEL_TOKEN (secret) plus VERCEL_ORG_ID and VERCEL_PROJECT_ID (variables)."
-          echo "After adding secrets, push any commit to main to trigger the deploy."
-          exit 0
+          exit 1
 
-      - name: Validate Vercel project configuration
-        if: ${{ env.HAS_VERCEL_TOKEN != '' && env.HAS_VERCEL_ORG != '' && env.HAS_VERCEL_PROJECT != '' }}
-        run: test -n "$HAS_VERCEL_TOKEN" && test -n "$HAS_VERCEL_ORG" && test -n "$HAS_VERCEL_PROJECT"
+      - name: Skip non-production when Vercel credentials are unavailable
+        if: ${{ needs.plan.outputs.env != 'prod' && (env.HAS_VERCEL_TOKEN == '' || env.HAS_VERCEL_ORG == '' || env.HAS_VERCEL_PROJECT == '') }}
+        run: |
+          echo "::notice title='Vercel deploy skipped'::VERCEL_TOKEN, VERCEL_ORG_ID, or VERCEL_PROJECT_ID is missing; the $DEPLOY_ENV deploy was skipped."
 
       - uses: actions/checkout@v4
         if: ${{ env.HAS_VERCEL_TOKEN != '' && env.HAS_VERCEL_ORG != '' && env.HAS_VERCEL_PROJECT != '' }}
@@ -60,30 +106,86 @@ jobs:
         with:
           bun-version: latest
 
-      - name: Validate and stage API base for Vercel build
+      - name: Validate the API base for the target environment
         if: ${{ env.HAS_VERCEL_TOKEN != '' && env.HAS_VERCEL_ORG != '' && env.HAS_VERCEL_PROJECT != '' }}
         run: |
           test -n "$VITE_API_URL" || {
             echo "The configured API URL repository variable is required for Vercel builds." >&2
             exit 1
           }
-          if [ "${{ github.event_name }}" = "push" ] && [ "${{ github.ref }}" = "refs/heads/main" ]; then
+          # Production must be a public HTTPS origin. dev and preview may address
+          # a loopback stack, so the insecure-base guard is relaxed for them.
+          if [ "$DEPLOY_ENV" = "prod" ]; then
             PRODUCTION_DEPLOY=1 npm --prefix frontend run test:api-base
+          else
+            ALLOW_INSECURE_API_BASE=1 npm --prefix frontend run test:api-base
           fi
 
-      - name: Deploy to Vercel (preview on PR, production on main)
+      - name: Deploy to Vercel
         if: ${{ env.HAS_VERCEL_TOKEN != '' && env.HAS_VERCEL_ORG != '' && env.HAS_VERCEL_PROJECT != '' }}
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
           VERCEL_ORG_ID: ${{ vars.VERCEL_ORG_ID }}
           VERCEL_PROJECT_ID: ${{ vars.VERCEL_PROJECT_ID }}
         run: |
-          if [ "${{ github.event_name }}" == "pull_request" ]; then
-            npx vercel@59.19.0 deploy --yes --scope "$VERCEL_ORG_ID" --token "$VERCEL_TOKEN" \
-              --build-env "VITE_API_URL=$VITE_API_URL" \
-              --env "VITE_API_URL=$VITE_API_URL"
+          set -euo pipefail
+          # --prod only for the prod environment: dev and preview produce an
+          # immutable preview deployment instead of promoting the production alias.
+          if [ "$DEPLOY_ENV" = "prod" ]; then
+            prod_flag="--prod"
           else
-            npx vercel@59.19.0 deploy --prod --yes --scope "$VERCEL_ORG_ID" --token "$VERCEL_TOKEN" \
-              --build-env "VITE_API_URL=$VITE_API_URL" \
-              --env "VITE_API_URL=$VITE_API_URL"
+            prod_flag=""
           fi
+          # shellcheck disable=SC2086  # deliberate word splitting: empty or --prod
+          url=$(npx vercel@59.19.0 deploy $prod_flag --yes --scope "$VERCEL_ORG_ID" --token "$VERCEL_TOKEN" \
+            --build-env "VITE_API_URL=$VITE_API_URL" \
+            --env "VITE_API_URL=$VITE_API_URL" | tail -n 1)
+          echo "DEPLOY_URL=$url" >> "$GITHUB_ENV"
+          echo "Deployed: $url"
+
+      - name: Verify the deployment serves the app
+        if: ${{ env.HAS_VERCEL_TOKEN != '' && env.HAS_VERCEL_ORG != '' && env.HAS_VERCEL_PROJECT != '' && env.DEPLOY_URL != '' }}
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ vars.VERCEL_ORG_ID }}
+          # Optional. Create Protection Bypass for Automation in the Vercel
+          # project and store it as this repository secret. Without it, preview
+          # deployments sit behind Vercel Authentication and CI cannot read them
+          # to verify what was actually published.
+          VERCEL_AUTOMATION_BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
+        run: |
+          set -uo pipefail
+          # A 200 proves nothing here. The repo-root public/index.html placeholder
+          # ("Frontend scaffolding coming soon.") is served whenever a deployment
+          # has no build output, so the site answers 200 while showing the stub
+          # instead of the app. Read the body and assert it is the SPA. `vercel
+          # curl` is used because dev and preview deployments sit behind Vercel
+          # Authentication, where a plain fetch returns the SSO login page.
+          if [ -n "${VERCEL_AUTOMATION_BYPASS_SECRET:-}" ]; then
+            body=$(curl -sSL --max-time 30 \
+              -H "x-vercel-protection-bypass: $VERCEL_AUTOMATION_BYPASS_SECRET" \
+              "$DEPLOY_URL" 2>/dev/null || true)
+          else
+            body=$(curl -sSL --max-time 30 "$DEPLOY_URL" 2>/dev/null || true)
+          fi
+          if [ -z "$body" ]; then
+            echo "::warning::Could not fetch $DEPLOY_URL to verify its contents."
+            exit 0
+          fi
+          if printf %s "$body" | grep -qi "scaffolding coming soon"; then
+            echo "::error::$DEPLOY_URL is serving the public/index.html placeholder, not the built app."
+            exit 1
+          fi
+          if printf %s "$body" | grep -qi "vercel.com/login\|sso-api"; then
+            echo "::notice::$DEPLOY_URL is behind Vercel Authentication, so its contents could not be verified without a bypass token."
+            exit 0
+          fi
+          if [ "$body" = "Unauthorized" ]; then
+            echo "::notice::$DEPLOY_URL answered 401 Unauthorized: the production alias is gated by Cloudflare Access middleware (expected). Content verification runs through the Access hostname instead."
+            exit 0
+          fi
+          if ! printf %s "$body" | grep -q "id=\"root\""; then
+            echo "::error::$DEPLOY_URL does not look like the SPA build (no #root element in the body)."
+            exit 1
+          fi
+          echo "PASS: $DEPLOY_URL serves the app build."

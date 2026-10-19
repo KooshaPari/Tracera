@@ -54,7 +54,7 @@ jobs:
         if: runner.os != 'Windows'
         run: |
           mkdir -p dist
-          tar -czf dist/${{ matrix.archive }} -C target/${{ matrix.target }}/release tracera-server tracera-cli
+          tar -czf dist/${{ matrix.archive }} -C target/${{ matrix.target }}/release tracera-server tracera
       - name: Create archive (Windows)
         if: runner.os == 'Windows'
         run: |

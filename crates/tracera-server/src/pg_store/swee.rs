@@ -86,8 +86,8 @@ pub(super) async fn list_swee_nodes(
         .into_iter()
         .map(|r| {
             let meta_str: String = r.try_get("metadata").unwrap_or_default();
-            let metadata: Value = serde_json::from_str(&meta_str)
-                .unwrap_or(Value::Object(Default::default()));
+            let metadata: Value =
+                serde_json::from_str(&meta_str).unwrap_or(Value::Object(Default::default()));
             let id: i64 = r.try_get("id").unwrap_or_default();
             serde_json::json!({
                 "id": id.to_string(),
@@ -106,33 +106,29 @@ pub(super) async fn list_swee_edges(
     edge_type: Option<String>,
 ) -> StoreResult<Vec<Value>> {
     let rows = match edge_type {
-        Some(ref et) => {
-            sqlx::query(
-                "SELECT id, source_id, target_id, edge_type, confidence, metadata::text, created_at \
+        Some(ref et) => sqlx::query(
+            "SELECT id, source_id, target_id, edge_type, confidence, metadata::text, created_at \
                  FROM swee_edges WHERE edge_type = $1 ORDER BY created_at DESC",
-            )
-            .bind(et)
-            .fetch_all(pool)
-            .await
-            .map_err(StoreError::from)?
-        }
-        None => {
-            sqlx::query(
-                "SELECT id, source_id, target_id, edge_type, confidence, metadata::text, created_at \
+        )
+        .bind(et)
+        .fetch_all(pool)
+        .await
+        .map_err(StoreError::from)?,
+        None => sqlx::query(
+            "SELECT id, source_id, target_id, edge_type, confidence, metadata::text, created_at \
                  FROM swee_edges ORDER BY created_at DESC",
-            )
-            .fetch_all(pool)
-            .await
-            .map_err(StoreError::from)?
-        }
+        )
+        .fetch_all(pool)
+        .await
+        .map_err(StoreError::from)?,
     };
 
     Ok(rows
         .into_iter()
         .map(|r| {
             let meta_str: String = r.try_get("metadata").unwrap_or_default();
-            let metadata: Value = serde_json::from_str(&meta_str)
-                .unwrap_or(Value::Object(Default::default()));
+            let metadata: Value =
+                serde_json::from_str(&meta_str).unwrap_or(Value::Object(Default::default()));
             let id: i64 = r.try_get("id").unwrap_or_default();
             let src_id: i64 = r.try_get("source_id").unwrap_or_default();
             let tgt_id: i64 = r.try_get("target_id").unwrap_or_default();
@@ -149,10 +145,7 @@ pub(super) async fn list_swee_edges(
         .collect())
 }
 
-pub(super) async fn get_swee_node(
-    pool: &PgPool,
-    id: String,
-) -> StoreResult<Option<Value>> {
+pub(super) async fn get_swee_node(pool: &PgPool, id: String) -> StoreResult<Option<Value>> {
     let row = sqlx::query(
         "SELECT id, node_type, label, metadata::text, created_at, updated_at \
          FROM swee_nodes WHERE id = $1",
@@ -221,8 +214,8 @@ pub(super) async fn get_swee_neighbors(
         .into_iter()
         .map(|r| {
             let meta_str: String = r.try_get("metadata").unwrap_or_default();
-            let metadata: Value = serde_json::from_str(&meta_str)
-                .unwrap_or(Value::Object(Default::default()));
+            let metadata: Value =
+                serde_json::from_str(&meta_str).unwrap_or(Value::Object(Default::default()));
             let eid: i64 = r.try_get("id").unwrap_or_default();
             let src_id: i64 = r.try_get("source_id").unwrap_or_default();
             let tgt_id: i64 = r.try_get("target_id").unwrap_or_default();

@@ -68,7 +68,9 @@ enum ApiError {
     Ci(tracera_atlas::CiEventError),
     /// Request body failed to parse.
     BadRequest(String),
-    /// Something unexpected — surfaced as a 500.
+    /// Something unexpected — surfaced as a 500. Reserved for failures that do
+    /// not have a more specific mapping yet.
+    #[allow(dead_code)]
     Internal(String),
 }
 

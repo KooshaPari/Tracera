@@ -2,6 +2,7 @@ import type { Item, Link } from "./types";
 
 // Traceability Matrix API stub
 import { client } from "./client";
+import { requireAvailable, invalidResponse } from "./availability";
 
 interface TraceabilityMatrix {
   coverage: {
@@ -15,19 +16,7 @@ interface TraceabilityMatrix {
 }
 
 const { apiClient } = client;
-const { safeApiCall } = client;
 const get = apiClient.GET.bind(apiClient);
-
-const emptyMatrix: TraceabilityMatrix = {
-  coverage: {
-    percentage: 0,
-    total: 0,
-    traced: 0,
-    untraced: 0,
-  },
-  items: [],
-  links: [],
-};
 
 const isRecordObject = (value: unknown): value is Record<string, unknown> =>
   Object.prototype.toString.call(value) === "[object Object]";
@@ -54,35 +43,22 @@ const isTraceabilityMatrix = (value: unknown): value is TraceabilityMatrix => {
 };
 
 const fetchMatrix = async (projectId: string): Promise<TraceabilityMatrix> => {
-  try {
-    const response = await safeApiCall(
-      get("/api/v1/projects/{id}/matrix", {
-        params: { path: { id: projectId } },
-      }),
-    );
-    const { data } = response;
-    if (isTraceabilityMatrix(data)) {
-      return data;
-    }
-    return emptyMatrix;
-  } catch {
-    return emptyMatrix;
-  }
+  const data = await requireAvailable(
+    get("/api/v1/projects/{id}/matrix", { params: { path: { id: projectId } } }),
+  );
+  if (!isTraceabilityMatrix(data)) return invalidResponse();
+  return data;
 };
 
 const exportMatrix = async (projectId: string, format: "csv" | "json" | "xlsx"): Promise<Blob> => {
-  try {
-    const response = await safeApiCall(
-      get("/api/v1/projects/{id}/matrix/export", {
-        params: { path: { id: projectId }, query: { format } },
-      }),
-    );
-    return new Blob([JSON.stringify(response.data)], {
-      type: "application/json",
-    });
-  } catch {
-    return new Blob(["{}"], { type: "application/json" });
-  }
+  const data = await requireAvailable(
+    get("/api/v1/projects/{id}/matrix/export", {
+      params: { path: { id: projectId }, query: { format } },
+      parseAs: "blob",
+    }),
+  );
+  if (!(data instanceof Blob)) return invalidResponse();
+  return data;
 };
 
 const matrixApi = { exportMatrix, fetchMatrix };

@@ -14,9 +14,7 @@ import re
 from pathlib import Path
 
 ROUTE_RE = re.compile(r"(/api/v1[^\s`\"',)]+)")
-DECORATOR_RE = re.compile(
-    r"@(?:\w+\.)?(?:get|post|put|patch|delete)\([\"']([^\"']+)"
-)
+DECORATOR_RE = re.compile(r"@(?:\w+\.)?(?:get|post|put|patch|delete)\([\"']([^\"']+)")
 PREFIX_RE = re.compile(r"router\s*=\s*APIRouter\(prefix=[\"']([^\"']+)")
 ROUTER_NAMES = {
     "auth": "/auth",
@@ -133,10 +131,18 @@ def main() -> int:
     parser.add_argument("--output", type=Path)
     args = parser.parse_args()
     try:
-        frontend_checkout = workspace_path(args.frontend_checkout, "frontend checkout", directory=True)
-        oracle_checkout = workspace_path(args.oracle_checkout, "oracle checkout", directory=True)
-        go_routes_path = workspace_path(args.go_routes, "Go routes file") if args.go_routes else None
-        rust_main_path = workspace_path(args.rust_main, "Rust main file") if args.rust_main else None
+        frontend_checkout = workspace_path(
+            args.frontend_checkout, "frontend checkout", directory=True
+        )
+        oracle_checkout = workspace_path(
+            args.oracle_checkout, "oracle checkout", directory=True
+        )
+        go_routes_path = (
+            workspace_path(args.go_routes, "Go routes file") if args.go_routes else None
+        )
+        rust_main_path = (
+            workspace_path(args.rust_main, "Rust main file") if args.rust_main else None
+        )
         output_path = args.output.resolve() if args.output else None
     except ValueError as error:
         parser.error(str(error))
@@ -164,14 +170,16 @@ def main() -> int:
         "oracle_only": sorted(set(oracle_normalized) - set(rich_normalized)),
         "gateway_routes": len(gateway),
         "gateway_normalized_matches": len(
-            {normalize(route) for route in rich} & {normalize(route) for route in gateway}
+            {normalize(route) for route in rich}
+            & {normalize(route) for route in gateway}
         ),
         "gateway_method_inventory": {
             route: sorted(methods) for route, methods in sorted(gateway_methods.items())
         },
         "rust_routes": len(native),
         "rust_normalized_matches": len(
-            {normalize(route) for route in rich} & {normalize(route) for route in native}
+            {normalize(route) for route in rich}
+            & {normalize(route) for route in native}
         ),
         "normalization": "all {param} segments collapse to {} for comparison only",
     }

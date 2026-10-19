@@ -20,8 +20,8 @@ pub(super) fn list_evidence(pool: &SqlitePool) -> BoxFuture<'_, StoreResult<Vec<
             .into_iter()
             .map(|r| {
                 let meta_str: String = r.try_get("metadata").unwrap_or_default();
-                let metadata: Value = serde_json::from_str(&meta_str)
-                    .unwrap_or(Value::Object(Default::default()));
+                let metadata: Value =
+                    serde_json::from_str(&meta_str).unwrap_or(Value::Object(Default::default()));
                 EvidenceItem {
                     id: r.try_get("id").unwrap_or_default(),
                     artifact_id: r.try_get("artifact_id").unwrap_or_default(),

@@ -16,6 +16,7 @@ pub(super) fn pg_row_to_trace_link(r: sqlx::postgres::PgRow) -> TraceLink {
     }
 }
 
+#[allow(clippy::too_many_arguments)]
 pub(super) async fn create_trace_link(
     pool: &PgPool,
     id: String,

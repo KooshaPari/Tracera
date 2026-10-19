@@ -23,7 +23,9 @@ CONTAINER_NAME_RE = re.compile(r"^\s*container_name:\s*([^#\s]+)", re.MULTILINE)
 SERVICE_RE = re.compile(r"^  ([a-zA-Z0-9_.-]+):\s*$", re.MULTILINE)
 BUILD_CONTEXT_RE = re.compile(r"^\s*context:\s*([^#\s]+)", re.MULTILINE)
 BUILD_DOCKERFILE_RE = re.compile(r"^\s*dockerfile:\s*([^#\s]+)", re.MULTILINE)
-SERVICE_BLOCK_RE = re.compile(r"^  ([a-zA-Z0-9_.-]+):\s*$([\s\S]*?)(?=^  [a-zA-Z0-9_.-]+:\s*$|\Z)", re.MULTILINE)
+SERVICE_BLOCK_RE = re.compile(
+    r"^  ([a-zA-Z0-9_.-]+):\s*$([\s\S]*?)(?=^  [a-zA-Z0-9_.-]+:\s*$|\Z)", re.MULTILINE
+)
 UPSTREAM_RE = re.compile(r"^\s*upstream\s+([a-zA-Z0-9_.-]+)\s*\{", re.MULTILINE)
 UPSTREAM_SERVER_RE = re.compile(r"^\s*server\s+([a-zA-Z0-9_.-]+):\d+", re.MULTILINE)
 NETWORK_ALIAS_RE = re.compile(r"^\s*-\s+([a-zA-Z0-9_.-]+)\s*$", re.MULTILINE)
@@ -72,7 +74,9 @@ def validate_checkout(
                 rf"(?m)^\s*{re.escape(service)}:\s*$[\s\S]{{0,400}}?\bbackend\b",
                 text,
             ):
-                errors.append(f"{service} is not attached to the internal backend network")
+                errors.append(
+                    f"{service} is not attached to the internal backend network"
+                )
     services = set(SERVICE_RE.findall(text))
     # Validate build inputs before launch. Compose reports these late and with
     # opaque errors; this gate makes an incomplete stable ref explicit.
@@ -96,8 +100,12 @@ def validate_checkout(
             ignore_file = (project_base / context / ".dockerignore").resolve()
             if ignore_file.is_file():
                 ignored = ignore_file.read_text(encoding="utf-8", errors="replace")
-                dockerfile_text = dockerfile_path.read_text(encoding="utf-8", errors="replace")
-                for copy_line in re.findall(r"^COPY\s+(.+)$", dockerfile_text, re.MULTILINE):
+                dockerfile_text = dockerfile_path.read_text(
+                    encoding="utf-8", errors="replace"
+                )
+                for copy_line in re.findall(
+                    r"^COPY\s+(.+)$", dockerfile_text, re.MULTILINE
+                ):
                     sources = copy_line.split()[:-1]
                     for source in sources:
                         if source.startswith("--") or source.startswith("$"):
@@ -136,9 +144,15 @@ def validate_checkout(
         if upstreams:
             observations.append("nginx upstreams: " + ", ".join(sorted(upstreams)))
         if upstream_servers:
-            observations.append("nginx upstream hosts: " + ", ".join(sorted(upstream_servers)))
-        if http_only and re.search(r"(?:ssl_certificate|listen\s+443\s+ssl)", gateway_text):
-            errors.append("HTTP-only mode cannot include TLS certificate or HTTPS directives")
+            observations.append(
+                "nginx upstream hosts: " + ", ".join(sorted(upstream_servers))
+            )
+        if http_only and re.search(
+            r"(?:ssl_certificate|listen\s+443\s+ssl)", gateway_text
+        ):
+            errors.append(
+                "HTTP-only mode cannot include TLS certificate or HTTPS directives"
+            )
         if http_only and re.search(r"/etc/nginx/certs|conf\.d/ssl", gateway_text):
             errors.append("HTTP-only mode cannot require an nginx cert mount")
     host_ports = [int(match.group(1)) for match in PORT_RE.finditer(text)]
@@ -151,15 +165,20 @@ def validate_checkout(
         if host is None:
             errors.append(f"published port must bind loopback: {match.group('port')}")
     if RESERVED_HOST_PORT in host_ports:
-        errors.append("host port 8080 is reserved for Grapheon and must not be published")
+        errors.append(
+            "host port 8080 is reserved for Grapheon and must not be published"
+        )
     observations.append(
-        "host ports: " + (", ".join(map(str, host_ports)) if host_ports else "none published")
+        "host ports: "
+        + (", ".join(map(str, host_ports)) if host_ports else "none published")
     )
 
     names = CONTAINER_NAME_RE.findall(text)
     if names:
         observations.append("fixed container_name values: " + ", ".join(names))
-        observations.append("fixed container names require an isolated project/container prefix")
+        observations.append(
+            "fixed container names require an isolated project/container prefix"
+        )
     else:
         observations.append("fixed container_name values: none")
     return errors, observations

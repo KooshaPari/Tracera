@@ -1,7 +1,7 @@
 use chrono::{DateTime, Utc};
 use sqlx::{PgPool, Row};
 
-use crate::store::{Story, StoreError, StoreResult};
+use crate::store::{StoreError, StoreResult, Story};
 
 pub(super) async fn list_stories(pool: &PgPool) -> StoreResult<Vec<Story>> {
     let rows = sqlx::query(
@@ -27,6 +27,7 @@ pub(super) async fn list_stories(pool: &PgPool) -> StoreResult<Vec<Story>> {
         .collect())
 }
 
+#[allow(clippy::too_many_arguments)]
 pub(super) async fn create_story(
     pool: &PgPool,
     id: String,

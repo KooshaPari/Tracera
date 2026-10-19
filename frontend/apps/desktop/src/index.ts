@@ -24,7 +24,12 @@ log("target URL:", targetUrl);
 
 // The packaged legacy stack is explicit-only. Rich mode (18000) is the
 // default and must not be replaced unless a developer explicitly opts in.
-if (allowLegacyBundle && !skipBundle && targetUrl.startsWith(LOCAL_URL) && resolveBundleCli(import.meta.dir)) {
+if (
+  allowLegacyBundle &&
+  !skipBundle &&
+  targetUrl.startsWith(LOCAL_URL) &&
+  resolveBundleCli(import.meta.dir)
+) {
   try {
     log("starting bundled stack...");
     stopBundle = await startBundle({ localUrl: targetUrl, log });

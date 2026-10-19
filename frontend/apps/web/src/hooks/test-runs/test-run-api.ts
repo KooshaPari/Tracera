@@ -6,10 +6,11 @@ import type { CreateTestRunData, SubmitTestResultData, TestRunFilters } from "./
 
 import { testRunGuards } from "./test-run-guards";
 import { testRunParsers } from "./test-run-parsers";
+import { API_ORIGIN } from "@/config/api-origin";
 
 const { getAuthHeaders } = client;
 
-const API_URL = import.meta.env.VITE_API_URL ?? "";
+const API_URL = API_ORIGIN;
 
 interface TestRunsResponse {
   testRuns: TestRun[];

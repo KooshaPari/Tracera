@@ -5,7 +5,7 @@ use serde_json::Value;
 
 use crate::{bad_request, ErrorResponse};
 
-use crate::swee::{NodeKind, EdgeKind};
+use crate::swee::{EdgeKind, NodeKind};
 
 use super::super::AppState;
 use super::evidence::empty_object;

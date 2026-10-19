@@ -18,6 +18,7 @@ pub(super) fn row_to_trace_link(r: sqlx::sqlite::SqliteRow) -> TraceLink {
     }
 }
 
+#[allow(clippy::too_many_arguments)]
 pub(super) fn create_trace_link(
     pool: &SqlitePool,
     id: String,

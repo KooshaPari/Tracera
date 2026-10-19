@@ -27,14 +27,14 @@ enum CacheInner {
 
 impl CacheClient {
     /// Construct from `CACHE_URL` env var.
-    /// Construct from `CACHE_URL` env var.
+    ///
     /// Expected formats:
     /// - `redis://<endpoint>.upstash.io:<port>` + `CACHE_TOKEN=...` (ignored if URL embeds token)
     /// - `upstash://:<token>@<host>`
     /// - `https://<endpoint>.upstash.io` + `CACHE_TOKEN=...` (REST, primary path)
-    /// Construct from `CACHE_URL` env var, or return `None` if it is not configured.
-    /// When the constructor receives a URL but no usable token, it returns
-    /// `None` (disabled) rather than a stub client.
+    ///
+    /// Returns `None` if not configured or if the URL is present but no usable
+    /// token is available (disabled rather than a stub client).
     pub fn from_env() -> Option<Self> {
         let url = std::env::var("CACHE_URL").ok();
 
@@ -117,17 +117,8 @@ impl CacheClient {
                     cmd.push("EX".to_string());
                     cmd.push(ttl.to_string());
                 }
-                let body: Vec<serde_json::Value> = cmd
-                    .iter()
-                    .enumerate()
-                    .map(|(i, s)| {
-                        if i == 0 {
-                            serde_json::json!(s)
-                        } else {
-                            serde_json::json!(s)
-                        }
-                    })
-                    .collect();
+                let body: Vec<serde_json::Value> =
+                    cmd.iter().map(|s| serde_json::json!(s)).collect();
                 let _ = client
                     .post(format!("{}/pipeline", base_url))
                     .bearer_auth(token)

@@ -85,16 +85,6 @@ grep -qE 'CLOUDFLARE_API_TOKEN' "$cf" \
 grep -qE 'cf_scope_check|cf_creds_ok|Continue.*deploy only' "$cf" \
   || fail "CF workflow must have a credential scope probe gating the deploy step"
 
-# Render deploy must be gated on RENDER_API_KEY + service ID, with a probe.
-render="$workflows/deploy-render.yml"
-[[ -f "$render" ]] || fail "deploy-render workflow is missing"
-grep -qE 'RENDER_API_KEY' "$render" \
-  || fail "Render workflow must reference RENDER_API_KEY"
-grep -qE 'RENDER_SERVICE_ID' "$render" \
-  || fail "Render workflow must reference RENDER_SERVICE_ID"
-grep -qE 'render_creds_ok' "$render" \
-  || fail "Render workflow must gate deploy step on a credential probe"
-
 latency="$workflows/runtime-latency-smoke.yml"
 [[ -f "$latency" ]] || fail "runtime latency workflow is missing"
 grep -q 'toolchain: stable' "$latency" \

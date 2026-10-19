@@ -2,15 +2,9 @@ use axum::Json;
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 
+use crate::graph::{bfs_distances, build_adjacency, build_coverage_matrix, neighbors_of};
+use crate::validation::{validate_text, MAX_ID_CHARS};
 use crate::{bad_request, ErrorResponse};
-use crate::validation::{
-    validate_text, MAX_ID_CHARS,
-};
-use crate::graph::{
-    build_adjacency, bfs_distances, build_coverage_matrix,
-    neighbors_of,
-};
-
 
 // ---------------------------------------------------------------------------
 // Trace-link types (coverage-matrix / impact / blast-radius / spec-check)
@@ -283,9 +277,7 @@ pub(crate) async fn impact(Json(request): Json<ImpactRequest>) -> Json<ImpactRes
     })
 }
 
-pub(crate) async fn confidence(
-    Json(request): Json<ConfidenceRequest>,
-) -> Json<ConfidenceResponse> {
+pub(crate) async fn confidence(Json(request): Json<ConfidenceRequest>) -> Json<ConfidenceResponse> {
     let score = crate::graph::jaccard_score(&request.requirement_text, &request.artifact_text);
     Json(ConfidenceResponse {
         confidence: score,
@@ -293,9 +285,7 @@ pub(crate) async fn confidence(
     })
 }
 
-pub(crate) async fn spec_check(
-    Json(req): Json<SpecCheckRequest>,
-) -> Json<GovernanceReport> {
+pub(crate) async fn spec_check(Json(req): Json<SpecCheckRequest>) -> Json<GovernanceReport> {
     use std::collections::{BTreeSet, HashMap};
     let mut traces_by_spec: HashMap<&str, BTreeSet<&str>> = HashMap::new();
     for t in &req.traces {
@@ -359,7 +349,11 @@ pub(crate) async fn spec_check(
     })
 }
 
-pub(crate) fn viol(spec_id: &str, code: &'static str, message: &'static str) -> GovernanceViolation {
+pub(crate) fn viol(
+    spec_id: &str,
+    code: &'static str,
+    message: &'static str,
+) -> GovernanceViolation {
     GovernanceViolation {
         spec_id: spec_id.to_string(),
         code,
@@ -367,9 +361,7 @@ pub(crate) fn viol(spec_id: &str, code: &'static str, message: &'static str) -> 
     }
 }
 
-pub(crate) async fn blast_radius(
-    Json(req): Json<BlastRadiusRequest>,
-) -> Json<BlastRadiusResponse> {
+pub(crate) async fn blast_radius(Json(req): Json<BlastRadiusRequest>) -> Json<BlastRadiusResponse> {
     let adj = build_adjacency(&req.links);
     let mut blast = Vec::new();
     for node in bfs_distances(&adj, &req.changed_artifact_ids) {

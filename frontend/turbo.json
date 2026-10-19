@@ -27,6 +27,7 @@
       ],
       "outputs": [
         "dist/**",
+        "../../dist/**",
         ".next/**",
         "!.next/cache/**",
         "storybook-static/**",
@@ -47,7 +48,7 @@
         "!**/*.test.*",
         "!**/*.spec.*"
       ],
-      "outputs": ["dist/**"],
+      "outputs": ["dist/**", "../../dist/**"],
       "outputLogs": "hash-only",
       "env": ["NODE_ENV", "VITE_*", "NEXT_PUBLIC_*"]
     },
@@ -75,7 +76,13 @@
       "outputLogs": "new-only"
     },
     "test:unit": {
-      "inputs": ["src/**", "__tests__/**", "*.test.*", "*.spec.*", "vitest.config.*"],
+      "inputs": [
+        "src/**",
+        "__tests__/**",
+        "*.test.*",
+        "*.spec.*",
+        "vitest.config.*"
+      ],
       "outputs": ["coverage/**"],
       "dependsOn": [],
       "outputLogs": "new-only"
@@ -94,12 +101,7 @@
       "outputLogs": "hash-only"
     },
     "lint": {
-      "inputs": [
-        "src/**",
-        ".eslintrc*",
-        ".oxlintrc.json",
-        "package.json"
-      ],
+      "inputs": ["src/**", ".eslintrc*", ".oxlintrc.json", "package.json"],
       "outputs": [".eslintcache"],
       "dependsOn": [],
       "outputLogs": "hash-only"
@@ -109,7 +111,14 @@
       "outputs": []
     },
     "//#lint": {
-      "inputs": ["**/*.ts", "**/*.tsx", "**/*.js", "**/*.jsx", ".oxlintrc.json", "package.json"],
+      "inputs": [
+        "**/*.ts",
+        "**/*.tsx",
+        "**/*.js",
+        "**/*.jsx",
+        ".oxlintrc.json",
+        "package.json"
+      ],
       "outputs": [],
       "outputLogs": "hash-only"
     },
@@ -118,7 +127,13 @@
       "outputs": []
     },
     "//#typecheck": {
-      "inputs": ["**/*.ts", "**/*.tsx", ".oxlintrc.json", "package.json", "tsconfig.json"],
+      "inputs": [
+        "**/*.ts",
+        "**/*.tsx",
+        ".oxlintrc.json",
+        "package.json",
+        "tsconfig.json"
+      ],
       "outputs": [],
       "outputLogs": "hash-only"
     },

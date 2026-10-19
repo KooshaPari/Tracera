@@ -1,8 +1,10 @@
 // Execution API endpoints for QA Integration
 
 import { client, handleApiResponse, safeApiCall } from "./client";
+import { API_ORIGIN } from "@/config/api-origin";
 
 const { apiClient } = client;
+const API_URL = API_ORIGIN;
 
 // Types for execution API
 type ExecutionConfig = Record<string, string | number | boolean | object | null | undefined>;
@@ -187,7 +189,7 @@ const create = async (projectId: string, data: ExecutionCreate): Promise<Executi
   );
 
 const downloadArtifact = (projectId: string, executionId: string, artifactId: string): string =>
-  `${import.meta.env.VITE_API_URL ?? ""}/api/v1/projects/${projectId}/executions/${executionId}/artifacts/${artifactId}/download`;
+  `${API_URL}/api/v1/projects/${projectId}/executions/${executionId}/artifacts/${artifactId}/download`;
 
 const get = async (projectId: string, executionId: string): Promise<Execution> =>
   handleApiResponse(

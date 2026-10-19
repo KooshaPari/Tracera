@@ -3,10 +3,11 @@ import type { UseQueryResult } from "@tanstack/react-query";
 import { useQuery } from "@tanstack/react-query";
 
 import { client } from "@/api/client";
+import { API_ORIGIN } from "@/config/api-origin";
 
 const { getAuthHeaders } = client;
 
-const API_URL = import.meta.env.VITE_API_URL ?? "";
+const API_URL = API_ORIGIN;
 
 interface QAMetricsSummary {
   projectId: string;

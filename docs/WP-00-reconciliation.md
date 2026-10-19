@@ -1,148 +1,261 @@
-# WP-00 — G0 Reconciliation: Owner Intent, Authority and Accepted Horizon
+# WP-00 - Reconcile Accepted Horizon
 
-**Date:** 2026-09-17
-**Author:** Jcode (coordinator agent)
-**Status:** Reconciled (proposed)
-**Source ref:** `66ce888ba` (HEAD at reconciliation time)
-**Rust toolchain:** stable 1.98.0 (88d9e12ae 2026-08-18)
-
----
-
-## 1. Current Intent Inventory
-
-All 36 requirements from the Tracera Product Program v1 are classified as `specified_not_product_verified`.
-No requirement has been promoted to product-verified status. This reconciliation maps each to the codebase.
-
-### Retained (code exists, direction confirmed)
-
-| Req | Title | Code Location |
-|-----|-------|--------------|
-| R01 | Persistent product identity and canonical accepted product model | `product/identity.rs`, `product/baseline.rs` (new) |
-| R02 | Searchable traversable computable graph with bounded expansion | `swee/` module (NodeKind 30 types, EdgeKind 32 types) |
-| R03 | Accepted intent, observed state and hypotheses remain distinct | `product/identity.rs` (IntentKind, IntentStatus) |
-| R04 | Automatic dissatisfaction exists in the first accepted horizon | Not yet implemented — WP-10/11 scope |
-| R05 | Violation, missing assurance, stale and inconclusive results are distinguished | `product/observation.rs` (ObservationResult enum) |
-| R06 | Human or external-agent resolution works without native autonomous planning | `tracera-mcp` bridge |
-| R07 | Repo/project-scoped work persists across sessions | `store.rs` (projects, sprints, stories, evidence) |
-| R08 | One authoritative work lifecycle; Tracera delegates scoped execution | Atlas (`tracera-atlas`) + AgilePlus (`agileplus-domain`) |
-| R22 | Reuse existing audit/evaluation/ledger tools; no rival registry | `audit/` directory, scorecard tooling |
-| R23 | Deleted-project restoration is excluded | **Exclusion confirmed** — see §3 |
-| R24 | Product map, capabilities and dissatisfaction lead the UI | Target state — not implemented |
-| R29 | Product-first graph semantics above SWEE | WP-07 design complete (`docs/WP-07-product-graph-design.md`) |
-| R30 | Reconciled horizon with no silent shrink | This document |
-
-### Deferred (valid, not yet implemented)
-
-| Req | Title | Target WP |
-|-----|-------|-----------|
-| R04 | Automatic dissatisfaction | WP-10, WP-11 |
-| R10 | Acceptance criteria cannot be weakened by unapproved change | WP-12, WP-14 |
-| R11 | Accepted product changes use authorization and optimistic concurrency | WP-02 (partially), WP-17 |
-| R12 | Verification binds artifact, product baseline, expectation, installed target | WP-12, WP-14 |
-| R13 | Evidence expiry, collector failures and conflicts cannot yield silent green | WP-10, WP-11 |
-| R14 | Duplicate delivery is idempotent; conflicting replay is rejected | WP-17 |
-| R16 | Persistent writes, recovery and migration failures never advance false state | WP-17 |
-| R17 | Concurrent claims use atomic ownership, leases and fencing | WP-06 |
-| R18 | Machine interfaces return truthful bounded errors | WP-05 |
-| R19 | Untrusted repository/model content cannot grant mutation authority | WP-17 |
-| R20 | Release proof from exact installed/deployed candidate | WP-19 |
-| R21 | Applicable quality families have independent evidence and denominators | WP-18 |
-| R25 | Human and machine clients expose equivalent product/work semantics | WP-25 |
-| R26 | Observation append does not revise accepted baseline; invalidation is explicit | WP-02 (types), WP-09 (queries) |
-
-### Not Applicable (excluded or unrelated)
-
-| Req | Title | Reason |
-|-----|-------|--------|
-| R23 | Deleted-project restoration is excluded | Program prohibition — Frostify, Pheno MLX, 5 unspecified deleted projects |
-| R35 | AgentLens identity | **Unresolved** — do not substitute Agentora |
+**Work Packet:** WP-00
+**Product:** Tracera
+**Owner Role:** program
+**State:** reconciliation_recorded
+**Prepared:** 2026-09-16
+**Acceptance Cases:** T38, T39
 
 ---
 
-## 2. Native Work Claims
-
-Current capabilities owned by the Tracera workspace:
-
-| Component | Crate | Lines | Status |
-|-----------|-------|-------|--------|
-| SWEE graph schema | `tracera-server/src/swee/` | 853 | Active, split into modules |
-| Store trait + SQLite/PG impls | `tracera-server/src/store.rs`, `sqlite_store/`, `pg_store/` | ~1200 | Active, domain modules |
-| Ingest pipeline | `tracera-server/src/ingest/` | ~600 | Active, split by source |
-| Product identity types | `tracera-server/src/product/` | 569 | **New this session** |
-| Memory/distillation | `tracera-server/src/memory/` | 635 | Active, split into modules |
-| Traceability matrix | `tracera-server/src/traceability.rs` | 423 | Active |
-| HTTP handlers | `tracera-server/src/handlers/` | ~800 | Active, split by domain |
-| Router + middleware | `tracera-server/src/router.rs`, `middleware.rs` | ~500 | Active |
-| MCP bridge | `tracera-mcp/` | ~200 | Active |
-| Atlas (agent of record) | `tracera-atlas/` | ~400 | Active, overlapping with AP |
-| AgilePlus domain | `agileplus-domain/` | ~300 | Active, overlapping with Atlas |
-| Traceability core | `traceability-core/` | ~300 | Active, lifecycle state machine |
-| WorkOS integration | `tracera-workos/` | ~500 | Active |
-
----
-
-## 3. Exclusions
-
-The following are explicitly NOT restored, recreated, or substituted:
-
-- **Frostify** — excluded by program prohibition
-- **Pheno MLX** — excluded by program prohibition
-- **Five unspecified deleted projects** — excluded; cannot restore without identification
-- **AgentLens** — identity unresolved; do NOT substitute Agentora
-- **No new repos** — everything stays in the existing workspace
-- **No new registries** — no parallel identity/assessment registries
-- **No new SDKs** — reuse existing transport contracts
-
----
-
-## 4. Boundary Decisions
-
-| Decision | Authority | Confirmation |
-|----------|-----------|-------------|
-| Tracera owns product model | Tracera | R01, WP-02 types created |
-| AgilePlus owns execution | AgilePlus | R08, existing AP domain crate |
-| One owner per fact | Program | Architecture doc §1 confirmed |
-| No new infrastructure | Program | Existing Rust workspace + SQLite/PG |
-| AP works offline without Tracera | Integration | R09 — not yet verified |
-| Product acceptance ≠ work completion | Program | R10 — types distinguish these |
-
----
-
-## 5. Current Refs
+## 1. Current Refs
 
 | Item | Value |
-|------|-------|
-| Git HEAD | `66ce888ba` |
-| Rust toolchain | stable 1.98.0 (88d9e12ae) |
-| Cargo workspace | 13 crates |
-| Frontend | Bun + Next.js (apps/web) |
-| CI | GitHub Actions (ci.yml, deploy-*.yml) |
-| Database | SQLite (repo-local) + Postgres (optional) |
-| Product program | v1.0.0 (2026-09-15) |
+|---|---|
+| Git HEAD | f4f28bb77c29db45cdc8bf9c10be38417557993d |
+| Branch | main |
+| Rust toolchain | stable (channel), edition 2021, rust-version 1.82 |
+| Workspace crate count | 9 workspace members |
+| SWEE node types | 30 (no Product or Capability variant) |
+| SWEE edge types | 35 taxonomy rows (32 CHECK constraint strings) |
+
+All references recorded at reconciliation time. Product execution status for this package: **not executed**.
 
 ---
 
-## 6. Gate G0 Exit Criteria
+## 2. Current Intent Inventory (R01-R36)
 
-| Criterion | Status | Evidence |
-|-----------|--------|----------|
-| Current ref recorded | ✅ | `66ce888ba` above |
-| Intent reconciled | ✅ | §1 classifies all 36 reqs |
-| Exclusions confirmed | ✅ | §3 |
-| Boundary decisions documented | ✅ | §4 |
-| Native work claims inventoried | ✅ | §2 |
-| No silent horizon shrink | ✅ | Deferred items explicitly listed |
+Every requirement is **specified_not_product_verified** unless otherwise noted. No requirement in this document is claimed as product-verified.
+
+### Retained (valid obligation, mapped to existing code)
+
+| Req | Title | Owner | Code Evidence |
+|---|---|---|---|
+| R02 | Searchable traversable computable graph | Tracera | `swee/` module: 30 NodeKind, 35 EdgeKind, graph CRUD via Store trait |
+| R03 | Intent/observation/hypothesis distinct | Tracera | `queue/lifecycle.rs`: task states (ready/in_progress/done/failed) separate intent from execution |
+| R05 | Violation/missing/stale/inconclusive distinguished | Tracera | Product program assessment model defines five statuses; reference `reports/demo/*.json` |
+| R07 | Repo-scoped work persists across sessions | AgilePlus | `queue/lifecycle.rs`: SQLite-backed task lifecycle; claims table for agent assignment |
+| R08 | One authoritative work lifecycle | AgilePlus | Atlas `delegation.rs`: WorkItem + AgentAssignment lifecycle |
+| R13 | Collector failures cannot yield silent green | Tracera | Assessment model status `inconclusive` and `unknown`; collector failure rule family defined |
+| R14 | Idempotent delivery, conflicting replay rejected | integration | `ingest/persist.rs` idempotency key handling; `ingest/trace_refs.rs` conflict detection |
+| R15 | Identifiers survive transports | AgilePlus | Atlas WorkItemId/AgentId types with serde; cross-crate ID consistency |
+| R23 | Deleted-project restoration excluded | program | `program.json:restoration_exclusions` explicitly lists Frostify, Pheno MLX, five unspecified |
+| R32 | Use existing harness/substrate | integration | Workspace SQLite/Postgres dual-store; `tracera-cli`; existing migrations |
+| R35 | AgentLens identity unresolved | program | `program.json:unresolved_names` lists AgentLens; no substitution permitted |
+| R36 | Autonomy increases after measured outcomes | program | Program allocation rule in `00-executive-decision.md`; not yet measured |
+
+### Deferred (valid obligation, specified but not yet implemented in code)
+
+| Req | Title | Owner | Gap |
+|---|---|---|---|
+| R01 | Persistent product identity and canonical product model | Tracera | NodeKind has 30 types; no `Product` or `Capability` variant. Domain types in `store.rs` cover stories/sprints/projects but not the product-model identity required by the charter. |
+| R04 | Automatic dissatisfaction | Tracera | Assessment model and rule families defined in program docs; no automated dissatisfaction engine code exists. |
+| R06 | Human/external-agent resolution without native planning | AgilePlus | Spec 009 defines the ingestion contract; no AP adapter code in Tracera workspace. |
+| R09 | AP works offline; Tracera supports external work systems | integration | Spec 009 drafted; no bidirectional bridge code exists. |
+| R10 | Acceptance criteria cannot be weakened by same change | verification | No code enforcement; requires verified separation of concerns. |
+| R11 | Authorization and optimistic concurrency on product changes | Tracera | `Store` trait has no version column or compare-and-swap operation. |
+| R12 | Verification binds artifact, baseline, expectation, target | verification | Atlas `ci_bridge` normalizes CI events; no full verification-binding chain. |
+| R16 | Persistent writes never advance false state | storage | `sqlite_store` and `pg_store` exist; migration safety not yet validated. |
+| R17 | Atomic claims with fencing | AgilePlus | `queue/lifecycle.rs` claims table exists; no fencing token mechanism. |
+| R18 | Truthful bounded errors and cancellation | integration | `StoreError::Database(String)` exists; no structured error contract. |
+| R19 | Untrusted content cannot grant mutation authority | security | MCP write tools check auth; no formal trust boundary enforcement. |
+| R20 | Release proof from exact installed candidate | release | R2 artifact uploader exists; no release-proof binding to installed target. |
+| R21 | Independent evidence and denominators per quality family | verification | No quality-family evidence tracking code. |
+| R22 | Reuse existing audit tools, no rival registry | integration | ADR-GOV-001 establishes AgilePlus as governance SSOT; no production registry integration. |
+| R24 | Product map/dissatisfaction lead UI, not raw logs | Tracera | Frontend exists; dissatisfaction engine not implemented. |
+| R25 | Equivalent human/machine product semantics | integration | MCP tools expose graph ops; no formal semantic parity contract. |
+| R26 | Observation append does not revise baseline | Tracera | Assessment model defines this rule; no code-level enforcement. |
+| R27 | Semantic findings retain assumptions | Tracera | No semantic/predictive findings code exists. |
+| R28 | Repeat closed loop on second product | program | First loop not yet closed. |
+| R29 | Migrations require consumer parity and tested rollback | storage | No migration validation tooling. |
+| R30 | Reconcile and freeze accepted horizon | program | This document fulfills R30. |
+| R31 | Implementation claims require artifacts | program | Documented as policy; not enforced in code. |
+| R33 | Performance claims require measured workloads | verification | No benchmark harness. |
+| R34 | Retention/redaction preserves identity | security | No retention/redaction code. |
+
+### Retired (no longer applicable)
+
+None. All 36 requirements remain either retained or deferred. No requirement has been retired by this reconciliation.
 
 ---
 
-## 7. Rollback
+## 3. Native Work Claims
 
-- Prior commit: `1f55ff952` (before product types were introduced)
-- Revert: `git revert 66ce888ba 925e616d3`
-- No schema changes to roll back (migrations are forward-only, not yet applied)
-- No data changes (types are additive, `#![allow(dead_code)]`)
+What the Tracera codebase currently owns and implements:
+
+### 3.1 SWEE Graph Storage (`crates/tracera-server/src/swee/`)
+
+- **NodeKind**: 30 typed variants (Requirement, Specification, Design, SourceFile, Module, Class, Function, Test, TestSuite, Commit, PullRequest, Branch, Issue, Epic, Story, Task, Bug, Sprint, Release, Build, Deployment, Evidence, Problem, Incident, ChangeRequest, Person, Team, Environment, Artifact, Metric)
+- **EdgeKind**: 35-row taxonomy with 32 unique type strings (ADR-SWEE-001)
+- **Domain types**: `SwreeNode`, `SweeEdge`, `SwreeNodeLabel`, `NodeRef`, `EdgeDefinition`
+- **Schema**: `migrations/sqlite/003_swee_graph.sql`
+- **ADR**: `docs/governance/ADR-SWEE-001-graph-schema-design.md`
+
+### 3.2 Store Trait and Persistence (`crates/tracera-server/src/store.rs`)
+
+- `Store` trait with `Arc<dyn Store + Send + Sync>` handler pattern
+- `PgStore` (Postgres) and `SqliteStore` (SQLite) implementations
+- Domain types: `EvidenceItem`, `Sprint`, `Story`, `TeamRow`, `ProjectSummary`
+- Pagination via `ListParams` with validated page/page_size
+- `StoreError` and `StoreResult<T>` error handling
+
+### 3.3 Queue Lifecycle (`crates/tracera-server/src/queue/lifecycle.rs`)
+
+- Task lifecycle: `release_task`, `complete_task`, `fail_task`
+- SQLite-backed with claims table
+- States: `ready`, `in_progress`, `done`, `failed`
+- Ported from phenodag v0.3.0 (Go)
+
+### 3.4 Ingest Pipeline (`crates/tracera-server/src/ingest/`)
+
+- Adapters: `agcord.rs`, `github.rs`, `jira.rs`
+- Persistence: `persist.rs` (idempotent write-through)
+- Trace refs: `trace_refs.rs` (conflict detection)
+- Benchmarking: `benchmark.rs`
+
+### 3.5 Memory/Distillation (`crates/tracera-server/src/memory/`)
+
+- `distillation/` sub-module: `config.rs`, `distiller.rs`, `graph_input.rs`, `memory.rs`, `pattern.rs`
+- Pattern extraction and memory entry creation
+- Graph input for distillation pipeline
+
+### 3.6 Atlas ALM Engine (`crates/tracera-atlas/src/`)
+
+- **delegation**: WorkItem, AgentAssignment, assignment lifecycle
+- **agent_of_record**: Append-only mutation log, SignOff records
+- **ci_bridge**: GitHub Actions webhook normalization to SDLC events
+- **observability**: EventBus, SdlcEvent, SdlcStage, StageLog
+- In-memory and pluggable persistence (SQLite/Postgres features)
+
+### 3.7 MCP Bridge (`crates/tracera-mcp/src/`)
+
+- `TraceraMcpServer` wrapping `Arc<dyn Store>`
+- Tools: `list_nodes`, `get_node`, `neighbours` (read); `create_node`, `create_edge` (write); `propose_change` (propose)
+- rmcp 3.2 transport (stdio, JSON-RPC 2.0)
+
+### 3.8 Auth/WorkOS (`crates/tracera-workos/src/`)
+
+- `auth.rs`: authentication
+- `router.rs`: HTTP routing
+- `webhooks.rs`: webhook handling
+- `sync.rs`: synchronization
+- `audit.rs`: audit logging
+
+### 3.9 Supporting Infrastructure
+
+- **Cache**: `cache/` (Upstash Redis REST, auto-disabled without `CACHE_URL`)
+- **Neo4j sync**: `neo4j/` (Bolt client, auto-disabled without `NEO4J_URL`)
+- **R2 artifacts**: `r2/` (Cloudflare R2 upload, auto-disabled without `R2_*`)
+- **Events**: `tracera-events/` (ClickHouse ingestion)
+- **GraphQL**: `tracera-graphql/` (schema, resolvers, REST parity)
+- **ML**: `tracera-ml/` (embeddings, pgvector, qdrant, RAG)
+- **Edge**: `tracera-edge/`
+- **CLI**: `tracera-cli/` (bundle, compose, runtime)
+- **Go CLI**: `tracera-go-cli/`
+- **Python SDK**: `tracera-py-sdk/`
+- **9 migration files** (0001-0009)
 
 ---
 
-*This document is the WP-00 deliverable. It reconciles intent without starting a new governance platform.*
-*Next: WP-01 (source register) and WP-02 (types) are already completed this session.*
+## 4. Exclusions (Not Restored)
+
+The following are explicitly excluded from restoration and do not block the current horizon:
+
+| Exclusion | Status | Source |
+|---|---|---|
+| Frostify | Restoration excluded | `program.json:restoration_exclusions`, R23 |
+| Pheno MLX | Restoration excluded | `program.json:restoration_exclusions`, R23 |
+| Five unspecified deleted projects | Restoration excluded | `program.json:restoration_exclusions`, R23 |
+| AgentLens | Identity unresolved | `program.json:unresolved_names`, R35 |
+
+No work item restores these projects or substitutes Agentora for AgentLens. This satisfies acceptance case T38.
+
+---
+
+## 5. Boundary Decisions
+
+### 5.1 One Owner Per Fact
+
+| Domain Fact | Authority | Integration Rule |
+|---|---|---|
+| Product identity, accepted intent, product relations, product-state interpretation | **Tracera** | Versioned commands and immutable baseline revisions |
+| Working change intent, specs, work packages, execution transitions, claims/leases/checkpoints | **AgilePlus** | Repo/project isolation; optional Tracera projection; no competing state machine |
+| Source content and revision | **Source repository** | Reference exact revision/blob; graph is not a replacement Git store |
+| Measurement or test result | **Authenticated producing verifier** | Preserve input artifact, context, checker version, time, raw-result identity |
+| Product assessment | **Tracera** assessment semantics over accepted inputs | A result may be failed, stale, unknown or inconclusive; no silent success |
+
+### 5.2 Key Boundary Decisions
+
+1. **Tracera owns the product model.** AgilePlus owns execution. Neither substitutes for the other.
+2. **One owner per fact.** No dual-write, no competing state machines.
+3. **No new repos, registries, or SDKs.** Reuse existing infrastructure.
+4. **Atlas/AP consolidation.** Prefer AP's canonical work authority; migrate one capability at a time with parity tests (ADR-GOV-001).
+5. **Existing Rust workspace and proven storage.** Start with SQLite/Postgres dual-store; optional graph/cache/object-store adapters remain optional.
+6. **AP must remain useful offline without Tracera.** Tracera must represent externally managed products without AP.
+7. **Product acceptance and work completion are different commands.**
+
+### 5.3 Scope Boundaries (This Document)
+
+- **Included:** Current intent, native work claims, obligation classification, boundary decisions, exact refs, rollback description.
+- **Excluded:** No source retirement, no new repo creation, no silent scope shrink.
+
+---
+
+## 6. Rollback
+
+This reconciliation is a documentation-only work package. No code was changed.
+
+| Aspect | Pre-WP-00 State | Post-WP-00 State |
+|---|---|---|
+| Git HEAD | f4f28bb77c29db45cdc8bf9c10be38417557993d | Same (no code change) |
+| Obligations | Implicit from scattered ADRs, specs, and program.json | Explicitly classified as retained/deferred/retired |
+| Exclusions | Listed in program.json only | Documented here with R01-R36 mapping |
+| Boundaries | ADR-GOV-001 + docs/03-boundaries-and-architecture.md | Confirmed and cross-referenced here |
+| Native work claims | Implicit from crate inventory | Explicitly enumerated with file paths |
+
+**Rollback action:** Delete `docs/WP-00-reconciliation.md`. No code or schema rollback required.
+
+---
+
+## 7. Acceptance Status
+
+| Case | Description | Status | Evidence |
+|---|---|---|---|
+| T38 | Deleted projects stay outside restoration queue | **Pass** | R01-R36 classification shows no retired requirements restore excluded projects; R23 retained; R35 retained (AgentLens unresolved). No work items created for excluded projects. |
+| T39 | Accepted horizon does not silently shrink | **Pass** | All 36 requirements classified: 12 retained, 24 deferred, 0 retired. Deferred items documented with specific code gaps. No requirement removed from scope. |
+
+---
+
+## 8. Remaining Risks and Next Steps
+
+1. **R01 gap is critical.** The SWEE graph has no `Product` or `Capability` node kind. The product charter requires persistent canonical product identity. This is the first implementation gap to close (likely WP-01 territory).
+2. **R04 (automatic dissatisfaction) has no code.** The assessment model is fully specified in program docs but no engine implements it.
+3. **Atlas/AP consolidation is specified but not started.** ADR-GOV-001 and the boundaries doc define the approach; no migration has begun.
+4. **No product-verified acceptance cases.** Every T01-T39 in program.json shows `not_executed_in_this_package`. The first closed loop requires at least T05/T06 (failed/healthy assessment) to pass on a real surface.
+5. **Schema migration safety untested.** R16 and R29 require tested rollback; current migrations have no rollback rehearsal.
+
+---
+
+## 9. Capability Return (AGENT_RETURN template)
+
+- **Work packet / mapped native work ID:** WP-00
+- **Product / project / owning repository:** Tracera / `C:\Users\koosh\tracera`
+- **Base commit / final commit / source blob references:** f4f28bb77c29db45cdc8bf9c10be38417557993d (main)
+- **Accepted requirements and criteria revisions:** R01-R36 classified (12 retained, 24 deferred, 0 retired); T38/T39 pass
+- **Reachable implementation and consumer path:** Documentation artifact; no code path changed
+- **Candidate artifact digest / installed target digest:** This document (`docs/WP-00-reconciliation.md`)
+- **Commands run, environment, raw result locations and outcomes:** File reads of all source crates, `git rev-parse HEAD`, `rust-toolchain.toml` inspection; all succeeded
+- **Critical acceptance cases (passed / failed / unknown / inapplicable with reason):** T38 pass; T39 pass
+- **Independent quality families and denominators:** Documentation deliverable; code quality N/A
+- **Product outcome versus work-item state:** Reconciliation recorded; no product state changed
+- **Current source/data coverage and observation cutoff:** All 9 workspace crates inspected; all 36 requirements classified; cutoff 2026-09-16
+- **Regression/negative controls:** No code changed; zero regression risk
+- **Migration / backup / restore / rollback evidence:** Delete this file to rollback
+- **Remaining risk, conflict, blocked owner and exact unblock action:** R01 (no Product node kind) blocks product-model claims; unblock by adding node kinds in WP-01
+- **Existing ledger/work item updated:** `docs/WP-00-reconciliation.md` created
+- **Next smallest accepted outcome:** WP-01: Add Product and Capability node kinds to SWEE taxonomy; create product identity storage
+
+---
+
+*This document satisfies WP-00 outcome: "Reconcile current accepted obligations with the product-first owner clarification." All requirements remain `specified_not_product_verified`. No requirements were retired or silently removed.*

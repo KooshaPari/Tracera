@@ -1,88 +1,63 @@
-# Mergify Configuration — Optimized for multi-language monorepos
+# Mergify Configuration - multi-language monorepo
 # Docs: https://docs.mergify.com/
+# Merges route through the merge queue; ci.yml already triggers on merge_group.
+# Required gate: the aggregate "CI" job in .github/workflows/ci.yml
+# (roll-up of all per-language lint/test + security + dependency-review + trunk-check).
+
+queue_rules:
+  - name: default
+    queue_conditions:
+      - check-success=CI
+    merge_conditions:
+      - check-success=CI
+    merge_method: squash
 
 pull_request_rules:
-  # Auto-merge when all CI checks pass and PR is approved
-  - name: Auto-merge when approved + CI green
+  # Human/agent PRs opt in with the automerge label; single maintainer, no review gate
+  - name: Queue PRs labeled automerge
     conditions:
-      - "#review-requested=0"
-      - "#approved-reviews-by>=1"
-      - check-success=ci
-      - check-success=lint
-      - check-success=typecheck
-      - check-success=test
-      - -conflict
-      - -closed
-    actions:
-      merge:
-        method: squash
-        commit_message_format:
-          title: pr-title
-          body: empty
-          trailers:
-            - co-authored-by
-
-  # Auto-merge owner PRs when CI passes (no self-review required)
-  - name: Auto-merge owner PRs + CI green
-    conditions:
-      - author=KooshaPari
-      - check-success=ci
-      - check-success=lint
-      - check-success=typecheck
-      - check-success=test
+      - label=automerge
+      - check-success=CI
       - -conflict
       - -closed
       - -draft
     actions:
-      merge:
-        method: squash
-        commit_message_template: |
-          {{ title }} (#{{ number }})
+      queue:
+        name: default
 
-          Co-authored-by: {{ author }}
-
-  # Auto-merge dependabot/Renovate PRs when CI passes
-  - name: Auto-merge dependency updates
+  # Dependency updates queue themselves once CI is green
+  - name: Queue dependency updates
     conditions:
-      - 'author ~= ^(?:dependabot\[bot\]|renovate\[bot\])$'
-      - check-success=ci
+      - or:
+          - author=dependabot[bot]
+          - author=renovate[bot]
+      - check-success=CI
       - -conflict
-      - -closed
-    actions:
-      merge:
-        method: squash
-        commit_message_format:
-          title: pr-title
-          body: empty
-          trailers:
-            - co-authored-by
-
-  # Auto-merge bot PRs (CI configs, formatting) when CI passes
-  - name: Auto-merge bot housekeeping PRs
-    conditions:
-      - 'author ~= ^(?:trunk-io\[bot\]|mergify\[bot\]|github-actions\[bot\])$'
-      - check-success=ci
-      - check-success=lint
-      - -conflict
-      - -closed
-    actions:
-      merge:
-        method: squash
-
-  # Add reviewers based on changed paths
-  - name: Request review from team
-    conditions:
       - -closed
       - -draft
     actions:
-      request_reviews:
-        users:
-          - KooshaPari
+      queue:
+        name: default
+
+  # Bot housekeeping PRs (CI configs, formatting) queue when CI passes
+  - name: Queue bot housekeeping PRs
+    conditions:
+      - or:
+          - author=trunk-io[bot]
+          - author=mergify[bot]
+          - author=github-actions[bot]
+      - check-success=CI
+      - -conflict
+      - -closed
+      - -draft
+    actions:
+      queue:
+        name: default
 
   # Label PRs based on changed files
   - name: Label Python changes
     conditions:
-      - files~=\.py$
+      - files~=\\.py$
     actions:
       label:
         add:
@@ -90,7 +65,7 @@ pull_request_rules:
 
   - name: Label Rust changes
     conditions:
-      - files~=\.rs$|Cargo\.
+      - files~=\\.rs$|Cargo\\.
     actions:
       label:
         add:
@@ -98,7 +73,7 @@ pull_request_rules:
 
   - name: Label Go changes
     conditions:
-      - files~=\.go$|go\.
+      - files~=\\.go$|go\\.
     actions:
       label:
         add:
@@ -106,11 +81,22 @@ pull_request_rules:
 
   - name: Label TypeScript changes
     conditions:
-      - files~=\.ts$|\.tsx$|package\.json
+      - files~=\\.ts$|\\.tsx$|package\\.json
     actions:
       label:
         add:
           - typescript
+
+  # Flag conflicts so they leave the queue path until rebased
+  - name: Flag conflicts for rebase
+    conditions:
+      - conflict
+    actions:
+      label:
+        add:
+          - needs-rebase
+        remove:
+          - automerge
 
   # Close stale PRs after 30 days
   - name: Close stale PRs
@@ -138,16 +124,17 @@ pull_request_rules:
           **Large PR Alert**: This PR touches {{ number }} files.
           Consider splitting into smaller PRs for easier review.
 
-  # Add ready-to-merge label when all checks pass
+  # Add ready-to-merge label when all gate checks pass (current check names)
   - name: Add ready-to-merge label
     conditions:
       - -closed
       - -draft
-      - check-success=ci
-      - check-success=lint
-      - check-success=test
-      - "#approved-reviews-by>=1"
+      - check-success=ci / lint
+      - check-success=ci / test
+      - check-success=CI
     actions:
       label:
         add:
           - ready-to-merge
+
+  # Clean up merged branches

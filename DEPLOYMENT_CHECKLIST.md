@@ -7,28 +7,29 @@
 
 ## 0. Prerequisites (What You Need Before Starting)
 
-| # | Item | Where to Get | Status |
-|---|------|-------------|--------|
-| 0.1 | **GitHub account** | github.com | ✅ (<REDACTED>) |
-| 0.2 | **Render account** | render.com (free tier) | ☐ |
-| 0.3 | **Vercel account** | vercel.com (free tier) | ✅ |
-| 0.4 | **Cloudflare account** | cloudflare.com (free tier) | ☐ |
-| 0.5 | **Domain registered** | phenotype.studio (or similar) | ☐ |
-| 0.6 | **Git installed** | git-scm.com | ✅ |
-| 0.7 | **Rust toolchain** | rustup.rs | ✅ |
-| 0.8 | **Bun installed** | bun.sh | ✅ |
-| 0.9 | **Node.js + npm** | nodejs.org | ✅ |
-| 0.10 | **wrangler CLI** | `npm install -g wrangler` | ☐ |
-| 0.11 | **vercel CLI** | `npm install -g vercel` | ☐ |
-| 0.12 | **Docker Desktop** | docker.com (for local) | ☐ |
-| 0.13 | **SSH key** | `ssh-keygen -t ed25519` | ☐ |
-| 0.14 | **GPG key** | `gpg --full-generate-key` | ☐ |
+| #    | Item                   | Where to Get                   | Status          |
+| ---- | ---------------------- | ------------------------------ | --------------- |
+| 0.1  | **GitHub account**     | github.com                     | ✅ (<REDACTED>) |
+| 0.2  | **Vercel account**     | vercel.com (free tier)         | ✅              |
+| 0.3  | **Cloudflare account** | cloudflare.com (free tier)     | ☐               |
+| 0.4  | **cloudflared**        | cloudflare.com/products/tunnel | ☐               |
+| 0.5  | **Domain registered**  | phenotype.studio (or similar)  | ☐               |
+| 0.6  | **Git installed**      | git-scm.com                    | ✅              |
+| 0.7  | **Rust toolchain**     | rustup.rs                      | ✅              |
+| 0.8  | **Bun installed**      | bun.sh                         | ✅              |
+| 0.9  | **Node.js + npm**      | nodejs.org                     | ✅              |
+| 0.10 | **wrangler CLI**       | `npm install -g wrangler`      | ☐               |
+| 0.11 | **vercel CLI**         | `npm install -g vercel`        | ☐               |
+| 0.12 | **Docker Desktop**     | docker.com (for local)         | ☐               |
+| 0.13 | **SSH key**            | `ssh-keygen -t ed25519`        | ☐               |
+| 0.14 | **GPG key**            | `gpg --full-generate-key`      | ☐               |
 
 ---
 
 ## 1. Secrets & Credentials (Generate These First)
 
 ### 1.1 — Auth Token (Backend)
+
 ```bash
 # Generate a secure 32-byte hex token
 openssl rand -hex 32
@@ -37,6 +38,7 @@ openssl rand -hex 32
 ```
 
 ### 1.2 — JWT Signing Key (If using JWT auth)
+
 ```bash
 # Generate Ed25519 key pair
 openssl genpkey -algorithm Ed25519 -out jwt-private-key.pem
@@ -45,6 +47,7 @@ openssl pkey -in jwt-private-key.pem -pubout -out jwt-public-key.pem
 ```
 
 ### 1.3 — Cloudflare API Token
+
 - Go to: https://dash.cloudflare.com/profile/api-tokens
 - Create token with permissions:
   - `Workers: Edit`
@@ -54,21 +57,23 @@ openssl pkey -in jwt-private-key.pem -pubout -out jwt-public-key.pem
 - Save as: `CLOUDFLARE_API_TOKEN`
 
 ### 1.4 — Vercel CLI Auth
+
 ```bash
 vercel login
 # Follow browser OAuth flow
 # Save: VERCEL_TOKEN (auto-managed by CLI)
 ```
 
-### 1.5 — Render CLI Auth
+### 1.5 — Cloudflare Tunnel Token
+
 ```bash
-# Render doesn't have a CLI, use API token
-# Go to: https://render.com/dashboard/settings/api
-# Generate API token
-# Save as: RENDER_API_TOKEN
+# Create a tunnel in the Cloudflare Zero Trust dashboard
+# Copy the tunnel token for the named tunnel
+# Save as: CF_TUNNEL_TOKEN (used by deploy/selfhost/docker-compose.selfhost.yml)
 ```
 
 ### 1.6 — GPG Commit Signing Key
+
 ```bash
 gpg --list-secret-keys --keyid-format=long
 # Note the key ID
@@ -77,6 +82,7 @@ git config --global user.signingkey <KEY_ID>
 ```
 
 ### 1.7 — SSH Deploy Key (for GitHub)
+
 ```bash
 ssh-keygen -t ed25519 -C "deploy@tracera" -f ~/.ssh/deploy_tracera
 # Add public key to GitHub Deploy Keys
@@ -88,86 +94,84 @@ ssh-keygen -t ed25519 -C "deploy@tracera" -f ~/.ssh/deploy_tracera
 ## 2. Domain & DNS
 
 ### 2.1 — Register / Configure Domain
-| Domain | Purpose | DNS Provider | Status |
-|--------|---------|-------------|--------|
-| `phenotype.studio` | Main dashboard | Cloudflare | ☐ |
-| `api.phenotype.studio` | API gateway (Render) | Cloudflare | ☐ |
-| `ws.phenotype.studio` | WebSocket (Render) | Cloudflare | ☐ |
-| `worker.phenotype.studio` | Cloudflare Worker | Cloudflare | ☐ |
-| `docs.phenotype.studio` | Documentation (Vercel) | Cloudflare | ☐ |
+
+| Domain                     | Purpose                      | DNS Provider | Status |
+| -------------------------- | ---------------------------- | ------------ | ------ |
+| `phenotype.studio`         | Main dashboard               | Cloudflare   | ☐      |
+| `api.tracera.pheno.studio` | API (self-hosted via tunnel) | Cloudflare   | ☐      |
+| `tracera.pheno.studio`     | Web app + `/api` path prefix | Cloudflare   | ☐      |
+| `worker.phenotype.studio`  | Cloudflare Worker            | Cloudflare   | ☐      |
+| `docs.phenotype.studio`    | Documentation (Vercel)       | Cloudflare   | ☐      |
 
 ### 2.2 — DNS Records (Cloudflare)
+
 ```
-A       @       <Render external IP>        TTL Auto
-CNAME   api     @                           TTL Auto (point to Render)
-CNAME   www     @                           TTL Auto (point to Vercel)
-TXT     @       v=spf1 include:vercel.com   TTL Auto
-TXT     _dmarc  v=DMARC1; p=none            TTL Auto
+CNAME   tracera           <tunnel-id>.cfargotunnel.com   TTL Auto
+CNAME   api.tracera       <tunnel-id>.cfargotunnel.com   TTL Auto
+CNAME   www               cname.vercel-dns.com           TTL Auto (point to Vercel)
+TXT     @                 v=spf1 include:vercel.com      TTL Auto
+TXT     _dmarc            v=DMARC1; p=none               TTL Auto
 ```
 
 ### 2.3 — SSL/TLS Certificates
+
 - **Automatic**: Cloudflare Universal SSL (free, auto-issued)
 - **Manual backup**: Let's Encrypt via certbot if not using Cloudflare
+
 ```bash
 certbot certonly --standalone -d phenotype.studio -d api.phenotype.studio
 ```
 
 ---
 
-## 3. Backend Deployment (Render)
+## 3. Backend Deployment (Self-hosted)
 
 ### 3.1 — Prerequisites
-- [ ] Render account created
-- [ ] GitHub repo connected to Render
-- [ ] `render.yaml` exists in repo root ✅
+
+- [ ] Docker Desktop or Docker Engine on the operator machine
+- [ ] Cloudflare Tunnel created for `tracera.pheno.studio`
+- [ ] `deploy/selfhost/docker-compose.selfhost.yml` reviewed ✅
 - [ ] `Dockerfile.rust` exists ✅
 - [ ] `Cargo.toml` workspace configured ✅
 
-### 3.2 — Render Setup Steps
-```bash
-# 1. Login to Render (via browser)
-# 2. Go to https://render.com/dashboard
-# 3. Click "New +" → "Web Service"
-# 4. Connect GitHub repo: <REDACTED>/Tracera
-# 5. Select branch: main
-# 6. Render will auto-detect render.yaml
+### 3.2 — Self-host Setup Steps
 
-# OR use Render API:
-curl -X POST https://api.render.com/v1/services \
-  -H "Authorization: Bearer $RENDER_API_TOKEN" \
-  -H "Content-Type: application/json" \
-  -d @render.yaml
+```bash
+# From the repo root (see deploy/selfhost/README.md for full runbook):
+export CF_TUNNEL_TOKEN="<tunnel-token>"
+export TRACERA_PUBLIC_HOSTNAME="tracera.pheno.studio"
+export TRACERA_AUTH_TOKEN="<from §1.1>"
+
+docker compose -f deploy/selfhost/docker-compose.selfhost.yml up
 ```
 
-### 3.3 — Environment Variables (Render)
-| Variable | Value | Source |
-|----------|-------|--------|
-| `DATABASE_URL` | Auto-provided by Render PostgreSQL | Render DB |
-| `TRACERA_AUTH_TOKEN` | From §1.1 | Generated |
-| `TRACERA_BIND_ADDR` | `0.0.0.0:8080` | Hardcoded |
-| `TRACERA_PUBLIC_BIND_MODE` | `loopback-published` | Hardcoded |
-| `RUST_LOG` | `info` | Hardcoded |
-| `RUST_BACKTRACE` | `1` | Hardcoded |
+### 3.3 — Environment Variables (Operator Box)
 
-### 3.4 — PostgreSQL Database (Render)
+| Variable                   | Value                                             | Source                   |
+| -------------------------- | ------------------------------------------------- | ------------------------ |
+| `DATABASE_URL`             | PostgreSQL connection string                      | Local compose or host DB |
+| `TRACERA_AUTH_TOKEN`       | From §1.1                                         | Generated                |
+| `TRACERA_BIND_ADDR`        | `0.0.0.0:8080`                                    | Hardcoded                |
+| `TRACERA_PUBLIC_BIND_MODE` | `authenticated-proxy` when ingress auth is active | Operator choice          |
+| `CF_TUNNEL_TOKEN`          | From §1.5                                         | Cloudflare Zero Trust    |
+| `RUST_LOG`                 | `info`                                            | Hardcoded                |
+| `RUST_BACKTRACE`           | `1`                                               | Hardcoded                |
+
+### 3.4 — PostgreSQL Database
+
 ```bash
-# Create via render.yaml (auto-provisioned)
-# Or manually:
-# Render Dashboard → Databases → New PostgreSQL
-# Plan: Free (256MB RAM, 1GB disk)
-# Region: Closest to you
+# Use the PostgreSQL service in docker-compose.selfhost.yml
+# or point DATABASE_URL at an existing local instance.
 ```
 
 ### 3.5 — Verify Backend
-```bash
-# After deploy, get the URL:
-# https://tracera-server.onrender.com
 
-curl https://tracera-server.onrender.com/healthz
+```bash
+curl https://api.tracera.pheno.studio/healthz
 # Expected: {"status":"ok","service":"tracera-server"}
 
-curl https://tracera-server.onrender.com/readyz
-# Expected: {"status":"ready","version":"0.1.3","backend":"postgres"}
+curl https://api.tracera.pheno.studio/readyz
+# Expected: {"status":"ready",...}
 ```
 
 ---
@@ -175,16 +179,18 @@ curl https://tracera-server.onrender.com/readyz
 ## 4. Frontend Deployment (Vercel)
 
 ### 4.1 — Prerequisites
+
 - [ ] Vercel account ✅
 - [ ] `vercel.json` exists ✅
 - [ ] `frontend/apps/web/package.json` exists ✅
 - [ ] `frontend/apps/web/vite.config.ts` exists ✅
 
 ### 4.2 — Environment Variables (Vercel)
+
 ```bash
 # Set production API URL
 vercel env add VITE_API_URL production
-# Value: https://api.phenotype.studio (or your Render URL)
+# Value: https://tracera.pheno.studio/api
 
 vercel env add VITE_WS_URL production
 # Value: wss://api.phenotype.studio
@@ -197,6 +203,7 @@ vercel env ls
 ```
 
 ### 4.3 — Deploy
+
 ```bash
 # First deploy (or re-deploy after changes):
 vercel --prod --yes
@@ -206,6 +213,7 @@ vercel deploy --prod --yes --cwd frontend
 ```
 
 ### 4.4 — Verify Frontend
+
 ```bash
 curl -s -o /dev/null -w "%{http_code}" https://tracera-kappa.vercel.app
 # Expected: 200
@@ -220,6 +228,7 @@ curl https://tracera-kappa.vercel.app/api/health
 ## 5. Cloudflare Worker Deployment
 
 ### 5.1 — Prerequisites
+
 - [ ] Cloudflare account ✅
 - [ ] `wrangler.toml` exists ✅
 - [ ] `CLOUDFLARE_API_TOKEN` from §1.3
@@ -227,6 +236,7 @@ curl https://tracera-kappa.vercel.app/api/health
 - [ ] R2 bucket provisioned (see §5.3)
 
 ### 5.2 — Provision KV Namespace
+
 ```bash
 wrangler kv namespace create tracera_cache
 # Copy the "id" from output → update wrangler.toml id field
@@ -236,11 +246,13 @@ wrangler kv namespace create tracera_cache --preview
 ```
 
 ### 5.3 — Provision R2 Bucket
+
 ```bash
 wrangler r2 bucket create tracera-artifacts
 ```
 
 ### 5.4 — Deploy Worker
+
 ```bash
 # Login if needed:
 wrangler login
@@ -253,6 +265,7 @@ wrangler deploy -c wrangler.toml
 ```
 
 ### 5.5 — Verify Worker
+
 ```bash
 curl -s https://tracera-edge.workers.dev
 # Expected: Worker response
@@ -269,11 +282,13 @@ wrangler r2 bucket list --name tracera-artifacts
 ## 6. Desktop Client (Electrobun / Tauri)
 
 ### 6.1 — Prerequisites
+
 - [ ] Electrobun installed (Electron + Bun)
 - [ ] Code signing certificates (§7)
 - [ ] Auto-update server configured
 
 ### 6.2 — Build
+
 ```bash
 cd frontend/apps/desktop
 bun run build
@@ -281,9 +296,11 @@ bun run build
 ```
 
 ### 6.3 — Code Signing (Windows)
+
 - [ ] Windows Authenticode certificate (e.g., from DigiCert, Sectigo)
 - [ ] Install certificate in Windows Store
 - [ ] Configure in `electrobun.config.ts`:
+
 ```ts
 export default {
   build: {
@@ -296,11 +313,13 @@ export default {
 ```
 
 ### 6.4 — Code Signing (macOS)
+
 - [ ] Apple Developer ID certificate
 - [ ] Notarization enabled
 - [ ] `electron-builder` notarization config
 
 ### 6.5 — Auto-Update Setup
+
 - [ ] Update server (e.g., S3, R2, or Render endpoint)
 - [ ] Configure `updater.ts` with update URL
 - [ ] Test update flow from v0.1.0 → v0.1.1
@@ -310,6 +329,7 @@ export default {
 ## 7. CLI Tool (`tracera` / `tracera-server`)
 
 ### 7.1 — Build Release Binaries
+
 ```bash
 # Linux x64
 cargo build --release --target x86_64-unknown-linux-gnu
@@ -322,11 +342,13 @@ cargo build --release --target x86_64-pc-windows-msvc
 ```
 
 ### 7.2 — Publish to Package Managers
+
 - [ ] **npm** (as `tracera-cli`): `npm publish`
 - [ ] **Cargo** (crates.io): `cargo publish`
 - [ ] **GitHub Releases**: Upload binaries to releases
 
 ### 7.3 — Install Scripts
+
 ```bash
 # curl-based installer (like `curl | sh`):
 curl -fsSL https://tracera.phenotype.studio/install | sh
@@ -340,21 +362,25 @@ irm https://tracera.phenotype.studio/install.ps1 | iex
 ## 8. Database & Storage
 
 ### 8.1 — PostgreSQL (Render Managed)
+
 - [ ] Database created via Render
 - [ ] Migrations applied on deploy
 - [ ] Connection string in `DATABASE_URL`
 - [ ] Backup schedule configured (Render auto-backup)
 
 ### 8.2 — SQLite (Local/Client)
+
 - [ ] `sqlite::memory:` for dev
 - [ ] `sqlite:tracera.db` for local prod
 - [ ] Migrations applied on first run
 
 ### 8.3 — R2 (Cloudflare)
+
 - [ ] Bucket created: `tracera-artifacts`
 - [ ] Used for: uploaded evidence, generated reports, export files
 
 ### 8.4 — KV (Cloudflare)
+
 - [ ] Namespace: `tracera_cache`
 - [ ] Used for: session tokens, rate limiting, cached queries
 
@@ -363,19 +389,22 @@ irm https://tracera.phenotype.studio/install.ps1 | iex
 ## 9. Monitoring & Observability
 
 ### 9.1 — Health Checks
-| Endpoint | Method | Expected | Frequency |
-|----------|--------|----------|-----------|
-| `/healthz` | GET | `{"status":"ok"}` | 30s |
-| `/readyz` | GET | `{"status":"ready"}` | 30s |
-| `/metrics` | GET | Prometheus text | 60s |
+
+| Endpoint   | Method | Expected             | Frequency |
+| ---------- | ------ | -------------------- | --------- |
+| `/healthz` | GET    | `{"status":"ok"}`    | 30s       |
+| `/readyz`  | GET    | `{"status":"ready"}` | 30s       |
+| `/metrics` | GET    | Prometheus text      | 60s       |
 
 ### 9.2 — Alerting
+
 - [ ] Render: Email alerts on deploy failure
 - [ ] Vercel: Slack/email on build failure
 - [ ] Cloudflare: Worker error alerts
 - [ ] Custom: `/metrics` scraped by Prometheus/Grafana
 
 ### 9.3 — Logging
+
 - [ ] Render: Log drain to external service
 - [ ] Cloudflare: Workers logs via `wrangler tail`
 - [ ] Vercel: Function logs in dashboard
@@ -385,16 +414,18 @@ irm https://tracera.phenotype.studio/install.ps1 | iex
 ## 10. CI/CD Pipeline
 
 ### 10.1 — GitHub Actions Workflows
-| Workflow | Trigger | What It Does |
-|----------|---------|-------------|
-| `ci.yml` | PR/push | Lint, test, build |
-| `e2e.yml` | PR/push | E2E contract tests |
-| `coverage.yml` | push | Coverage report |
-| `mutants.yml` | push | Mutation testing |
-| `audit-sla.yml` | cron (1st of month) | Auto-scorecard |
-| `release-desktop-sign.yml` | tag `v*` | Build + sign desktop |
+
+| Workflow                   | Trigger             | What It Does         |
+| -------------------------- | ------------------- | -------------------- |
+| `ci.yml`                   | PR/push             | Lint, test, build    |
+| `e2e.yml`                  | PR/push             | E2E contract tests   |
+| `coverage.yml`             | push                | Coverage report      |
+| `mutants.yml`              | push                | Mutation testing     |
+| `audit-sla.yml`            | cron (1st of month) | Auto-scorecard       |
+| `release-desktop-sign.yml` | tag `v*`            | Build + sign desktop |
 
 ### 10.2 — Branch Protection (Already Applied)
+
 - [x] `enforce_admins: true`
 - [x] `required_pull_request_reviews: 1`
 - [x] `required_linear_history: true`
@@ -402,6 +433,7 @@ irm https://tracera.phenotype.studio/install.ps1 | iex
 - [x] `required_conversation_resolution: true`
 
 ### 10.3 — Signed Commits
+
 - [x] GPG/SSH signing configured
 - [x] `verify-signed-commits.sh` in CI
 - [x] CONTRIBUTING.md documents signing setup
@@ -411,24 +443,29 @@ irm https://tracera.phenotype.studio/install.ps1 | iex
 ## 11. Security Hardening
 
 ### 11.1 — Rate Limiting
+
 - [x] Implemented in `main.rs` (100 req/min per IP)
 - [ ] Verify in production
 
 ### 11.2 — CORS
+
 - [ ] Configure for `phenotype.studio` and `phenotype.space`
 - [ ] Update `main.rs` CORS middleware
 
 ### 11.3 — Auth Token Rotation
+
 - [ ] `TRACERA_AUTH_TOKEN` generated
 - [ ] Rotate every 90 days
 - [ ] Store in Render env vars (not in repo)
 
 ### 11.4 — Dependency Scanning
+
 - [x] `cargo audit` in CI
 - [x] `npm audit` in CI
 - [x] Dependabot enabled
 
 ### 11.5 — Secrets Management
+
 - [x] All secrets in env vars (never in repo)
 - [x] `.env.example` has placeholders only
 - [x] `.gitignore` excludes `.env` files
@@ -438,6 +475,7 @@ irm https://tracera.phenotype.studio/install.ps1 | iex
 ## 12. Release Process
 
 ### 12.1 — Version Bumping
+
 ```bash
 # Semantic versioning:
 # v0.1.0 — Initial release
@@ -451,15 +489,17 @@ cargo set-version 0.1.0  # In Cargo.toml
 ```
 
 ### 12.2 — Git Tag & Push
+
 ```bash
 git tag -s v0.1.0 -m "Release v0.1.0"
 git push origin v0.1.0
 ```
 
 ### 12.3 — CI Triggers on Tag
+
 - [ ] Build all binaries (Rust + Frontend + Desktop)
 - [ ] Run all tests
-- [ ] Deploy to Render (backend)
+- [ ] Restart self-hosted backend (operator box)
 - [ ] Deploy to Vercel (frontend)
 - [ ] Deploy Cloudflare Worker
 - [ ] Publish to npm/Cargo
@@ -471,6 +511,7 @@ git push origin v0.1.0
 ## 13. Post-Deployment Verification
 
 ### 13.1 — Smoke Tests
+
 ```bash
 # Backend:
 curl https://api.phenotype.studio/healthz
@@ -496,6 +537,7 @@ tracera server status
 ```
 
 ### 13.2 — End-to-End Flow
+
 1. Create a spec in the governance layer
 2. Ingest an agent/task via `/ingest/agileplus`
 3. Create a trace link
@@ -506,6 +548,7 @@ tracera server status
 8. Check metrics: `GET /metrics`
 
 ### 13.3 — Scorecard Verification
+
 ```bash
 # Re-run the audit scorecard:
 cargo test -p tracera-server
@@ -520,14 +563,14 @@ cat audit/SCORECARD-FULL-2026-08-30.md | grep "TOTAL"
 
 ## 14. Cost Summary (Free Tier)
 
-| Service | Cost | What It Provides |
-|---------|------|-----------------|
-| **Render** | $0/mo | Rust backend + PostgreSQL 17 |
-| **Vercel** | $0/mo | Frontend hosting + edge |
-| **Cloudflare** | $0/mo | Workers + KV + R2 + DNS + SSL |
-| **GitHub** | $0/mo | Repo + CI/CD + Packages |
-| **Domain** | ~$10/yr | phenotype.studio |
-| **Total** | **~$10/yr** | Full production stack |
+| Service        | Cost        | What It Provides              |
+| -------------- | ----------- | ----------------------------- |
+| **Render**     | $0/mo       | Rust backend + PostgreSQL 17  |
+| **Vercel**     | $0/mo       | Frontend hosting + edge       |
+| **Cloudflare** | $0/mo       | Workers + KV + R2 + DNS + SSL |
+| **GitHub**     | $0/mo       | Repo + CI/CD + Packages       |
+| **Domain**     | ~$10/yr     | phenotype.studio              |
+| **Total**      | **~$10/yr** | Full production stack         |
 
 ---
 
@@ -535,7 +578,7 @@ cat audit/SCORECARD-FULL-2026-08-30.md | grep "TOTAL"
 
 ```bash
 # 1. Clone repo
-git clone https://github.com/<REDACTED>/Tracera.git
+git clone https://github.com/KooshaPari/Tracera.git
 cd Tracera
 
 # 2. Install tools
@@ -573,7 +616,7 @@ tracera --version
 □ 0. Prerequisites (all tools installed)
 □ 1. Secrets & Credentials (all tokens generated)
 □ 2. Domain & DNS (all records configured)
-□ 3. Backend on Render (deployed and healthy)
+□ 3. Backend self-hosted (tunnel up and healthy)
 □ 4. Frontend on Vercel (deployed and healthy)
 □ 5. Cloudflare Worker (deployed and healthy)
 □ 6. Desktop Client (built, signed, published)
@@ -589,6 +632,6 @@ tracera --version
 
 ---
 
-*Generated: 2026-09-01*  
-*Scorecard: 435/435 (100%)*  
-*Status: Ready for deployment*
+_Generated: 2026-09-01_  
+_Scorecard: 435/435 (100%)_  
+_Status: Ready for deployment_

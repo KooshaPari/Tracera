@@ -26,10 +26,11 @@ import { useCallback, useEffect, useRef, useState } from "react";
 
 import { client } from "@/api/client";
 import { logger } from "@/lib/logger";
+import { API_ORIGIN } from "@/config/api-origin";
 
 const { getAuthHeaders } = client;
 
-const API_URL = import.meta.env.VITE_API_URL || "";
+const API_URL = API_ORIGIN;
 
 /**
  * Viewport bounds with zoom level

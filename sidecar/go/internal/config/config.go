@@ -13,6 +13,16 @@ type Config struct {
 	APIBase       string
 	PollInterval  time.Duration
 	QueueEndpoint string
+
+	// Control-plane (node agent) mode. All three must be set to activate.
+	ControlPlaneBase string
+	NodeID           string
+	EnrollToken      string
+
+	// StateDir is where per-service docker compose project dirs are created.
+	StateDir string
+	// ConvergeTimeout bounds a single docker compose invocation.
+	ConvergeTimeout time.Duration
 }
 
 func boolEnv(name string, defaultValue bool) bool {
@@ -49,5 +59,12 @@ func InitializeContext() Config {
 		APIBase:       getenv("TRACERA_API_BASE", "http://127.0.0.1:8080"),
 		PollInterval:  getDuration("TRACERA_SIDE_CAR_POLL_INTERVAL", 5*time.Second),
 		QueueEndpoint: getenv("TRACERA_SIDE_CAR_QUEUE", "/var/run/tracera/dispatch.sock"),
+
+		ControlPlaneBase: getenv("TRACERA_CONTROL_PLANE_URL", ""),
+		NodeID:           getenv("TRACERA_NODE_ID", ""),
+		EnrollToken:      getenv("TRACERA_ENROLL_TOKEN", ""),
+
+		StateDir:        getenv("TRACERA_NODE_STATE_DIR", "/var/lib/tracera-node"),
+		ConvergeTimeout: getDuration("TRACERA_NODE_CONVERGE_TIMEOUT", 5*time.Minute),
 	}
 }

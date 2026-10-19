@@ -11,6 +11,12 @@
 //! `Response`. This lets `tracera-server/src/main.rs` mount it via
 //! `Router::nest("/auth/workos", tracera_workos::router::router(client))`.
 
+// `Result<Response, Response>` is the idiomatic axum handler shape: the error
+// side must implement `IntoResponse`, and axum's `Response` is 128 bytes. The
+// alternative is boxing every failure path for no practical gain, so the lint
+// is allowed for this module instead.
+#![allow(clippy::result_large_err)]
+
 use axum::{
     body::Bytes,
     extract::{Query, State},

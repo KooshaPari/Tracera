@@ -33,7 +33,10 @@
 //! let assigned = engine.delegation()
 //!     .assign(&item.id, "agent-7")
 //!     .unwrap();
-//! assert_eq!(assigned.assigned_agent.as_ref().map(|a| a.0.as_str()), Some("agent-7"));
+//! assert_eq!(
+//!     assigned.work_item.assigned_agent.as_ref().map(|a| a.0.as_str()),
+//!     Some("agent-7")
+//! );
 //! ```
 
 #![forbid(unsafe_code)]
@@ -45,7 +48,9 @@ pub mod ci_bridge;
 pub mod delegation;
 pub mod observability;
 
-pub use agent_of_record::{ActorId, AgentOfRecord, AoRQuery, ChangeKind, SignOff, SignOffId};
+pub use agent_of_record::{
+    ActorId, AgentOfRecord, AoRError, AoRQuery, ChangeKind, SignOff, SignOffId,
+};
 pub use ci_bridge::{
     publish_ci_event, CiBridge, CiEventError, CiEventKind, CiProvider, CiProviderAdapter,
     GitHubActionsEvent, NormalizedCiEvent,

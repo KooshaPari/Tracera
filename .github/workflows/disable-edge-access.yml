@@ -1,0 +1,42 @@
+name: Disable Edge Access Public
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  disable:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment: cloudflare-prod
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      ACCESS_HOSTNAME: tracera-edge.pheno.studio
+      PUBLIC_BYPASS: "1"
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: List Access applications
+        run: |
+          set -euo pipefail
+          curl -fsS \
+            -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+            "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/access/apps?per_page=100" \
+            | python3 -c "import json,sys; data=json.load(sys.stdin); [print(f\"{a.get('domain')}\t{a.get('id')}\") for a in data.get('result', [])]"
+
+      - name: Apply public Bypass policy
+        run: bash scripts/setup-cloudflare-access.sh
+
+      - name: Smoke curl
+        run: |
+          set -euo pipefail
+          code=$(curl -sS -o /tmp/body.txt -w '%{http_code}' -L --max-time 30 https://tracera-edge.pheno.studio/)
+          echo "HTTP ${code}"
+          if grep -Eiq 'cf-access|sign in|cloudflareaccess|Email' /tmp/body.txt; then
+            echo "FAIL: Access markers in body"
+            head -c 300 /tmp/body.txt
+            exit 1
+          fi

@@ -1,0 +1,38 @@
+# osv-scanner configuration for the repository root.
+#
+# osv-scanner auto-discovers this file for lockfiles in the same directory
+# (Cargo.lock here); it deliberately does not propagate to child directories, so
+# frontend/bun.lock and sidecar/go/go.mod keep a clean slate and are not covered
+# by the Rust exceptions below.
+#
+# These mirror the reviewed exceptions in deny.toml, which documents the same
+# reasoning for cargo-deny. Both lists must be kept in step.
+
+# All four advisories below are `unmaintained` signals (maintenance hygiene, with
+# no known exploit against this service), and all four arrive through one
+# dependency: neo4rs 0.8.0, the newest *stable* release of the Neo4j driver used
+# by tracera-server. They cannot be removed without adopting neo4rs 0.9.0-rc.x,
+# which rewrites the bolt protocol implementation and is still a release
+# candidate. neo4rs 0.9 drops all four at once (backoff -> backon, paste ->
+# pastey, rustls-native-certs 0.7 -> 0.8), so this block should be deleted when
+# 0.9.0 ships stable. The expiry forces that revisit.
+
+[[IgnoredVulns]]
+id = "RUSTSEC-2025-0012"
+ignoreUntil = 2027-03-01
+reason = "backoff 0.4.0 is unmaintained; pulled in by neo4rs 0.8.0 (no stable release drops it)."
+
+[[IgnoredVulns]]
+id = "RUSTSEC-2024-0384"
+ignoreUntil = 2027-03-01
+reason = "instant 0.1.13 is unmaintained; transitive via backoff <- neo4rs 0.8.0."
+
+[[IgnoredVulns]]
+id = "RUSTSEC-2024-0436"
+ignoreUntil = 2027-03-01
+reason = "paste 1.0.15 is unmaintained; pulled in by neo4rs 0.8.0."
+
+[[IgnoredVulns]]
+id = "RUSTSEC-2025-0134"
+ignoreUntil = 2027-03-01
+reason = "rustls-pemfile 2.2.0 is unmaintained; transitive via rustls-native-certs 0.7 <- neo4rs 0.8.0."

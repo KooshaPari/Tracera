@@ -253,11 +253,16 @@ function CommandPaletteComponent() {
   useEffect(() => {
     globalThis.addEventListener("keydown", handleKeyDown);
 
+    let focusTimer: ReturnType<typeof setTimeout> | undefined;
     if (open) {
       // Save focus to restore later
       savedFocusRef.current = saveFocus();
-      // Focus input after palette opens
-      setTimeout(() => {
+      // Focus input after palette opens. The handle is captured so the timer can
+      // be cleared on cleanup: this effect also re-runs whenever filtered.length
+      // changes, and a timer that outlives the component throws
+      // "document is not defined" from announceToScreenReader once the DOM is
+      // gone (which is how it surfaced as an unhandled error in CI).
+      focusTimer = setTimeout(() => {
         inputRef.current?.focus();
         announceToScreenReader(
           `Command palette opened. Type to search commands. ${filtered.length} result${filtered.length !== 1 ? "s" : ""} available.`,
@@ -271,6 +276,9 @@ function CommandPaletteComponent() {
 
     return () => {
       globalThis.removeEventListener("keydown", handleKeyDown);
+      if (focusTimer !== undefined) {
+        clearTimeout(focusTimer);
+      }
     };
   }, [handleKeyDown, open, filtered.length]);
 

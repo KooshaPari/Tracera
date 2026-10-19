@@ -3,9 +3,9 @@ use chrono::Utc;
 use serde::Deserialize;
 use uuid::Uuid;
 
-use crate::{bad_request, ErrorResponse};
 use crate::store::{Story, TraceLink};
 use crate::validation::{validate_text, MAX_ID_CHARS, MAX_LONG_TEXT_CHARS, MAX_SHORT_TEXT_CHARS};
+use crate::{bad_request, ErrorResponse};
 
 use super::super::AppState;
 
