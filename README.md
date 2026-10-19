@@ -153,17 +153,17 @@ and [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) (operator-facing component ma
 `resolver = "2"`, edition 2021, MSRV 1.82. Distribution via **cargo-dist
 0.28.0** (shell + powershell + msi installers).
 
-| Crate | Binary | Responsibility |
-|---|---|---|
+| Crate                   | Binary           | Responsibility                                                                                                            |
+| ----------------------- | ---------------- | ------------------------------------------------------------------------------------------------------------------------- |
 | `crates/tracera-server` | `tracera-server` | Core axum HTTP server: traceability, impact, coverage, evidence, ingest, memory, SWEE graph, dual store, auth, cache, R2. |
-| `crates/tracera-mcp` | `mcp-server` | MCP stdio server exposing SWEE graph read/write/navigate/propose tools over the server `Store` trait. |
-| `crates/tracertm-mcp` | `tracertm-mcp` | Native Rust MCP stdio server, replacing the legacy `python -m tracertm.mcp`. |
-| `crates/tracera-edge` | (cdylib) | Cloudflare Worker edge API for Tracera. |
-| `crates/tracera-cli` | `tracera` | Manages the bundled/local Compose stack across docker, podman, apple-container, and WSL2 runtimes. |
-| `crates/tracera-events` | `events-ingest` | ClickHouse-backed ingest/analytics for agent runs, decisions, deploys, traces, LLM calls. |
-| `crates/tracera-workos` | `workos-mock` | WorkOS AuthKit login, HMAC webhooks, directory sync, audit-log ingest. |
-| `crates/tracera-atlas` | `atlas-server` | Atlas ALM: WorkItem delegation, SDLC observability, agent-of-record, CI bridge. |
-| `crates/mock-agcord` | (test) | Mock AgCord server returning AgCord-compatible JSON for `/ingest/agileplus`. |
+| `crates/tracera-mcp`    | `mcp-server`     | MCP stdio server exposing SWEE graph read/write/navigate/propose tools over the server `Store` trait.                     |
+| `crates/tracertm-mcp`   | `tracertm-mcp`   | Native Rust MCP stdio server, replacing the legacy `python -m tracertm.mcp`.                                              |
+| `crates/tracera-edge`   | (cdylib)         | Cloudflare Worker edge API for Tracera.                                                                                   |
+| `crates/tracera-cli`    | `tracera`        | Manages the bundled/local Compose stack across docker, podman, apple-container, and WSL2 runtimes.                        |
+| `crates/tracera-events` | `events-ingest`  | ClickHouse-backed ingest/analytics for agent runs, decisions, deploys, traces, LLM calls.                                 |
+| `crates/tracera-workos` | `workos-mock`    | WorkOS AuthKit login, HMAC webhooks, directory sync, audit-log ingest.                                                    |
+| `crates/tracera-atlas`  | `atlas-server`   | Atlas ALM: WorkItem delegation, SDLC observability, agent-of-record, CI bridge.                                           |
+| `crates/mock-agcord`    | (test)           | Mock AgCord server returning AgCord-compatible JSON for `/ingest/agileplus`.                                              |
 
 Additional `crates/` trees present but **not** workspace members (built
 separately): `tracera-graphql` (GraphQL gateway + subscriptions),
@@ -179,13 +179,13 @@ its HTTP/service wiring completes (`ADR-DEP-001`).
 
 ### Frontend monorepo (`frontend/`, bun workspaces + Turborepo)
 
-| Workspace | Purpose |
-|---|---|
-| `apps/web` | React 19 + TanStack Router SPA (Vite; OpenAPI types generated from `public/specs/openapi.json`). |
-| `apps/desktop` | Electrobun desktop viewer. |
-| `apps/tauri-desktop` | Tauri desktop shell. |
-| `apps/os-service` | OS-level service integration crate. |
-| `packages/{api-client,config,env-manager,state,tokens,types,ui}` | Shared client, config, state, design tokens, and UI library. |
+| Workspace                                                        | Purpose                                                                                          |
+| ---------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
+| `apps/web`                                                       | React 19 + TanStack Router SPA (Vite; OpenAPI types generated from `public/specs/openapi.json`). |
+| `apps/desktop`                                                   | Electrobun desktop viewer.                                                                       |
+| `apps/tauri-desktop`                                             | Tauri desktop shell.                                                                             |
+| `apps/os-service`                                                | OS-level service integration crate.                                                              |
+| `packages/{api-client,config,env-manager,state,tokens,types,ui}` | Shared client, config, state, design tokens, and UI library.                                     |
 
 Tooling: oxlint/oxfmt, stylelint, Vitest, Playwright, Storybook + Chromatic,
 bun, Turborepo.
@@ -201,22 +201,22 @@ bun, Turborepo.
 
 ## Documentation map
 
-| Guide | Location |
-|---|---|
-| Quickstart | [`docs/quickstart.md`](docs/quickstart.md) |
-| Getting started + CLI tutorial | [`docs/01-getting-started/README.md`](docs/01-getting-started/README.md) |
-| Architecture (long-form) | [`ARCHITECTURE.md`](ARCHITECTURE.md) |
-| Architecture (component map) | [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) |
-| API reference (target contract) | [`docs/API_REFERENCE.md`](docs/API_REFERENCE.md) |
+| Guide                                 | Location                                                                                                     |
+| ------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| Quickstart                            | [`docs/quickstart.md`](docs/quickstart.md)                                                                   |
+| Getting started + CLI tutorial        | [`docs/01-getting-started/README.md`](docs/01-getting-started/README.md)                                     |
+| Architecture (long-form)              | [`ARCHITECTURE.md`](ARCHITECTURE.md)                                                                         |
+| Architecture (component map)          | [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)                                                               |
+| API reference (target contract)       | [`docs/API_REFERENCE.md`](docs/API_REFERENCE.md)                                                             |
 | Endpoint traceability (FR→route→test) | [`docs/governance/policy/endpoint_traceability_map.md`](docs/governance/policy/endpoint_traceability_map.md) |
-| Guided + deployment guides | [`docs/04-guides/`](docs/04-guides/DEVELOPER_GUIDE.md) |
-| Governance / ADRs | [`docs/governance/README.md`](docs/governance/README.md) |
-| Feature inventory (migration oracle) | [`docs/FEATURE_INVENTORY.md`](docs/FEATURE_INVENTORY.md) |
-| WBS + work packages | [`docs/WBS.md`](docs/WBS.md), [`docs/WP-00-reconciliation.md`](docs/WP-00-reconciliation.md) |
-| Specifications | [`docs/specs/`](docs/specs) |
-| Security | [`SECURITY.md`](SECURITY.md), [`docs/security/`](docs/security/SECURITY.md) |
-| Self-hosted deployment | [`deploy/selfhost/README.md`](deploy/selfhost/README.md) |
-| Changelog | [`CHANGELOG.md`](CHANGELOG.md) |
+| Guided + deployment guides            | [`docs/04-guides/`](docs/04-guides/DEVELOPER_GUIDE.md)                                                       |
+| Governance / ADRs                     | [`docs/governance/README.md`](docs/governance/README.md)                                                     |
+| Feature inventory (migration oracle)  | [`docs/FEATURE_INVENTORY.md`](docs/FEATURE_INVENTORY.md)                                                     |
+| WBS + work packages                   | [`docs/WBS.md`](docs/WBS.md), [`docs/WP-00-reconciliation.md`](docs/WP-00-reconciliation.md)                 |
+| Specifications                        | [`docs/specs/`](docs/specs)                                                                                  |
+| Security                              | [`SECURITY.md`](SECURITY.md), [`docs/security/`](docs/security/SECURITY.md)                                  |
+| Self-hosted deployment                | [`deploy/selfhost/README.md`](deploy/selfhost/README.md)                                                     |
+| Changelog                             | [`CHANGELOG.md`](CHANGELOG.md)                                                                               |
 
 ## Development
 
@@ -251,12 +251,12 @@ assets, ruff-format on Python, and commit-msg validation.
 
 ## Deployment
 
-| Surface | Canonical URI |
-|---|---|
-| API | `https://tracera.pheno.studio/api/*` |
-| MCP | `https://mcp.tracera.pheno.studio` |
-| Edge worker | `https://tracera-edge.pheno.studio` |
-| Web app | `https://app.tracera.pheno.studio` |
+| Surface     | Canonical URI                        |
+| ----------- | ------------------------------------ |
+| API         | `https://tracera.pheno.studio/api/*` |
+| MCP         | `https://mcp.tracera.pheno.studio`   |
+| Edge worker | `https://tracera-edge.pheno.studio`  |
+| Web app     | `https://app.tracera.pheno.studio`   |
 
 Self-hosted stack: Tracera server + Caddy (TLS + security headers) + Cloudflare
 Tunnel — see [`deploy/selfhost/README.md`](deploy/selfhost/README.md). The Rust
