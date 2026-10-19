@@ -26,6 +26,8 @@ async fn fixture() -> Router {
         cache: None,
         neo4j: None,
         r2: None,
+        frontend: crate::FrontendState::Ok,
+        frontend_dist: std::path::PathBuf::new(),
     };
     crate::router::build_router(state)
 }

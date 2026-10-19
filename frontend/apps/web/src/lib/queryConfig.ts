@@ -15,7 +15,7 @@ export const QUERY_CONFIGS = {
    */
   static: {
     staleTime: 10 * 60 * 1000, // 10 minutes
-    gcTime: 30 * 60 * 1000, // 30 minutes
+    gcTime: 3 * 10 * 60 * 1000, // 30 minutes
     refetchOnMount: false,
     refetchOnWindowFocus: false,
     refetchOnReconnect: false,
@@ -26,7 +26,7 @@ export const QUERY_CONFIGS = {
    * Changes frequently, needs fresher data
    */
   dynamic: {
-    staleTime: 30 * 1000, // 30 seconds
+    staleTime: 3 * 10 * 1000, // 30 seconds
     gcTime: 5 * 60 * 1000, // 5 minutes
     refetchOnMount: true,
     refetchOnWindowFocus: false,
@@ -39,7 +39,7 @@ export const QUERY_CONFIGS = {
    */
   graph: {
     staleTime: 5 * 60 * 1000, // 5 minutes
-    gcTime: 15 * 60 * 1000, // 15 minutes
+    gcTime: 3 * 5 * 60 * 1000, // 15 minutes
     refetchOnMount: false,
     refetchOnWindowFocus: false,
     refetchOnReconnect: false,
