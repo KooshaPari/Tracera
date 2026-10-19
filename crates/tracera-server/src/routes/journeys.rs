@@ -210,7 +210,6 @@ pub(super) fn routes() -> Router<AppState> {
     }
     router
 }
-
 pub(crate) const ROUTES: &[&str] = &[
     "/api/v1/projects/{project_id}/journeys/detect",
     "/journeys",
@@ -275,6 +274,8 @@ mod tests {
             cache: None,
             neo4j: None,
             r2: None,
+            frontend: crate::FrontendState::Ok,
+            frontend_dist: std::path::PathBuf::new(),
         };
         (crate::router::build_router(state), store)
     }

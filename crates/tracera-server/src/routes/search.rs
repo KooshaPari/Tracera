@@ -190,6 +190,8 @@ mod tests {
             cache: None,
             neo4j: None,
             r2: None,
+            frontend: crate::FrontendState::Ok,
+            frontend_dist: std::path::PathBuf::new(),
         });
         (app, store)
     }
@@ -406,6 +408,8 @@ mod tests {
             cache: None,
             neo4j: None,
             r2: None,
+            frontend: crate::FrontendState::Ok,
+            frontend_dist: std::path::PathBuf::new(),
         });
         for route in ["/api/v1/search", "/api/v1/search/suggest"] {
             let (status, body) = request(
