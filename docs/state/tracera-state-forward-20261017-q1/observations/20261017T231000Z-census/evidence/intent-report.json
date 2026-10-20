@@ -32,7 +32,9 @@
       "recorded_status_not_current_verdict": "UNKNOWN",
       "recorded_review": "PROPOSED",
       "source_location": "README.md; crates/tracera-server/src/router.rs:153-173",
-      "dependencies": ["G01"],
+      "dependencies": [
+        "G01"
+      ],
       "current_cells": "Await exact-current source and witness report; frozen goal status is not copied as current verdict"
     },
     {
@@ -48,7 +50,9 @@
       "recorded_status_not_current_verdict": "UNKNOWN",
       "recorded_review": "PROPOSED",
       "source_location": "crates/tracera-server/src/handlers/governance.rs:9-45",
-      "dependencies": ["G01"],
+      "dependencies": [
+        "G01"
+      ],
       "current_cells": "Await exact-current source and witness report; frozen goal status is not copied as current verdict"
     },
     {
@@ -64,7 +68,9 @@
       "recorded_status_not_current_verdict": "FAIL",
       "recorded_review": "PROPOSED",
       "source_location": "crates/tracera-server/src/memory/distillation/distiller.rs:12-26",
-      "dependencies": ["G01"],
+      "dependencies": [
+        "G01"
+      ],
       "current_cells": "Await exact-current source and witness report; frozen goal status is not copied as current verdict"
     },
     {
@@ -80,7 +86,9 @@
       "recorded_status_not_current_verdict": "UNKNOWN",
       "recorded_review": "PROPOSED",
       "source_location": "crates/tracera-server/src/handlers/evidence.rs",
-      "dependencies": ["G01"],
+      "dependencies": [
+        "G01"
+      ],
       "current_cells": "Await exact-current source and witness report; frozen goal status is not copied as current verdict"
     },
     {
@@ -96,7 +104,9 @@
       "recorded_status_not_current_verdict": "UNKNOWN",
       "recorded_review": "PROPOSED",
       "source_location": "crates/tracera-server/src/product/; docs/WP-07-product-graph-design.md (DRAFT)",
-      "dependencies": ["G01"],
+      "dependencies": [
+        "G01"
+      ],
       "current_cells": "Await exact-current source and witness report; frozen goal status is not copied as current verdict"
     },
     {
@@ -112,7 +122,9 @@
       "recorded_status_not_current_verdict": "UNKNOWN",
       "recorded_review": "PROPOSED",
       "source_location": "crates/tracera-server/src/ingest/persist.rs:39-107",
-      "dependencies": ["G01"],
+      "dependencies": [
+        "G01"
+      ],
       "current_cells": "Await exact-current source and witness report; frozen goal status is not copied as current verdict"
     },
     {
@@ -128,7 +140,9 @@
       "recorded_status_not_current_verdict": "UNKNOWN",
       "recorded_review": "PROPOSED",
       "source_location": "crates/tracera-server/src/pg_store/projects.rs; historical audit",
-      "dependencies": ["G01"],
+      "dependencies": [
+        "G01"
+      ],
       "current_cells": "Await exact-current source and witness report; frozen goal status is not copied as current verdict"
     },
     {
@@ -144,7 +158,9 @@
       "recorded_status_not_current_verdict": "UNKNOWN",
       "recorded_review": "PROPOSED",
       "source_location": "frontend/apps/web/src/pages/projects/views/; inputs/TRACERA-HISTORICAL-VIEW-COVERAGE.csv",
-      "dependencies": ["G01"],
+      "dependencies": [
+        "G01"
+      ],
       "current_cells": "Await exact-current source and witness report; frozen goal status is not copied as current verdict"
     },
     {
@@ -160,7 +176,9 @@
       "recorded_status_not_current_verdict": "FAIL",
       "recorded_review": "PROPOSED",
       "source_location": "crates/tracera-server/src/routes/specs.rs; frontend SpecificationDashboard.tsx",
-      "dependencies": ["G01"],
+      "dependencies": [
+        "G01"
+      ],
       "current_cells": "Await exact-current source and witness report; frozen goal status is not copied as current verdict"
     },
     {
@@ -176,7 +194,9 @@
       "recorded_status_not_current_verdict": "FAIL",
       "recorded_review": "PROPOSED",
       "source_location": "crates/tracera-server/src/handlers/projects.rs; routes/links.rs",
-      "dependencies": ["G01"],
+      "dependencies": [
+        "G01"
+      ],
       "current_cells": "Await exact-current source and witness report; frozen goal status is not copied as current verdict"
     },
     {
@@ -192,7 +212,9 @@
       "recorded_status_not_current_verdict": "UNKNOWN",
       "recorded_review": "PROPOSED",
       "source_location": "crates/tracera-server/src/routes/graph.rs; routes/search.rs",
-      "dependencies": ["G01"],
+      "dependencies": [
+        "G01"
+      ],
       "current_cells": "Await exact-current source and witness report; frozen goal status is not copied as current verdict"
     },
     {
@@ -208,7 +230,9 @@
       "recorded_status_not_current_verdict": "FAIL",
       "recorded_review": "PROPOSED",
       "source_location": "crates/tracera-server/src/routes/test_runs.rs; routes/spec_analytics.rs",
-      "dependencies": ["G01"],
+      "dependencies": [
+        "G01"
+      ],
       "current_cells": "Await exact-current source and witness report; frozen goal status is not copied as current verdict"
     },
     {
@@ -224,7 +248,9 @@
       "recorded_status_not_current_verdict": "UNKNOWN",
       "recorded_review": "PROPOSED",
       "source_location": "Cargo.toml; crates/tracera-cli/; crates/tracera-mcp/; crates/tracertm-mcp/",
-      "dependencies": ["G01"],
+      "dependencies": [
+        "G01"
+      ],
       "current_cells": "Await exact-current source and witness report; frozen goal status is not copied as current verdict"
     },
     {
@@ -272,7 +298,9 @@
       "recorded_status_not_current_verdict": "UNKNOWN",
       "recorded_review": "PROPOSED",
       "source_location": "desktop/README.md; crates/tracera-tauri/; docs/ARCHITECTURE.md",
-      "dependencies": ["G01"],
+      "dependencies": [
+        "G01"
+      ],
       "current_cells": "Await exact-current source and witness report; frozen goal status is not copied as current verdict"
     },
     {
@@ -288,7 +316,9 @@
       "recorded_status_not_current_verdict": "UNKNOWN",
       "recorded_review": "PROPOSED",
       "source_location": "inputs/TRACERA-Q0-RUNTIME-QUALIFICATION.md",
-      "dependencies": ["G01"],
+      "dependencies": [
+        "G01"
+      ],
       "current_cells": "Await exact-current source and witness report; frozen goal status is not copied as current verdict"
     },
     {
@@ -304,7 +334,9 @@
       "recorded_status_not_current_verdict": "UNKNOWN",
       "recorded_review": "PROPOSED",
       "source_location": "frontend/apps/web/src/pages/projects/views/ApiView.tsx; frontend/apps/web/src/routes/",
-      "dependencies": ["G01"],
+      "dependencies": [
+        "G01"
+      ],
       "current_cells": "Await exact-current source and witness report; frozen goal status is not copied as current verdict"
     },
     {
@@ -336,7 +368,9 @@
       "recorded_status_not_current_verdict": "NOT_RUN",
       "recorded_review": "PROPOSED",
       "source_location": "inputs/docs5-DOSSIER.md:comparators",
-      "dependencies": ["G01"],
+      "dependencies": [
+        "G01"
+      ],
       "current_cells": "Await exact-current source and witness report; frozen goal status is not copied as current verdict"
     },
     {
@@ -352,7 +386,9 @@
       "recorded_status_not_current_verdict": "UNKNOWN",
       "recorded_review": "PROPOSED",
       "source_location": "docs/04-guides/DEPLOYMENT_GUIDE.md; prior heartbeat ledger",
-      "dependencies": ["G01"],
+      "dependencies": [
+        "G01"
+      ],
       "current_cells": "Await exact-current source and witness report; frozen goal status is not copied as current verdict"
     },
     {
@@ -368,7 +404,9 @@
       "recorded_status_not_current_verdict": "NOT_RUN",
       "recorded_review": "PROPOSED",
       "source_location": "No actual user-session/feedback receipt supplied",
-      "dependencies": ["G01"],
+      "dependencies": [
+        "G01"
+      ],
       "current_cells": "Await exact-current source and witness report; frozen goal status is not copied as current verdict"
     },
     {
@@ -384,7 +422,9 @@
       "recorded_status_not_current_verdict": "UNKNOWN",
       "recorded_review": "PROPOSED",
       "source_location": "inputs/TRACERA-BASELINE-PROMISES.csv; inputs/TRACERA-GAP-INVENTORY.csv",
-      "dependencies": ["G01"],
+      "dependencies": [
+        "G01"
+      ],
       "current_cells": "Await exact-current source and witness report; frozen goal status is not copied as current verdict"
     },
     {
@@ -400,7 +440,15 @@
       "recorded_status_not_current_verdict": "UNKNOWN",
       "recorded_review": "PROPOSED",
       "source_location": "README.md; router.rs codex session endpoints; Q1 product observations API",
-      "dependencies": ["G02", "G03", "G04", "G06", "G07", "G15", "G16"],
+      "dependencies": [
+        "G02",
+        "G03",
+        "G04",
+        "G06",
+        "G07",
+        "G15",
+        "G16"
+      ],
       "current_cells": "Await exact-current source and witness report; frozen goal status is not copied as current verdict"
     }
   ],
