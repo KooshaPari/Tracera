@@ -134,6 +134,9 @@ dev_server*.log
 coverage.xml
 htmlcov/
 
-# Hash-pinned evidence artifacts: bytes are attested by SHA256SUMS and
-# must never be reformatted.
+# Hash-pinned evidence artifacts. Their bytes are attested by sibling
+# SHA256SUMS / EVIDENCE-SHA256.json / input-manifest.json manifests, so a
+# formatting pass would break the attestation. Verify with
+# `python3 scripts/verify_evidence_hashes.py`.
+docs/state/**
 docs/audit/readiness/**
