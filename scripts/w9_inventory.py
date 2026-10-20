@@ -2,6 +2,7 @@
 
 import collections
 import csv
+import functools
 import json
 import pathlib
 import re
@@ -9,6 +10,15 @@ import re
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 references = collections.defaultdict(set)
 pattern = re.compile(r"/api/v1/(?:\$\{[^}]+\}|[^`\s\"\x27<>?)])+")
+
+
+def _placeholder(match: "re.Match[str]", counter: list[int]) -> str:
+    """Replace the next ``{...}`` placeholder with ``{paramN}``."""
+    value = "{param" + str(counter[0]) + "}"
+    counter[0] += 1
+    return value
+
+
 for source in (ROOT / "frontend/apps/web/src").rglob("*"):
     if source.suffix not in (".ts", ".tsx") or ".test." in source.name:
         continue
@@ -21,10 +31,10 @@ for source in (ROOT / "frontend/apps/web/src").rglob("*"):
         )
         if "..." in route or ":" in route:
             continue
-        n = iter(range(20))
+        counter = [0]
         route = re.sub(
             r"\{[^}]+\}",
-            lambda _, counter=n: "{param" + str(next(counter)) + "}",
+            functools.partial(_placeholder, counter=counter),
             route,
         )
         references[route].add(source.relative_to(ROOT).as_posix())
@@ -32,9 +42,9 @@ for source in (ROOT / "frontend/apps/web/src").rglob("*"):
 spec_path = "frontend/apps/web/public/specs/openapi.json"
 for route in json.loads((ROOT / spec_path).read_text(encoding="utf-8"))["paths"]:
     route = re.sub(r":([A-Za-z_]+)", r"{\1}", route)
-    n = iter(range(20))
+    counter = [0]
     route = re.sub(
-        r"\{[^}]+\}", lambda _, counter=n: "{param" + str(next(counter)) + "}", route
+        r"\{[^}]+\}", functools.partial(_placeholder, counter=counter), route
     )
     references[route].add(spec_path)
 
@@ -43,7 +53,7 @@ def shape(route):
     return re.sub(r"\{[^}]+\}", "{}", route)
 
 
-registered = {}
+registered: dict[str, str] = {}
 for source in (ROOT / "crates/tracera-server/src").rglob("*.rs"):
     if source.name.startswith("w9") or "test" in source.name:
         continue
