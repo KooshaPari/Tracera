@@ -40,6 +40,27 @@ pub(super) fn routes<S: Clone + Send + Sync + 'static>() -> Router<S> {
         .route("/api/v1/auth/refresh", any(unavailable))
 }
 
+pub(crate) const ROUTES: &[&str] = &[
+    "/api/v1/auth/account",
+    "/api/v1/auth/authkit/authorize",
+    "/api/v1/auth/authkit/callback",
+    "/api/v1/auth/authkit/refresh",
+    "/api/v1/auth/change-password",
+    "/api/v1/auth/profile",
+    "/api/v1/auth/request-verification",
+    "/api/v1/auth/reset-password",
+    "/api/v1/auth/reset-password/confirm",
+    "/api/v1/auth/user",
+    "/api/v1/auth/verify-email",
+    "/auth/me",
+];
+
+pub(crate) fn w9_routes() -> Router<crate::AppState> {
+    ROUTES.iter().fold(Router::new(), |router, path| {
+        router.route(path, any(crate::not_implemented::not_implemented))
+    })
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -97,25 +118,4 @@ mod tests {
     async fn refresh_returns_upstream_owned_501() {
         assert_contract("/api/v1/auth/refresh").await;
     }
-}
-
-pub(crate) const ROUTES: &[&str] = &[
-    "/api/v1/auth/account",
-    "/api/v1/auth/authkit/authorize",
-    "/api/v1/auth/authkit/callback",
-    "/api/v1/auth/authkit/refresh",
-    "/api/v1/auth/change-password",
-    "/api/v1/auth/profile",
-    "/api/v1/auth/request-verification",
-    "/api/v1/auth/reset-password",
-    "/api/v1/auth/reset-password/confirm",
-    "/api/v1/auth/user",
-    "/api/v1/auth/verify-email",
-    "/auth/me",
-];
-
-pub(crate) fn w9_routes() -> Router<crate::AppState> {
-    ROUTES.iter().fold(Router::new(), |router, path| {
-        router.route(path, any(crate::not_implemented::not_implemented))
-    })
 }

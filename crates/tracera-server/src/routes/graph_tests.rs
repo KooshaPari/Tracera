@@ -54,6 +54,8 @@ async fn fixture() -> (Router, Arc<SqliteStore>, Vec<String>) {
         cache: None,
         neo4j: None,
         r2: None,
+        frontend: crate::FrontendState::Ok,
+        frontend_dist: std::path::PathBuf::new(),
     };
     let app = crate::router::build_router(state);
     (app, store, ids)
