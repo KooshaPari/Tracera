@@ -41,6 +41,13 @@ target-version = "py310"
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "N", "UP", "B", "C4", "SIM"]
 
+[tool.mypy]
+# The evidence corpus holds captured observation artifacts, not importable
+# source. Two observation directories both contain a `render.py`, which mypy
+# reports as a duplicate module. Their integrity is enforced by
+# scripts/verify_evidence_hashes.py instead of by type checking.
+exclude = ["^docs/state/"]
+
 [tool.pytest.ini_options]
 # The Python SDK under crates/ has its own pytest project. Collecting it from
 # the repo root imports `tracera` in an environment that only installs this
