@@ -37,14 +37,14 @@ Pure detector counterexamples and UI inventory can proceed alongside schema plan
 
 ## Concrete work packages and acceptance
 
-| Package                                | Scope and concrete result                                                                                                                                               | Dependencies                      | Effort, engineer-days | Primary uncertainty                                    |
-| -------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------- | --------------------: | ------------------------------------------------------ |
-| A. Boundary and artifact qualification | Record retained obligations, canonical runtime/profile and accepted job; freeze source manifest and independent positive/negative oracles; reuse Q0                     | Owner intent and current receipts |                   1-3 | Product meaning and which profiles must ship           |
-| B. Durable canonical product model     | Products/capabilities/accepted baseline revisions, anchors, observations/findings and receipts persist through mounted Store adapters                                   | A                                 |                   5-9 | Schema migration and distinct existing model ownership |
-| C. Correct source import               | Source-qualified external IDs; full paging; idempotency across retry/restart; same key/different bytes conflict; atomic batch or explicitly accepted resumable contract | B                                 |                   4-8 | Current separate writes, collision/replay semantics    |
-| D. Genuine semantic loop               | Fix identity/comparability; real producer observations; explain mismatch, preserve unknowns; source R+1 updates historical/current findings correctly                   | B,C                               |                  6-12 | Detector false positives and source-to-model bridge    |
-| E. Usable frontend                     | Item-only projects discoverable; artifact-X/view-X; complete pages/detail; evidence-backed summary and bounded explanation journey                                      | B-D, partly parallel              |                   5-9 | Frontend/backend contract and real navigation          |
-| F. Reliability and pilot               | Cross-product/private-evidence controls; crash/restart/restore; supported ingress/install; independent unfamiliar-user three-product tasks                              | C-E                               |                  5-10 | Deployment and unanticipated user failures             |
+| Package | Scope and concrete result | Dependencies | Effort, engineer-days | Primary uncertainty |
+|---|---|---|---:|---|
+| A. Boundary and artifact qualification | Record retained obligations, canonical runtime/profile and accepted job; freeze source manifest and independent positive/negative oracles; reuse Q0 | Owner intent and current receipts | 1-3 | Product meaning and which profiles must ship |
+| B. Durable canonical product model | Products/capabilities/accepted baseline revisions, anchors, observations/findings and receipts persist through mounted Store adapters | A | 5-9 | Schema migration and distinct existing model ownership |
+| C. Correct source import | Source-qualified external IDs; full paging; idempotency across retry/restart; same key/different bytes conflict; atomic batch or explicitly accepted resumable contract | B | 4-8 | Current separate writes, collision/replay semantics |
+| D. Genuine semantic loop | Fix identity/comparability; real producer observations; explain mismatch, preserve unknowns; source R+1 updates historical/current findings correctly | B,C | 6-12 | Detector false positives and source-to-model bridge |
+| E. Usable frontend | Item-only projects discoverable; artifact-X/view-X; complete pages/detail; evidence-backed summary and bounded explanation journey | B-D, partly parallel | 5-9 | Frontend/backend contract and real navigation |
+| F. Reliability and pilot | Cross-product/private-evidence controls; crash/restart/restore; supported ingress/install; independent unfamiliar-user three-product tasks | C-E | 5-10 | Deployment and unanticipated user failures |
 
 Ranges overlap; summing rows mechanically is not a schedule. Each includes focused implementation, meaningful tests, review and evidence. Uncertainty should shrink after A/B. Report estimate changes as old -> new with measured evidence and remaining dependencies.
 
@@ -52,11 +52,11 @@ Ranges overlap; summing rows mechanically is not a schedule. Each includes focus
 
 No measured implementation velocity or committed staffing exists. Estimates below are planning judgement with low confidence, assuming reuse of Rust/React/Store foundations, one backend/integration owner plus one frontend/acceptance owner, actual owned sample products and access to the supported environment. Waiting on users/access is separate elapsed time. Agent concurrency is not linear engineer capacity.
 
-| Cumulative milestone from current source |           Optimistic |                 Base |           Conservative | Acceptance meaning                                                                                      |
-| ---------------------------------------- | -------------------: | -------------------: | ---------------------: | ------------------------------------------------------------------------------------------------------- |
-| Valuable CVP                             |  14-24 engineer-days |  24-44 engineer-days |    44-74 engineer-days | One real discrepancy loop, selected real frontend and restart/negative controls                         |
-| Unfamiliar-user pilot                    |  18-30 engineer-days |  28-50 engineer-days |    50-85 engineer-days | Three owned products, source change/restart, independent operator and value evidence                    |
-| Broad retained v1                        | 65-110 engineer-days | 95-215 engineer-days | 180-320+ engineer-days | Every explicitly retained obligation has correct implementation and accepted supported-profile evidence |
+| Cumulative milestone from current source | Optimistic | Base | Conservative | Acceptance meaning |
+|---|---:|---:|---:|---|
+| Valuable CVP | 14-24 engineer-days | 24-44 engineer-days | 44-74 engineer-days | One real discrepancy loop, selected real frontend and restart/negative controls |
+| Unfamiliar-user pilot | 18-30 engineer-days | 28-50 engineer-days | 50-85 engineer-days | Three owned products, source change/restart, independent operator and value evidence |
+| Broad retained v1 | 65-110 engineer-days | 95-215 engineer-days | 180-320+ engineer-days | Every explicitly retained obligation has correct implementation and accepted supported-profile evidence |
 
 Illustration only: two experienced engineers achieving 1.2-1.5 effective engineer-days per working day imply base CVP roughly 4-8 working weeks, pilot roughly 4-9, broad v1 roughly 13-36. No actual capacity, start date or finish date is asserted. Q0's completion modestly reduces the old 25-45 CVP base to 24-44; it does not eliminate the semantic pipeline. Broad v1 has no defensible upper bound until historical retained scope and dynamic dependencies are decided. Estimates are not a reason to silently retire obligations.
 
@@ -64,18 +64,18 @@ Illustration only: two experienced engineers achieving 1.2-1.5 effective enginee
 
 After the first coherent job, disposition every baseline record without losing provenance. The seven indexed sources and 652 promise records are discovery material, not an accepted backlog of 652 equally sized tasks. Maintain a closure ledger with source promise, current contract, implementation owner, evidence profile, dependency, disposition and user impact. Suggested sequencing:
 
-| Retained family                  | Finish requirement                                                                                   | Prioritization rationale                                   |
-| -------------------------------- | ---------------------------------------------------------------------------------------------------- | ---------------------------------------------------------- |
-| Product/identity/import/model    | Correct complete durable semantic model and replay/reconciliation                                    | Core dependency for every meaningful explanation           |
-| Source/evidence/graph/search     | Qualified anchors, comparability, bounded navigation, affected consumers, explicit unsupported edges | Makes findings understandable and trustworthy              |
-| Artifact/specification UI        | Exact type/product/data completeness, real detail/summary and verification evidence                  | Prevents misleading visible success                        |
-| Authoring/work management        | Real retained create/edit/link/workflow operations, validation and durable history                   | Finish promised breadth after model ownership settles      |
-| QA/execution/analytics/reporting | Actual run producers, result provenance, correct denominators and non-fabricated reporting           | Records alone are not execution or compliance              |
-| Integrations/collaboration       | Real scoped roundtrips, conflict/retry/privacy controls and failure contracts                        | Each integration adds external lifecycle cost              |
-| Agent traces/sessions/memory     | Demonstrated durable contribution to accepted product purpose                                        | Resolve observability vs product-model intent explicitly   |
-| UI/API/MCP/CLI profiles          | Same canonical IDs, ownership, errors and outcome across required interfaces                         | Avoid separate demos masquerading as parity                |
-| Security/release/operations      | Accepted authorization, backup/recovery, install/update and supported artifact matrix                | Local build differs from released and installed acceptance |
-| Documentation/quality/closure    | Truthful capabilities, enforced numeric gates, independent negative controls, dated closure receipts | Completion is evidence, not route or task counts           |
+| Retained family | Finish requirement | Prioritization rationale |
+|---|---|---|
+| Product/identity/import/model | Correct complete durable semantic model and replay/reconciliation | Core dependency for every meaningful explanation |
+| Source/evidence/graph/search | Qualified anchors, comparability, bounded navigation, affected consumers, explicit unsupported edges | Makes findings understandable and trustworthy |
+| Artifact/specification UI | Exact type/product/data completeness, real detail/summary and verification evidence | Prevents misleading visible success |
+| Authoring/work management | Real retained create/edit/link/workflow operations, validation and durable history | Finish promised breadth after model ownership settles |
+| QA/execution/analytics/reporting | Actual run producers, result provenance, correct denominators and non-fabricated reporting | Records alone are not execution or compliance |
+| Integrations/collaboration | Real scoped roundtrips, conflict/retry/privacy controls and failure contracts | Each integration adds external lifecycle cost |
+| Agent traces/sessions/memory | Demonstrated durable contribution to accepted product purpose | Resolve observability vs product-model intent explicitly |
+| UI/API/MCP/CLI profiles | Same canonical IDs, ownership, errors and outcome across required interfaces | Avoid separate demos masquerading as parity |
+| Security/release/operations | Accepted authorization, backup/recovery, install/update and supported artifact matrix | Local build differs from released and installed acceptance |
+| Documentation/quality/closure | Truthful capabilities, enforced numeric gates, independent negative controls, dated closure receipts | Completion is evidence, not route or task counts |
 
 Do not spend the whole broad-v1 allowance converting stubs individually without grouping capabilities by user outcome. One route can support several jobs; several aliases can represent one capability. Explicit unavailability remains preferable to fabricated successful mocks while implementing real behavior.
 
