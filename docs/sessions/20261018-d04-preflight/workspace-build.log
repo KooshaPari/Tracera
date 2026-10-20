@@ -1,7 +1,3 @@
-   Compiling bitflags v2.13.0
-   Compiling security-framework v3.7.0
-   Compiling tower-http v0.6.11
-   Compiling rustls-platform-verifier v0.6.2
-   Compiling reqwest v0.13.1
-   Compiling tracera-cli v0.1.0 (/tmp/tracera-d04-preflight/crates/tracera-cli)
-    Finished `dev` profile [unoptimized + debuginfo] target(s) in 18.16s
+
+warning: `tracera-cli` (bin "tracera") generated 1 warning
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 1.87s
