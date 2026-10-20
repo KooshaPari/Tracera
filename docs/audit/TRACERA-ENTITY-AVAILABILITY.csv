@@ -1,0 +1,7 @@
+project,entity_type,route,method,frontend_callsite,status,content_type,response_keys,counts_and_flags,classification,detail_route_disposition
+TRACERA,contracts,/api/v1/contracts?project_id={projectId},GET,contract.ts:70,200,application/json,count;data;items;results;stub;total,items=0;data=0;results=0;total=0;count=0;stub=True,EXPLICIT_STUB,No real typed entity IDs available
+TRACERA,features,/api/v1/features?project_id={projectId},GET,feature.ts:68,200,application/json,count;data;items;results;stub;total,items=0;data=0;results=0;total=0;count=0;stub=True,EXPLICIT_STUB,No real typed entity IDs available
+TRACERA,scenarios,/api/v1/specifications/projects/{projectId}/scenarios?,GET,scenario.ts:236,200,application/json,count;data;items;results;stub;total,items=0;data=0;results=0;total=0;count=0;stub=True,EXPLICIT_STUB,No real typed entity IDs available
+CIVIS,contracts,/api/v1/contracts?project_id={projectId},GET,contract.ts:70,200,application/json,count;data;items;results;stub;total,items=0;data=0;results=0;total=0;count=0;stub=True,EXPLICIT_STUB,No real typed entity IDs available
+CIVIS,features,/api/v1/features?project_id={projectId},GET,feature.ts:68,200,application/json,count;data;items;results;stub;total,items=0;data=0;results=0;total=0;count=0;stub=True,EXPLICIT_STUB,No real typed entity IDs available
+CIVIS,scenarios,/api/v1/specifications/projects/{projectId}/scenarios?,GET,scenario.ts:236,200,application/json,count;data;items;results;stub;total,items=0;data=0;results=0;total=0;count=0;stub=True,EXPLICIT_STUB,No real typed entity IDs available
