@@ -14,20 +14,31 @@ vi.mock("@/api/client", () => ({
     apiClient: {
       GET: vi.fn(),
     },
-    safeApiCall: vi.fn((promise) => promise),
   },
+}));
+
+vi.mock("@/api/availability", () => ({
+  requireAvailable: vi.fn(
+    async (promise: Promise<{ data?: unknown; error?: unknown; response: Response }>) => {
+      const { data, response } = await promise;
+      if (!response.ok)
+        throw new Error(response.status === 501 ? "Not implemented yet" : "Service unavailable");
+      if (data === undefined) throw new Error("Invalid response from service");
+      return data;
+    },
+  ),
+  invalidResponse: vi.fn(() => {
+    throw new Error("Invalid response from service");
+  }),
 }));
 
 import { client } from "@/api/client";
 
 import { mockItems, mockLinks } from "../mocks/data";
 
-const { apiClient, safeApiCall } = client;
+const { apiClient } = client;
 
-// TODO(#1137 mock drift): quarantined pre-existing failure on main - impl moved from
-// safeApiCall to requireAvailable(get(...)) in #1137 and these mocks still target the old
-// contract. Repair tracked as follow-up to PR #1172.
-describe.skip("Traceability Matrix API", () => {
+describe("Traceability Matrix API", () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -45,7 +56,7 @@ describe.skip("Traceability Matrix API", () => {
         links: mockLinks,
       };
 
-      vi.mocked(safeApiCall).mockResolvedValue({
+      vi.mocked(apiClient.GET).mockResolvedValue({
         data: mockMatrix,
         error: undefined,
         response: new Response(),
@@ -59,32 +70,24 @@ describe.skip("Traceability Matrix API", () => {
       expect(result.links).toHaveLength(mockLinks.length);
     });
 
-    it("should handle empty matrix", async () => {
-      vi.mocked(safeApiCall).mockResolvedValue({
+    it("should propagate error via requireAvailable", async () => {
+      vi.mocked(apiClient.GET).mockResolvedValue({
         data: undefined,
+        error: undefined,
+        response: new Response(null, { status: 503 }),
+      });
+
+      await expect(fetchMatrix("proj-1")).rejects.toThrow("Service unavailable");
+    });
+
+    it("should throw invalidResponse for malformed data", async () => {
+      vi.mocked(apiClient.GET).mockResolvedValue({
+        data: { coverage: "invalid" },
         error: undefined,
         response: new Response(),
       });
 
-      const result = await fetchMatrix("proj-empty");
-
-      expect(result).toEqual({
-        coverage: { percentage: 0, total: 0, traced: 0, untraced: 0 },
-        items: [],
-        links: [],
-      });
-    });
-
-    it("should fallback to empty matrix on error", async () => {
-      vi.mocked(safeApiCall).mockRejectedValue(new Error("API call failed"));
-
-      const result = await fetchMatrix("proj-1");
-
-      expect(result).toEqual({
-        coverage: { percentage: 0, total: 0, traced: 0, untraced: 0 },
-        items: [],
-        links: [],
-      });
+      await expect(fetchMatrix("proj-1")).rejects.toThrow("Invalid response from service");
     });
 
     it("should include traced/untraced coverage statistics", async () => {
@@ -99,7 +102,7 @@ describe.skip("Traceability Matrix API", () => {
         links: mockLinks,
       };
 
-      vi.mocked(safeApiCall).mockResolvedValue({
+      vi.mocked(apiClient.GET).mockResolvedValue({
         data: mockMatrix,
         error: undefined,
         response: new Response(),
@@ -113,7 +116,7 @@ describe.skip("Traceability Matrix API", () => {
     });
 
     it("should call API with correct project ID", async () => {
-      vi.mocked(safeApiCall).mockResolvedValue({
+      vi.mocked(apiClient.GET).mockResolvedValue({
         data: {
           coverage: { percentage: 0, total: 0, traced: 0, untraced: 0 },
           items: [],
@@ -125,7 +128,6 @@ describe.skip("Traceability Matrix API", () => {
 
       await fetchMatrix("specific-proj-123");
 
-      expect(safeApiCall).toHaveBeenCalled();
       expect(apiClient.GET).toHaveBeenCalledWith(
         "/api/v1/projects/{id}/matrix",
         expect.objectContaining({
@@ -137,9 +139,9 @@ describe.skip("Traceability Matrix API", () => {
 
   describe(exportMatrix, () => {
     it("should export matrix as CSV", async () => {
-      const mockData = { items: mockItems, links: mockLinks };
-      vi.mocked(safeApiCall).mockResolvedValue({
-        data: mockData,
+      const mockBlob = new Blob(["csv-data"], { type: "text/csv" });
+      vi.mocked(apiClient.GET).mockResolvedValue({
+        data: mockBlob,
         error: undefined,
         response: new Response(),
       });
@@ -147,13 +149,14 @@ describe.skip("Traceability Matrix API", () => {
       const result = await exportMatrix("proj-1", "csv");
 
       expect(result).toBeInstanceOf(Blob);
-      expect(result.type).toBe("application/json");
     });
 
     it("should export matrix as JSON", async () => {
-      const mockData = { items: mockItems, links: mockLinks };
-      vi.mocked(safeApiCall).mockResolvedValue({
-        data: mockData,
+      const mockBlob = new Blob(['{"items":[],"links":[]}'], {
+        type: "application/json",
+      });
+      vi.mocked(apiClient.GET).mockResolvedValue({
+        data: mockBlob,
         error: undefined,
         response: new Response(),
       });
@@ -161,13 +164,14 @@ describe.skip("Traceability Matrix API", () => {
       const result = await exportMatrix("proj-1", "json");
 
       expect(result).toBeInstanceOf(Blob);
-      expect(result.type).toBe("application/json");
     });
 
     it("should export matrix as XLSX", async () => {
-      const mockData = { items: mockItems, links: mockLinks };
-      vi.mocked(safeApiCall).mockResolvedValue({
-        data: mockData,
+      const mockBlob = new Blob(["xlsx-data"], {
+        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      });
+      vi.mocked(apiClient.GET).mockResolvedValue({
+        data: mockBlob,
         error: undefined,
         response: new Response(),
       });
@@ -177,34 +181,30 @@ describe.skip("Traceability Matrix API", () => {
       expect(result).toBeInstanceOf(Blob);
     });
 
-    it("should include data in blob content", async () => {
-      const mockData = { items: mockItems, links: mockLinks };
-      vi.mocked(safeApiCall).mockResolvedValue({
-        data: mockData,
+    it("should propagate error via requireAvailable", async () => {
+      vi.mocked(apiClient.GET).mockResolvedValue({
+        data: undefined,
+        error: undefined,
+        response: new Response(null, { status: 503 }),
+      });
+
+      await expect(exportMatrix("proj-1", "csv")).rejects.toThrow("Service unavailable");
+    });
+
+    it("should throw invalidResponse for non-blob data", async () => {
+      vi.mocked(apiClient.GET).mockResolvedValue({
+        data: { items: [] },
         error: undefined,
         response: new Response(),
       });
 
-      const result = await exportMatrix("proj-1", "json");
-
-      expect(result).toBeInstanceOf(Blob);
-      expect(result.size).toBeGreaterThan(0);
-      expect(result.type).toBe("application/json");
-    });
-
-    it("should return empty blob on export error", async () => {
-      vi.mocked(safeApiCall).mockRejectedValue(new Error("Export failed"));
-
-      const result = await exportMatrix("proj-1", "csv");
-
-      expect(result).toBeInstanceOf(Blob);
-      expect(result.type).toBe("application/json");
-      expect(result.size).toBeGreaterThan(0);
+      await expect(exportMatrix("proj-1", "csv")).rejects.toThrow("Invalid response from service");
     });
 
     it("should call API with correct export format", async () => {
-      vi.mocked(safeApiCall).mockResolvedValue({
-        data: {},
+      const mockBlob = new Blob(["data"]);
+      vi.mocked(apiClient.GET).mockResolvedValue({
+        data: mockBlob,
         error: undefined,
         response: new Response(),
       });
@@ -223,8 +223,9 @@ describe.skip("Traceability Matrix API", () => {
     });
 
     it("should support all export formats", async () => {
-      vi.mocked(safeApiCall).mockResolvedValue({
-        data: {},
+      const mockBlob = new Blob(["data"]);
+      vi.mocked(apiClient.GET).mockResolvedValue({
+        data: mockBlob,
         error: undefined,
         response: new Response(),
       });
@@ -238,17 +239,9 @@ describe.skip("Traceability Matrix API", () => {
     });
 
     it("should handle large datasets in export", async () => {
-      const largeItems = Array.from({ length: 100 }, (_, i) => ({
-        ...mockItems[0],
-        id: `item-${i}`,
-      }));
-      const largeLinks = Array.from({ length: 150 }, (_, i) => ({
-        ...mockLinks[0],
-        id: `link-${i}`,
-      }));
-
-      vi.mocked(safeApiCall).mockResolvedValue({
-        data: { items: largeItems, links: largeLinks },
+      const mockBlob = new Blob(["x".repeat(100000)]);
+      vi.mocked(apiClient.GET).mockResolvedValue({
+        data: mockBlob,
         error: undefined,
         response: new Response(),
       });
@@ -261,51 +254,35 @@ describe.skip("Traceability Matrix API", () => {
   });
 
   describe("Matrix API error handling", () => {
-    it("should gracefully handle network errors", async () => {
-      vi.mocked(safeApiCall).mockRejectedValue(new Error("Network error"));
+    it("should propagate network errors from requireAvailable", async () => {
+      vi.mocked(apiClient.GET).mockRejectedValue(new Error("Network error"));
 
-      const result = await fetchMatrix("proj-1");
-
-      expect(result.coverage.total).toBe(0);
-      expect(result.items).toEqual([]);
-      expect(result.links).toEqual([]);
+      await expect(fetchMatrix("proj-1")).rejects.toThrow("Network error");
     });
 
-    it("should handle null response data", async () => {
-      vi.mocked(safeApiCall).mockResolvedValue({
+    it("should throw on null response data", async () => {
+      vi.mocked(apiClient.GET).mockResolvedValue({
         data: null,
         error: undefined,
         response: new Response(),
       });
 
-      const result = await fetchMatrix("proj-1");
-
-      expect(result).toEqual({
-        coverage: { percentage: 0, total: 0, traced: 0, untraced: 0 },
-        items: [],
-        links: [],
-      });
+      await expect(fetchMatrix("proj-1")).rejects.toThrow("Invalid response from service");
     });
 
-    it("should handle partial matrix data", async () => {
+    it("should throw invalidResponse on partial matrix data", async () => {
       const partialMatrix: Partial<TraceabilityMatrix> = {
         items: mockItems,
         // Links is missing
       };
 
-      vi.mocked(safeApiCall).mockResolvedValue({
+      vi.mocked(apiClient.GET).mockResolvedValue({
         data: partialMatrix,
         error: undefined,
         response: new Response(),
       });
 
-      const result = await fetchMatrix("proj-1");
-
-      expect(result).toEqual({
-        coverage: { percentage: 0, total: 0, traced: 0, untraced: 0 },
-        items: [],
-        links: [],
-      });
+      await expect(fetchMatrix("proj-1")).rejects.toThrow("Invalid response from service");
     });
   });
 });

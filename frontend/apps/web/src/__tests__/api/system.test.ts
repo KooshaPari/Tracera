@@ -12,73 +12,127 @@ vi.mock("@/api/client", () => ({
     apiClient: {
       GET: vi.fn(),
     },
+    ApiError: class ApiError extends Error {
+      status: number;
+      statusText: string;
+      constructor(status: number, statusText: string) {
+        super(`API Error ${status}: ${statusText}`);
+        this.status = status;
+        this.statusText = statusText;
+      }
+    },
   },
 }));
+
+vi.mock("@/api/availability", () => ({
+  requireAvailable: vi.fn(
+    async (promise: Promise<{ data?: unknown; error?: unknown; response: Response }>) => {
+      const { data, response } = await promise;
+      if (!response.ok)
+        throw new Error(response.status === 501 ? "Not implemented yet" : "Service unavailable");
+      if (data === undefined) throw new Error("Invalid response from service");
+      return data;
+    },
+  ),
+  invalidResponse: vi.fn(() => {
+    throw new Error("Invalid response from service");
+  }),
+}));
+
 vi.mock("@/api/mcp-config", () => ({
   getMcpConfig: vi.fn(),
 }));
 
 import { client } from "@/api/client";
-import { getMcpConfig } from "@/api/mcp-config";
 
 const { apiClient } = client;
 
-// TODO(#1137 mock drift): quarantined pre-existing failure on main - impl moved from
-// safeApiCall to requireAvailable(get(...)) in #1137 and these mocks still target the old
-// contract. Repair tracked as follow-up to PR #1172.
-describe.skip("System API", () => {
+describe("System API", () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
   describe(fetchSystemStatus, () => {
     it("should fetch system status successfully", async () => {
-      const mockStatus = {
+      const mockApiResponse = {
         queuedJobs: 2,
-        status: "healthy" as const,
-        uptime: 99.9,
+        status: "healthy",
+        uptime_seconds: 99.9,
         version: "1.0.0",
       };
       vi.mocked(apiClient.GET).mockResolvedValue({
-        data: mockStatus,
+        data: mockApiResponse,
         error: undefined,
         response: new Response(),
-      });
-      vi.mocked(getMcpConfig).mockResolvedValue({
-        auth_mode: "authkit",
-        mcp_base_url: "http://localhost:9000",
-        requires_auth: true,
       });
 
       const result = await fetchSystemStatus();
       expect(result).toEqual({
-        ...mockStatus,
-        mcp: {
-          authMode: "authkit",
-          baseUrl: "http://localhost:9000",
-          requiresAuth: true,
-        },
+        queuedJobs: 2,
+        status: "healthy",
+        uptime: 99.9,
+        version: "1.0.0",
       });
       expect(apiClient.GET).toHaveBeenCalledWith("/api/v1/health", {});
     });
 
-    it("should return mock data when endpoint fails", async () => {
+    it("should propagate error via requireAvailable", async () => {
       vi.mocked(apiClient.GET).mockRejectedValue(new Error("Network error"));
-      vi.mocked(getMcpConfig).mockResolvedValue({
-        mcp_base_url: "http://localhost:9000",
+
+      await expect(fetchSystemStatus()).rejects.toThrow("Network error");
+    });
+
+    it("should normalize ok status to healthy", async () => {
+      const responseData = {
+        status: "ok",
+        uptime_seconds: 50,
+      };
+      vi.mocked(apiClient.GET).mockResolvedValue({
+        data: responseData,
+        error: undefined,
+        response: new Response(),
       });
 
       const result = await fetchSystemStatus();
-      expect(result).toEqual({
-        queuedJobs: 0,
-        status: "healthy",
-        uptime: 99.9,
-      });
+      expect(result.status).toBe("healthy");
+      expect(result.uptime).toBe(50);
     });
 
-    it("should merge response data with defaults", async () => {
+    it("should normalize ready status to healthy", async () => {
       const responseData = {
-        status: "degraded" as const,
+        status: "ready",
+        uptime_seconds: 100,
+      };
+      vi.mocked(apiClient.GET).mockResolvedValue({
+        data: responseData,
+        error: undefined,
+        response: new Response(),
+      });
+
+      const result = await fetchSystemStatus();
+      expect(result.status).toBe("healthy");
+      expect(result.uptime).toBe(100);
+    });
+
+    it("should pass through degraded status", async () => {
+      const responseData = {
+        status: "degraded",
+        uptime_seconds: 50,
+      };
+      vi.mocked(apiClient.GET).mockResolvedValue({
+        data: responseData,
+        error: undefined,
+        response: new Response(),
+      });
+
+      const result = await fetchSystemStatus();
+      expect(result.status).toBe("degraded");
+      expect(result.uptime).toBe(50);
+    });
+
+    it("should throw invalidResponse when uptime is missing", async () => {
+      const responseData = {
+        status: "degraded",
         version: "2.0.0",
       };
       vi.mocked(apiClient.GET).mockResolvedValue({
@@ -86,44 +140,22 @@ describe.skip("System API", () => {
         error: undefined,
         response: new Response(),
       });
-      vi.mocked(getMcpConfig).mockResolvedValue({
-        auth_mode: "authkit",
-        mcp_base_url: "http://localhost:9000",
-        requires_auth: true,
-      });
 
-      const result = await fetchSystemStatus();
-      expect(result).toEqual({
-        status: "healthy", // Overridden by response
-        uptime: 99.9,
-        queuedJobs: 0,
-        mcp: {
-          authMode: "authkit",
-          baseUrl: "http://localhost:9000",
-          requiresAuth: true,
-        },
-        ...responseData,
-      });
-      expect(result.status).toBe("degraded");
-      expect(result.version).toBe("2.0.0");
+      await expect(fetchSystemStatus()).rejects.toThrow("Invalid response from service");
     });
 
-    it("should handle empty response data", async () => {
+    it("should throw invalidResponse when status is invalid", async () => {
+      const responseData = {
+        status: "unknown_status",
+        uptime_seconds: 50,
+      };
       vi.mocked(apiClient.GET).mockResolvedValue({
-        data: null,
+        data: responseData,
         error: undefined,
         response: new Response(),
       });
-      vi.mocked(getMcpConfig).mockResolvedValue({
-        mcp_base_url: "http://localhost:9000",
-      });
 
-      const result = await fetchSystemStatus();
-      expect(result).toEqual({
-        queuedJobs: 0,
-        status: "healthy",
-        uptime: 99.9,
-      });
+      await expect(fetchSystemStatus()).rejects.toThrow("Invalid response from service");
     });
   });
 });

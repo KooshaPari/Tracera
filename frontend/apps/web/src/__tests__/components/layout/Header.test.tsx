@@ -5,6 +5,19 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 // Mock the router hooks BEFORE any imports that use them
+vi.mock("@/hooks/useNotifications", () => ({
+  useNotifications: () => ({
+    deleteNotification: { mutate: vi.fn() },
+    error: null,
+    isConnected: false,
+    isLoading: false,
+    markAllRead: { mutate: vi.fn() },
+    markAsRead: { mutate: vi.fn() },
+    notifications: [],
+    unreadCount: 0,
+  }),
+}));
+
 vi.mock("@tanstack/react-router", () => ({
   useLocation: () => ({ pathname: "/" }),
   useMatches: () => [],
@@ -33,10 +46,7 @@ const renderHeader = () => {
   );
 };
 
-// TODO(#1137 mock drift): quarantined pre-existing failure on main - impl moved from
-// safeApiCall to requireAvailable(get(...)) in #1137 and these mocks still target the old
-// contract. Repair tracked as follow-up to PR #1172.
-describe.skip(Header, () => {
+describe(Header, () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -53,9 +63,7 @@ describe.skip(Header, () => {
 
   it("displays the unauthenticated sign-in action", () => {
     renderHeader();
-    expect(
-      screen.getByRole("button", { name: /sign in/i }),
-    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /sign in/i })).toBeInTheDocument();
   });
 
   it("displays the notification status", () => {

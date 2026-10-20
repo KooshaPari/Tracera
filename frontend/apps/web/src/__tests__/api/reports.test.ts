@@ -1,15 +1,13 @@
 /**
  * Tests for Reports API
+ *
+ * Note: fetchReportTemplates and generateReport are currently 501 stubs
+ * (see reports.ts). Tests assert the honest-error contract per #1137.
  */
 
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import {
-  exportProject,
-  fetchReportTemplates,
-  generateReport,
-  importProject,
-} from "@/api/reports";
+import { exportProject, fetchReportTemplates, generateReport, importProject } from "@/api/reports";
 
 // Mock the endpoints
 vi.mock("@/api/endpoints", () => ({
@@ -21,177 +19,43 @@ vi.mock("@/api/endpoints", () => ({
 
 import { exportImportApi } from "@/api/endpoints";
 
-// TODO(#1137 mock drift): quarantined pre-existing failure on main - impl moved from
-// safeApiCall to requireAvailable(get(...)) in #1137 and these mocks still target the old
-// contract. Repair tracked as follow-up to PR #1172.
-describe.skip("Reports API", () => {
+describe("Reports API", () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
   describe(fetchReportTemplates, () => {
-    it("should fetch report templates", async () => {
-      const templates = await fetchReportTemplates();
-
-      expect(templates).toBeInstanceOf(Array);
-      expect(templates.length).toBeGreaterThan(0);
-    });
-
-    it("should return coverage report template", async () => {
-      const templates = await fetchReportTemplates();
-      const coverageTemplate = templates.find((t) => t.type === "coverage");
-
-      expect(coverageTemplate).toBeDefined();
-      expect(coverageTemplate?.name).toBe("Coverage Report");
-      expect(coverageTemplate?.format).toBe("pdf");
-    });
-
-    it("should return traceability report template", async () => {
-      const templates = await fetchReportTemplates();
-      const traceabilityTemplate = templates.find(
-        (t) => t.type === "traceability",
-      );
-
-      expect(traceabilityTemplate).toBeDefined();
-      expect(traceabilityTemplate?.name).toBe("Traceability Matrix");
-      expect(traceabilityTemplate?.format).toBe("xlsx");
-    });
-
-    it("should return status report template", async () => {
-      const templates = await fetchReportTemplates();
-      const statusTemplate = templates.find((t) => t.type === "status");
-
-      expect(statusTemplate).toBeDefined();
-      expect(statusTemplate?.name).toBe("Status Report");
-      expect(statusTemplate?.format).toBe("html");
-    });
-
-    it("should return progress report template", async () => {
-      const templates = await fetchReportTemplates();
-      const progressTemplate = templates.find((t) => t.type === "progress");
-
-      expect(progressTemplate).toBeDefined();
-      expect(progressTemplate?.name).toBe("Progress Report");
-      expect(progressTemplate?.format).toBe("pdf");
-    });
-
-    it("should have all required template fields", async () => {
-      const templates = await fetchReportTemplates();
-
-      templates.forEach((template) => {
-        expect(template).toHaveProperty("id");
-        expect(template).toHaveProperty("name");
-        expect(template).toHaveProperty("description");
-        expect(template).toHaveProperty("type");
-        expect(template).toHaveProperty("format");
+    it("should throw 501 Not implemented yet", async () => {
+      await expect(fetchReportTemplates()).rejects.toMatchObject({
+        status: 501,
+        statusText: "Not implemented yet",
       });
     });
 
-    it("should have unique template IDs", async () => {
-      const templates = await fetchReportTemplates();
-      const ids = templates.map((t) => t.id);
-
-      expect(new Set(ids).size).toBe(ids.length);
-    });
-
-    it("should support valid report types", async () => {
-      const templates = await fetchReportTemplates();
-      const validTypes = [
-        "coverage",
-        "traceability",
-        "status",
-        "progress",
-        "custom",
-      ];
-
-      templates.forEach((template) => {
-        expect(validTypes).toContain(template.type);
-      });
-    });
-
-    it("should support valid export formats", async () => {
-      const templates = await fetchReportTemplates();
-      const validFormats = ["pdf", "html", "json", "csv", "xlsx"];
-
-      templates.forEach((template) => {
-        expect(validFormats).toContain(template.format);
+    it("should throw error with not_implemented payload", async () => {
+      await expect(fetchReportTemplates()).rejects.toMatchObject({
+        data: expect.objectContaining({
+          error: "not_implemented",
+          route: "/api/v1/reports/templates",
+        }),
       });
     });
   });
 
   describe(generateReport, () => {
-    it("should generate a report with timestamp", async () => {
-      const report = await generateReport("proj-1", "1", "pdf");
-
-      expect(report).toHaveProperty("id");
-      expect(report).toHaveProperty("generatedAt");
-      expect(new Date(report.generatedAt)).toBeInstanceOf(Date);
+    it("should throw 501 Not implemented yet", async () => {
+      await expect(generateReport("proj-1", "1", "pdf")).rejects.toMatchObject({
+        status: 501,
+        statusText: "Not implemented yet",
+      });
     });
 
-    it("should generate report with correct metadata", async () => {
-      const report = await generateReport("proj-1", "1", "pdf");
-
-      expect(report.templateId).toBe("1");
-      expect(report.projectId).toBe("proj-1");
-      expect(report.format).toBe("pdf");
-    });
-
-    it("should generate unique report IDs", async () => {
-      const report1 = await generateReport("proj-1", "1", "pdf");
-      // Small delay to ensure different timestamp
-      await new Promise((resolve) => setTimeout(resolve, 10));
-      const report2 = await generateReport("proj-1", "1", "pdf");
-
-      expect(report1.id).not.toBe(report2.id);
-    });
-
-    it("should include data object in report", async () => {
-      const report = await generateReport("proj-1", "1", "pdf");
-
-      expect(report).toHaveProperty("data");
-      expect(typeof report.data).toBe("object");
-    });
-
-    it("should support different report formats", async () => {
-      const formats = ["pdf", "html", "json", "csv", "xlsx"];
-
-      for (const format of formats) {
-        const report = await generateReport("proj-1", "1", format);
-        expect(report.format).toBe(format);
-      }
-    });
-
-    it("should support different template IDs", async () => {
-      const templateIds = ["1", "2", "3", "4"];
-
-      for (const templateId of templateIds) {
-        const report = await generateReport("proj-1", templateId, "pdf");
-        expect(report.templateId).toBe(templateId);
-      }
-    });
-
-    it("should preserve project context in report", async () => {
-      const projectIds = ["proj-1", "proj-2", "proj-3"];
-
-      for (const projectId of projectIds) {
-        const report = await generateReport(projectId, "1", "pdf");
-        expect(report.projectId).toBe(projectId);
-      }
-    });
-
-    it("should generate report with ISO timestamp", async () => {
-      const report = await generateReport("proj-1", "1", "pdf");
-
-      expect(report.generatedAt).toMatch(/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/);
-    });
-
-    it("should include report metadata", async () => {
-      const report = await generateReport("proj-1", "coverage", "pdf");
-
-      expect(report).toMatchObject({
-        format: "pdf",
-        projectId: "proj-1",
-        templateId: "coverage",
+    it("should throw error with not_implemented payload", async () => {
+      await expect(generateReport("proj-1", "1", "pdf")).rejects.toMatchObject({
+        data: expect.objectContaining({
+          error: "not_implemented",
+          route: "/api/v1/reports",
+        }),
       });
     });
   });
@@ -223,9 +87,7 @@ describe.skip("Reports API", () => {
 
       await exportProject("specific-project-id");
 
-      expect(exportImportApi.exportProject).toHaveBeenCalledWith(
-        "specific-project-id",
-      );
+      expect(exportImportApi.exportProject).toHaveBeenCalledWith("specific-project-id");
     });
   });
 
@@ -281,60 +143,29 @@ describe.skip("Reports API", () => {
   });
 
   describe("Report API error handling", () => {
-    it("should handle template fetch errors gracefully", async () => {
-      // Templates are hardcoded, so should always succeed
-      const templates = await fetchReportTemplates();
-      expect(templates).toBeDefined();
+    it("fetchReportTemplates should throw 501 as honest error", async () => {
+      await expect(fetchReportTemplates()).rejects.toMatchObject({
+        status: 501,
+      });
     });
 
-    it("should generate reports even without data", async () => {
-      const report = await generateReport("proj-1", "1", "pdf");
-
-      expect(report.data).toBeDefined();
+    it("generateReport should throw 501 as honest error", async () => {
+      await expect(generateReport("proj-1", "1", "pdf")).rejects.toMatchObject({
+        status: 501,
+      });
     });
 
     it("should handle export errors", async () => {
-      vi.mocked(exportImportApi.exportProject).mockRejectedValue(
-        new Error("Export failed"),
-      );
+      vi.mocked(exportImportApi.exportProject).mockRejectedValue(new Error("Export failed"));
 
       await expect(exportProject("proj-1")).rejects.toThrow("Export failed");
     });
 
     it("should handle import errors", async () => {
       const mockFile = new File(["invalid"], "bad.json");
-      vi.mocked(exportImportApi.importProject).mockRejectedValue(
-        new Error("Import failed"),
-      );
+      vi.mocked(exportImportApi.importProject).mockRejectedValue(new Error("Import failed"));
 
       await expect(importProject(mockFile)).rejects.toThrow("Import failed");
-    });
-  });
-
-  describe("Report types and formats", () => {
-    it("should have templates for all report types", async () => {
-      const templates = await fetchReportTemplates();
-      const types = templates.map((t) => t.type);
-
-      expect(types).toContain("coverage");
-      expect(types).toContain("traceability");
-      expect(types).toContain("status");
-      expect(types).toContain("progress");
-    });
-
-    it("should return correct number of templates", async () => {
-      const templates = await fetchReportTemplates();
-
-      expect(templates).toHaveLength(4);
-    });
-
-    it("should have valid descriptions for all templates", async () => {
-      const templates = await fetchReportTemplates();
-
-      templates.forEach((template) => {
-        expect(template.description).toBeTruthy();
-        expect(template.description.length).toBeGreaterThan(0);
-      });
     });
   });
 });
