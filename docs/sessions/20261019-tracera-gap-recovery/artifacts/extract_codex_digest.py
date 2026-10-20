@@ -10,6 +10,7 @@ Outputs, per file:
   - shell commands (truncated)
   - file writes / patches (paths only)
 """
+
 import json
 import sys
 from collections import Counter, defaultdict
@@ -37,7 +38,12 @@ def text_of_content(content):
         if not isinstance(item, dict):
             continue
         t = item.get("type")
-        if t == "input_text" or t == "output_text" or t == "text" or t == "summary_text":
+        if (
+            t == "input_text"
+            or t == "output_text"
+            or t == "text"
+            or t == "summary_text"
+        ):
             parts.append(item.get("text", ""))
     return "\n".join(p for p in parts if p)
 
@@ -58,7 +64,11 @@ def payload_text(payload):
         role = payload.get("role", "")
         return f"[{role}] " + text_of_content(payload.get("content"))
     if payload.get("type") == "reasoning":
-        return "[reasoning] " + text_of_content(payload.get("content")) + text_of_content(payload.get("summary"))
+        return (
+            "[reasoning] "
+            + text_of_content(payload.get("content"))
+            + text_of_content(payload.get("summary"))
+        )
     return ""
 
 
@@ -114,7 +124,9 @@ def summarize(path, max_chars):
             continue
         ts = rec.get("timestamp", "")
         if payload.get("type") == "user_message" or (
-            rtype == "response_item" and payload.get("type") == "message" and payload.get("role") == "user"
+            rtype == "response_item"
+            and payload.get("type") == "message"
+            and payload.get("role") == "user"
         ):
             users.append((ts, txt))
         elif payload.get("type") in ("agent_message", "agent_reasoning") or (
