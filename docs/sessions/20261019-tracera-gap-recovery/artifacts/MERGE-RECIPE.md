@@ -47,3 +47,29 @@ Post-merge state of the combined tree, all observed:
 Shared config is deliberately byte-identical across branches so this stays
 true: `.prettierignore` in #1132 and #1158, and `.sonarcloud.properties`
 plus the `[tool.mypy]` block in #1158 and #1173.
+
+## Land order once the two dependency PRs exist
+
+Two more PRs were opened after the original four-PR simulation, and one of them
+changes the recommended order:
+
+| PR    | Purpose                                                                          | State                                                |
+| ----- | -------------------------------------------------------------------------------- | ---------------------------------------------------- |
+| #1205 | delete the unused `jq` install that fails `Lint & Format` on self-hosted runners | MERGEABLE, 61 checks, **0 failing**                  |
+| #1203 | three RUSTSEC-2026 TLS patch bumps                                               | MERGEABLE, red on the one advisory it does not close |
+| #1204 | eight npm advisories                                                             | MERGEABLE, red only on `Cargo.lock` Rust advisories  |
+
+#1205 is the only fully green PR in the set, so it should land first. It removes
+the `sudo` requirement from the `Trunk Check` workflow's `Lint & Format` job,
+which is currently producing false red on #1173 and #1204 for a reason unrelated
+to their content.
+
+Important detail: a PR's `Lint & Format` check runs the workflow from that PR's
+own branch, so #1173 and #1204 keep failing it even after #1205 is approved.
+They need to be updated from `main` after #1205 merges before that check can go
+green.
+
+#1203 and #1204 cannot go fully green on their own. Both touch lockfiles that
+`osv` and `cargo-deny` scan, so both report the one advisory that needs the
+`neo4rs` decision. #1203 closes two of three Rust advisories; #1204 closes all
+eight npm advisories and verifiably drops `osv`'s npm rows to zero.
