@@ -403,3 +403,31 @@ Post-merge state of the combined tree, all observed:
 Shared config is deliberately byte-identical across branches so this stays
 true: `.prettierignore` in #1132 and #1158, and `.sonarcloud.properties`
 plus the `[tool.mypy]` block in #1158 and #1173.
+
+## 10. `ci-agents / lint-rust`: a dependency advisory, not a PR defect
+
+PR #1173's latest run failed `ci-agents / lint-rust` on `cargo-deny`
+`advisories`. That is unrelated to the D-04 changes: it reproduces on a clean
+`origin/main` checkout, and `main` never surfaced it because it skipped the job
+(no Rust changes detected, so the advisory database moved on unnoticed).
+
+Three advisories, all published after main's last Rust-touching run:
+
+| Advisory          | Crate               | Installed         | Fix         |
+| ----------------- | ------------------- | ----------------- | ----------- |
+| RUSTSEC-2026-0382 | `rustls-webpki`     | 0.103.15          | >= 0.103.16 |
+| RUSTSEC-2026-0383 | `webpki-root-certs` | 1.0.8             | >= 1.0.10   |
+| RUSTSEC-2026-0381 | `webpki-roots`      | 1.0.9 and 0.26.11 | >= 1.0.10   |
+
+PR #1203 (`chore/rustsec-2026-0381-0383`) applies the three patch bumps, which
+closes 0382, 0383 and the 1.x instance of 0381. Verified there:
+`cargo check --workspace --all-targets` clean, `cargo test --workspace` 378
+passed / 0 failed / 1 ignored.
+
+One instance of RUSTSEC-2026-0381 remains: `webpki-roots 0.26.11`, pinned by
+`neo4rs 0.8.0` via `tracera-server` and `tracera-neo4j`. It is not suppressed.
+`0.8.0` is the latest stable `neo4rs`; only `0.9.0-rc.10`, a pre-release, moves
+to `webpki-roots` 1.x, and adopting it means changing the manifest to a release
+candidate of a database driver. That is an operator decision, so `lint-rust`
+stays red on #1173 and on #1203 until it is made. Do not read that check as a
+defect in the D-04 work.
