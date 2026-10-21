@@ -172,11 +172,11 @@ jobs:
             echo "::warning::Could not fetch $DEPLOY_URL to verify its contents."
             exit 0
           fi
-          if printf %s "$body" | grep -qi "scaffolding coming soon"; then
+          if grep -qi "scaffolding coming soon" <<< "$body"; then
             echo "::error::$DEPLOY_URL is serving the public/index.html placeholder, not the built app."
             exit 1
           fi
-          if printf %s "$body" | grep -qi "vercel.com/login\|sso-api"; then
+          if grep -qi "vercel.com/login\|sso-api" <<< "$body"; then
             echo "::notice::$DEPLOY_URL is behind Vercel Authentication, so its contents could not be verified without a bypass token."
             exit 0
           fi
@@ -184,7 +184,7 @@ jobs:
             echo "::notice::$DEPLOY_URL answered 401 Unauthorized: the production alias is gated by Cloudflare Access middleware (expected). Content verification runs through the Access hostname instead."
             exit 0
           fi
-          if ! printf %s "$body" | grep -q "id=\"root\""; then
+          if ! grep -q "id=\"root\"" <<< "$body"; then
             echo "::error::$DEPLOY_URL does not look like the SPA build (no #root element in the body)."
             exit 1
           fi
