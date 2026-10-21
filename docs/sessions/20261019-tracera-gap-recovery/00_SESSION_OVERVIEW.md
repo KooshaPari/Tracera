@@ -448,11 +448,19 @@ than anything introduced here.
 | GHSA-r825-w8mm-5pxw | 6.3  | `vite` (launch-editor) | 8.2.2     | 8.2.4    |
 
 Fix versions were read from `api.osv.dev`, not assumed. Both are patch-level.
-They were deliberately left out of the Rust advisory PR: a frontend lockfile
-bump needs its own build and test cycle, and mixing it into a `Cargo.lock` change
-would hide it. Note the repo already documents two other `osv-scanner.toml`
-filters with written justifications, so there is precedent for filtering only
-where no fix exists; here a fix does exist, so upgrading is the right remedy.
+They were kept out of the Rust advisory PR so a frontend lockfile bump would not
+hide inside a `Cargo.lock` change; they are fixed instead in PR #1204
+(`chore/frontend-advisory-pins`). Note the repo already documents two other
+`osv-scanner.toml` filters with written justifications, so there is precedent for
+filtering only where no fix exists; here a fix does exist, so upgrading is the
+right remedy.
+
+Two traps in that upgrade, both verified: `follow-redirects` is transitive via
+axios, so bumping it directly leaves the axios path on 1.16.0 and adds a second
+copy; only an `overrides` entry moves it. And `vite` already carried a
+`^8.0.0-beta.11` override, so any 8.x range let bun resolve 8.3.5, dragging
+`rolldown` 1.2.6 to 1.2.15 plus 20+ platform bindings. `~8.2.4` is the narrow
+range that takes the patch and leaves `rolldown` alone.
 
 ### 10.2 A dead self-hosted runner, not a test failure
 
