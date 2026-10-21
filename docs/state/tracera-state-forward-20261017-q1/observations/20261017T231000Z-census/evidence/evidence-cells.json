@@ -1,0 +1,2574 @@
+{
+  "source_sha": "912303f689f0e335d4dad77a7767ef1e26098af7",
+  "docs_sha": "912303f689f0e335d4dad77a7767ef1e26098af7",
+  "policy": "/Users/kooshapari/.jcode/memories/global/cockpit-progress-tree-policy.md",
+  "leaves": [
+    {
+      "id": "G09.named-view-binding",
+      "claim": "Named view code dispatch exists; complete type/project/detail parity is unqualified",
+      "Implementation": {
+        "verdict": "PASS",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/routes/projects.$projectId.views.code.tsx:16",
+        "limit": ""
+      },
+      "Usability": {
+        "verdict": "NOT_RUN",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/routes/projects.$projectId.views.code.tsx:16",
+        "limit": "Source inspected; no matching external journey executed"
+      },
+      "Validation": {
+        "verdict": "NOT_RUN",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/routes/projects.$projectId.views.code.tsx:16",
+        "limit": "Static checks do not prove UI runtime"
+      },
+      "Assurance": {
+        "verdict": "UNKNOWN",
+        "evidence": null,
+        "limit": "No independent complete journey witness"
+      }
+    },
+    {
+      "id": "G09.detail-scope",
+      "claim": "Detail route fetches by itemId and forwards projectId; this source alone does not enforce route project/type equality",
+      "Implementation": {
+        "verdict": "UNKNOWN",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/routes/projects.$projectId.views.$viewType.$itemId.tsx:9",
+        "limit": "Caller/source inspected; complete guard/call-chain qualification not performed. No failure of security boundary inferred."
+      },
+      "Usability": {
+        "verdict": "NOT_RUN",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/routes/projects.$projectId.views.$viewType.$itemId.tsx:9",
+        "limit": "Source inspected; no matching external journey executed"
+      },
+      "Validation": {
+        "verdict": "NOT_RUN",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/routes/projects.$projectId.views.$viewType.$itemId.tsx:9",
+        "limit": "Static checks do not prove UI runtime"
+      },
+      "Assurance": {
+        "verdict": "UNKNOWN",
+        "evidence": null,
+        "limit": "No independent complete journey witness"
+      }
+    },
+    {
+      "id": "G10.summary-fallback",
+      "claim": "Summary explicitly says detailed data unavailable; typed totals/unknown health requirement unqualified",
+      "Implementation": {
+        "verdict": "PASS",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/components/ProjectSummary.tsx:14",
+        "limit": ""
+      },
+      "Usability": {
+        "verdict": "NOT_RUN",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/components/ProjectSummary.tsx:14",
+        "limit": "Source inspected; no matching external journey executed"
+      },
+      "Validation": {
+        "verdict": "NOT_RUN",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/components/ProjectSummary.tsx:14",
+        "limit": "Static checks do not prove UI runtime"
+      },
+      "Assurance": {
+        "verdict": "UNKNOWN",
+        "evidence": null,
+        "limit": "No independent complete journey witness"
+      }
+    },
+    {
+      "id": "G11.ui-crud",
+      "claim": "UI hooks perform actual item requests and project/view list filtering; durable cross-project rejection requires backend witness",
+      "Implementation": {
+        "verdict": "PASS",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/hooks/useItems.ts:36",
+        "limit": ""
+      },
+      "Usability": {
+        "verdict": "NOT_RUN",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/hooks/useItems.ts:36",
+        "limit": "Source inspected; no matching external journey executed"
+      },
+      "Validation": {
+        "verdict": "NOT_RUN",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/hooks/useItems.ts:36",
+        "limit": "Static checks do not prove UI runtime"
+      },
+      "Assurance": {
+        "verdict": "UNKNOWN",
+        "evidence": null,
+        "limit": "No independent complete journey witness"
+      }
+    },
+    {
+      "id": "G12.mcp-graph",
+      "claim": "MCP provides 1-hop subgraph; bounded cycles/truncation/source-anchor journey unqualified",
+      "Implementation": {
+        "verdict": "PASS",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:crates/tracera-mcp/src/tools.rs:274",
+        "limit": ""
+      },
+      "Usability": {
+        "verdict": "NOT_RUN",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:crates/tracera-mcp/src/tools.rs:274",
+        "limit": "Source inspected; no matching external journey executed"
+      },
+      "Validation": {
+        "verdict": "NOT_RUN",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:crates/tracera-mcp/src/tools.rs:274",
+        "limit": "Static checks do not prove UI runtime"
+      },
+      "Assurance": {
+        "verdict": "UNKNOWN",
+        "evidence": null,
+        "limit": "No independent complete journey witness"
+      }
+    },
+    {
+      "id": "G14.route-contract",
+      "claim": "Executed static endpoint audit finds 20 Rust-native and 19 gateway-owned entries; it permits namespace exemptions and does not test schemas/handlers",
+      "Implementation": {
+        "verdict": "PASS",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/scripts/test-client-server-parity.mjs:34",
+        "limit": ""
+      },
+      "Usability": {
+        "verdict": "NOT_RUN",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/scripts/test-client-server-parity.mjs:34",
+        "limit": "Source inspected; no matching external journey executed"
+      },
+      "Validation": {
+        "verdict": "PASS",
+        "evidence": "/tmp/tracera-interface-census-20261017/test-client-server-parity.log",
+        "limit": "Static checks do not prove UI runtime"
+      },
+      "Assurance": {
+        "verdict": "UNKNOWN",
+        "evidence": null,
+        "limit": "No independent complete journey witness"
+      }
+    },
+    {
+      "id": "G14.cli-crud-parity",
+      "claim": "Current CLI enum has stack lifecycle commands only; required common Project/Item/Link CRUD is absent",
+      "Implementation": {
+        "verdict": "FAIL",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:crates/tracera-cli/src/commands.rs:41",
+        "limit": ""
+      },
+      "Usability": {
+        "verdict": "NOT_RUN",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:crates/tracera-cli/src/commands.rs:41",
+        "limit": "Source inspected; no matching external journey executed"
+      },
+      "Validation": {
+        "verdict": "FAIL",
+        "evidence": "/tmp/tracera-interface-census-20261017/installed-cli-help.log",
+        "limit": "Static checks do not prove UI runtime"
+      },
+      "Assurance": {
+        "verdict": "UNKNOWN",
+        "evidence": null,
+        "limit": "No independent complete journey witness"
+      }
+    },
+    {
+      "id": "G14.mcp-crud-parity",
+      "claim": "Current MCP graph tools operate SWEE nodes/edges/proposals, not common Project/Item/Link operation surface",
+      "Implementation": {
+        "verdict": "FAIL",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:crates/tracera-mcp/src/tools.rs:147",
+        "limit": ""
+      },
+      "Usability": {
+        "verdict": "NOT_RUN",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:crates/tracera-mcp/src/tools.rs:147",
+        "limit": "Source inspected; no matching external journey executed"
+      },
+      "Validation": {
+        "verdict": "NOT_RUN",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:crates/tracera-mcp/src/tools.rs:147",
+        "limit": "Static checks do not prove UI runtime"
+      },
+      "Assurance": {
+        "verdict": "UNKNOWN",
+        "evidence": null,
+        "limit": "No independent complete journey witness"
+      }
+    },
+    {
+      "id": "G17.desktop-origin",
+      "claim": "Desktop source defaults rich gateway18000; legacy18081 opt-in",
+      "Implementation": {
+        "verdict": "PASS",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/desktop/src/target.ts:7",
+        "limit": ""
+      },
+      "Usability": {
+        "verdict": "NOT_RUN",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/desktop/src/target.ts:7",
+        "limit": "Source inspected; no matching external journey executed"
+      },
+      "Validation": {
+        "verdict": "NOT_RUN",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/desktop/src/target.ts:7",
+        "limit": "Static checks do not prove UI runtime"
+      },
+      "Assurance": {
+        "verdict": "UNKNOWN",
+        "evidence": null,
+        "limit": "No independent complete journey witness"
+      }
+    },
+    {
+      "id": "G17.rich-spa",
+      "claim": "Fresh source checkout has no built frontend/apps/web/dist/index.html; this is not evidence installed app absent",
+      "Implementation": {
+        "verdict": "PASS",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/scripts/test-deployment-artifact.mjs:14",
+        "limit": ""
+      },
+      "Usability": {
+        "verdict": "NOT_RUN",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/scripts/test-deployment-artifact.mjs:14",
+        "limit": "Source inspected; no matching external journey executed"
+      },
+      "Validation": {
+        "verdict": "FAIL",
+        "evidence": "/tmp/tracera-interface-census-20261017/test-deployment-artifact.log",
+        "limit": "Static checks do not prove UI runtime"
+      },
+      "Assurance": {
+        "verdict": "UNKNOWN",
+        "evidence": null,
+        "limit": "No independent complete journey witness"
+      }
+    },
+    {
+      "id": "G19.focus-source",
+      "claim": "Focus/skip-link source exists. Existing a11y regex demands single quotes and rejects current double quotes; failure is test fragility, not observed keyboard failure",
+      "Implementation": {
+        "verdict": "PASS",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/components/layout/Layout.tsx:149",
+        "limit": ""
+      },
+      "Usability": {
+        "verdict": "NOT_RUN",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/components/layout/Layout.tsx:149",
+        "limit": "Source inspected; no matching external journey executed"
+      },
+      "Validation": {
+        "verdict": "FAIL",
+        "evidence": "/tmp/tracera-interface-census-20261017/test-ui-a11y-contract.log",
+        "limit": "Static checks do not prove UI runtime"
+      },
+      "Assurance": {
+        "verdict": "UNKNOWN",
+        "evidence": null,
+        "limit": "No independent complete journey witness"
+      }
+    },
+    {
+      "id": "G19.route-check",
+      "claim": "Existing route-mapping checker reads deleted legacy App.jsx and fails ENOENT",
+      "Implementation": {
+        "verdict": "FAIL",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/scripts/test-ui-route-mapping.mjs:5",
+        "limit": ""
+      },
+      "Usability": {
+        "verdict": "NOT_RUN",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/scripts/test-ui-route-mapping.mjs:5",
+        "limit": "Source inspected; no matching external journey executed"
+      },
+      "Validation": {
+        "verdict": "FAIL",
+        "evidence": "/tmp/tracera-interface-census-20261017/test-ui-route-mapping.log",
+        "limit": "Static checks do not prove UI runtime"
+      },
+      "Assurance": {
+        "verdict": "UNKNOWN",
+        "evidence": null,
+        "limit": "No independent complete journey witness"
+      }
+    },
+    {
+      "id": "G19.async-states",
+      "claim": "Detail route renders loading and missing states; rendered usability unqualified",
+      "Implementation": {
+        "verdict": "PASS",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/routes/projects.$projectId.views.$viewType.$itemId.tsx:14",
+        "limit": ""
+      },
+      "Usability": {
+        "verdict": "NOT_RUN",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/routes/projects.$projectId.views.$viewType.$itemId.tsx:14",
+        "limit": "Source inspected; no matching external journey executed"
+      },
+      "Validation": {
+        "verdict": "NOT_RUN",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/routes/projects.$projectId.views.$viewType.$itemId.tsx:14",
+        "limit": "Static checks do not prove UI runtime"
+      },
+      "Assurance": {
+        "verdict": "UNKNOWN",
+        "evidence": null,
+        "limit": "No independent complete journey witness"
+      }
+    },
+    {
+      "id": "G19.explicit-unsupported",
+      "claim": "Report template/generation APIs explicitly throw typed501 rather than fake success",
+      "Implementation": {
+        "verdict": "PASS",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/api/reports.ts:24",
+        "limit": ""
+      },
+      "Usability": {
+        "verdict": "NOT_RUN",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/api/reports.ts:24",
+        "limit": "Source inspected; no matching external journey executed"
+      },
+      "Validation": {
+        "verdict": "NOT_RUN",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/api/reports.ts:24",
+        "limit": "Static checks do not prove UI runtime"
+      },
+      "Assurance": {
+        "verdict": "UNKNOWN",
+        "evidence": null,
+        "limit": "No independent complete journey witness"
+      }
+    },
+    {
+      "id": "G19.cli-help",
+      "claim": "Installed CLI --help succeeds; binary hash provenance is not tied to current source commit",
+      "Implementation": {
+        "verdict": "PASS",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:crates/tracera-cli/src/commands.rs:14",
+        "limit": ""
+      },
+      "Usability": {
+        "verdict": "PASS",
+        "evidence": "/tmp/tracera-interface-census-20261017/installed-cli-help.log",
+        "limit": "Only --help invocation, no stack mutation or product operations"
+      },
+      "Validation": {
+        "verdict": "PASS",
+        "evidence": "/tmp/tracera-interface-census-20261017/installed-cli-help.log",
+        "limit": "Static checks do not prove UI runtime"
+      },
+      "Assurance": {
+        "verdict": "UNKNOWN",
+        "evidence": null,
+        "limit": "No independent complete journey witness"
+      }
+    },
+    {
+      "id": "G09.view-01",
+      "claim": "Dashboard => Dashboard",
+      "Implementation": {
+        "verdict": "PASS",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/routes/index.tsx:1",
+        "limit": "Route file existence only; complete artifact binding not accepted"
+      },
+      "Usability": {
+        "verdict": "NOT_RUN",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/routes/index.tsx:1",
+        "limit": "Source inspected; no matching external journey executed"
+      },
+      "Validation": {
+        "verdict": "NOT_RUN",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/routes/index.tsx:1",
+        "limit": "Static checks do not prove UI runtime"
+      },
+      "Assurance": {
+        "verdict": "UNKNOWN",
+        "evidence": null,
+        "limit": "No independent complete journey witness"
+      },
+      "historical_mapping": {
+        "menu_label": "Dashboard",
+        "expected_artifact": "Dashboard",
+        "frontend_route": "/",
+        "route_file": "frontend/apps/web/src/routes/index.tsx",
+        "component": "frontend/apps/web/src/views/LandingPage.tsx",
+        "api_dependencies": "UNKNOWN; no audited API hook mapping",
+        "actual_source_behavior": "Artifact-specific component or route adapter mapped; runtime unknown",
+        "evidence": "frontend/apps/web/src/components/layout/sidebar-nav.ts:66",
+        "status": "SOURCE_ONLY_RUNTIME_UNKNOWN",
+        "gap_linkage": "",
+        "click_status": "NOT_CLICKED"
+      }
+    },
+    {
+      "id": "G09.view-02",
+      "claim": "Projects => Projects",
+      "Implementation": {
+        "verdict": "PASS",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/routes/projects.tsx:1",
+        "limit": "Route file existence only; complete artifact binding not accepted"
+      },
+      "Usability": {
+        "verdict": "NOT_RUN",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/routes/projects.tsx:1",
+        "limit": "Source inspected; no matching external journey executed"
+      },
+      "Validation": {
+        "verdict": "NOT_RUN",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/routes/projects.tsx:1",
+        "limit": "Static checks do not prove UI runtime"
+      },
+      "Assurance": {
+        "verdict": "UNKNOWN",
+        "evidence": null,
+        "limit": "No independent complete journey witness"
+      },
+      "historical_mapping": {
+        "menu_label": "Projects",
+        "expected_artifact": "Projects",
+        "frontend_route": "/projects",
+        "route_file": "frontend/apps/web/src/routes/projects.tsx",
+        "component": "UNKNOWN (inline route component or dynamic dispatcher)",
+        "api_dependencies": "UNKNOWN; no audited API hook mapping",
+        "actual_source_behavior": "Artifact-specific component or route adapter mapped; runtime unknown",
+        "evidence": "frontend/apps/web/src/components/layout/sidebar-nav.ts:69",
+        "status": "SOURCE_ONLY_RUNTIME_UNKNOWN",
+        "gap_linkage": "",
+        "click_status": "NOT_CLICKED"
+      }
+    },
+    {
+      "id": "G09.view-03",
+      "claim": "Items => Items",
+      "Implementation": {
+        "verdict": "PASS",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/routes/items.tsx:1",
+        "limit": "Route file existence only; complete artifact binding not accepted"
+      },
+      "Usability": {
+        "verdict": "NOT_RUN",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/routes/items.tsx:1",
+        "limit": "Source inspected; no matching external journey executed"
+      },
+      "Validation": {
+        "verdict": "NOT_RUN",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/routes/items.tsx:1",
+        "limit": "Static checks do not prove UI runtime"
+      },
+      "Assurance": {
+        "verdict": "UNKNOWN",
+        "evidence": null,
+        "limit": "No independent complete journey witness"
+      },
+      "historical_mapping": {
+        "menu_label": "Items",
+        "expected_artifact": "Items",
+        "frontend_route": "/items",
+        "route_file": "frontend/apps/web/src/routes/items.tsx",
+        "component": "frontend/apps/web/src/views/ItemsTableView.tsx",
+        "api_dependencies": "{'api_hooks': ['useProjects'], 'resolved_http_endpoints': 'UNKNOWN; not inferred from function names'}",
+        "actual_source_behavior": "Artifact-specific component or route adapter mapped; runtime unknown",
+        "evidence": "frontend/apps/web/src/components/layout/sidebar-nav.ts:73",
+        "status": "SOURCE_ONLY_RUNTIME_UNKNOWN",
+        "gap_linkage": "",
+        "click_status": "NOT_CLICKED"
+      }
+    },
+    {
+      "id": "G09.view-04",
+      "claim": "Agents => Agents",
+      "Implementation": {
+        "verdict": "PASS",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/routes/agents.tsx:1",
+        "limit": "Route file existence only; complete artifact binding not accepted"
+      },
+      "Usability": {
+        "verdict": "NOT_RUN",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/routes/agents.tsx:1",
+        "limit": "Source inspected; no matching external journey executed"
+      },
+      "Validation": {
+        "verdict": "NOT_RUN",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/routes/agents.tsx:1",
+        "limit": "Static checks do not prove UI runtime"
+      },
+      "Assurance": {
+        "verdict": "UNKNOWN",
+        "evidence": null,
+        "limit": "No independent complete journey witness"
+      },
+      "historical_mapping": {
+        "menu_label": "Agents",
+        "expected_artifact": "Agents",
+        "frontend_route": "/agents",
+        "route_file": "frontend/apps/web/src/routes/agents.tsx",
+        "component": "frontend/apps/web/src/views/AgentsView.tsx",
+        "api_dependencies": "UNKNOWN; no audited API hook mapping",
+        "actual_source_behavior": "Artifact-specific component or route adapter mapped; runtime unknown",
+        "evidence": "frontend/apps/web/src/components/layout/sidebar-nav.ts:74",
+        "status": "SOURCE_ONLY_RUNTIME_UNKNOWN",
+        "gap_linkage": "",
+        "click_status": "NOT_CLICKED"
+      }
+    },
+    {
+      "id": "G09.view-05",
+      "claim": "Overview => Overview",
+      "Implementation": {
+        "verdict": "PASS",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/routes/projects.$projectId.tsx:1",
+        "limit": "Route file existence only; complete artifact binding not accepted"
+      },
+      "Usability": {
+        "verdict": "NOT_RUN",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/routes/projects.$projectId.tsx:1",
+        "limit": "Source inspected; no matching external journey executed"
+      },
+      "Validation": {
+        "verdict": "NOT_RUN",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/routes/projects.$projectId.tsx:1",
+        "limit": "Static checks do not prove UI runtime"
+      },
+      "Assurance": {
+        "verdict": "UNKNOWN",
+        "evidence": null,
+        "limit": "No independent complete journey witness"
+      },
+      "historical_mapping": {
+        "menu_label": "Overview",
+        "expected_artifact": "Overview",
+        "frontend_route": "/projects/${activeId}",
+        "route_file": "frontend/apps/web/src/routes/projects.$projectId.tsx",
+        "component": "frontend/apps/web/src/components/layout/ErrorBoundary.tsx; frontend/apps/web/src/components/layout/FullScreenPage.tsx; frontend/apps/web/src/components/layout/LoadingSpinner.tsx",
+        "api_dependencies": "UNKNOWN; no audited API hook mapping",
+        "actual_source_behavior": "Artifact-specific component or route adapter mapped; runtime unknown",
+        "evidence": "frontend/apps/web/src/components/layout/sidebar-nav.ts:91",
+        "status": "SOURCE_ONLY_RUNTIME_UNKNOWN",
+        "gap_linkage": "",
+        "click_status": "NOT_CLICKED"
+      }
+    },
+    {
+      "id": "G09.view-06",
+      "claim": "Feature Layer => Feature Layer",
+      "Implementation": {
+        "verdict": "PASS",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/routes/projects.$projectId.views.feature.tsx:1",
+        "limit": "Route file existence only; complete artifact binding not accepted"
+      },
+      "Usability": {
+        "verdict": "NOT_RUN",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/routes/projects.$projectId.views.feature.tsx:1",
+        "limit": "Source inspected; no matching external journey executed"
+      },
+      "Validation": {
+        "verdict": "NOT_RUN",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/routes/projects.$projectId.views.feature.tsx:1",
+        "limit": "Static checks do not prove UI runtime"
+      },
+      "Assurance": {
+        "verdict": "UNKNOWN",
+        "evidence": null,
+        "limit": "No independent complete journey witness"
+      },
+      "historical_mapping": {
+        "menu_label": "Feature Layer",
+        "expected_artifact": "Feature Layer",
+        "frontend_route": "/projects/${activeId}/views/feature",
+        "route_file": "frontend/apps/web/src/routes/projects.$projectId.views.feature.tsx",
+        "component": "frontend/apps/web/src/pages/projects/views/FeatureView.tsx",
+        "api_dependencies": "{'api_hooks': ['useCreateItem', 'useItems'], 'resolved_http_endpoints': 'UNKNOWN; not inferred from function names'}",
+        "actual_source_behavior": "Artifact-specific component or route adapter mapped; runtime unknown",
+        "evidence": "frontend/apps/web/src/components/layout/sidebar-nav.ts:97",
+        "status": "SOURCE_ONLY_RUNTIME_UNKNOWN",
+        "gap_linkage": "",
+        "click_status": "NOT_CLICKED"
+      }
+    },
+    {
+      "id": "G09.view-07",
+      "claim": "Source Map => Source Map",
+      "Implementation": {
+        "verdict": "PASS",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/routes/projects.$projectId.views.code.tsx:1",
+        "limit": "Route file existence only; complete artifact binding not accepted"
+      },
+      "Usability": {
+        "verdict": "NOT_RUN",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/routes/projects.$projectId.views.code.tsx:1",
+        "limit": "Source inspected; no matching external journey executed"
+      },
+      "Validation": {
+        "verdict": "NOT_RUN",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/routes/projects.$projectId.views.code.tsx:1",
+        "limit": "Static checks do not prove UI runtime"
+      },
+      "Assurance": {
+        "verdict": "UNKNOWN",
+        "evidence": null,
+        "limit": "No independent complete journey witness"
+      },
+      "historical_mapping": {
+        "menu_label": "Source Map",
+        "expected_artifact": "Source Map",
+        "frontend_route": "/projects/${activeId}/views/code",
+        "route_file": "frontend/apps/web/src/routes/projects.$projectId.views.code.tsx",
+        "component": "frontend/apps/web/src/views/ItemsTableView.tsx",
+        "api_dependencies": "UNKNOWN; no audited API hook mapping",
+        "actual_source_behavior": "Artifact-specific component or route adapter mapped; runtime unknown",
+        "evidence": "frontend/apps/web/src/components/layout/sidebar-nav.ts:103",
+        "status": "SOURCE_ONLY_RUNTIME_UNKNOWN",
+        "gap_linkage": "",
+        "click_status": "NOT_CLICKED"
+      }
+    },
+    {
+      "id": "G09.view-08",
+      "claim": "Validation => Validation",
+      "Implementation": {
+        "verdict": "PASS",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/routes/projects.$projectId.views.test.tsx:1",
+        "limit": "Route file existence only; complete artifact binding not accepted"
+      },
+      "Usability": {
+        "verdict": "NOT_RUN",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/routes/projects.$projectId.views.test.tsx:1",
+        "limit": "Source inspected; no matching external journey executed"
+      },
+      "Validation": {
+        "verdict": "NOT_RUN",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/routes/projects.$projectId.views.test.tsx:1",
+        "limit": "Static checks do not prove UI runtime"
+      },
+      "Assurance": {
+        "verdict": "UNKNOWN",
+        "evidence": null,
+        "limit": "No independent complete journey witness"
+      },
+      "historical_mapping": {
+        "menu_label": "Validation",
+        "expected_artifact": "Validation",
+        "frontend_route": "/projects/${activeId}/views/test",
+        "route_file": "frontend/apps/web/src/routes/projects.$projectId.views.test.tsx",
+        "component": "frontend/apps/web/src/views/ItemsTableView.tsx",
+        "api_dependencies": "UNKNOWN; no audited API hook mapping",
+        "actual_source_behavior": "Artifact-specific component or route adapter mapped; runtime unknown",
+        "evidence": "frontend/apps/web/src/components/layout/sidebar-nav.ts:109",
+        "status": "SOURCE_ONLY_RUNTIME_UNKNOWN",
+        "gap_linkage": "",
+        "click_status": "NOT_CLICKED"
+      }
+    },
+    {
+      "id": "G09.view-09",
+      "claim": "Workflow Runs => Workflow Runs",
+      "Implementation": {
+        "verdict": "PASS",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/routes/projects.$projectId.views.$viewType.tsx:1",
+        "limit": "Route file existence only; complete artifact binding not accepted"
+      },
+      "Usability": {
+        "verdict": "NOT_RUN",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/routes/projects.$projectId.views.$viewType.tsx:1",
+        "limit": "Source inspected; no matching external journey executed"
+      },
+      "Validation": {
+        "verdict": "NOT_RUN",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/routes/projects.$projectId.views.$viewType.tsx:1",
+        "limit": "Static checks do not prove UI runtime"
+      },
+      "Assurance": {
+        "verdict": "UNKNOWN",
+        "evidence": null,
+        "limit": "No independent complete journey witness"
+      },
+      "historical_mapping": {
+        "menu_label": "Workflow Runs",
+        "expected_artifact": "Workflow Runs",
+        "frontend_route": "/projects/${activeId}/views/workflows",
+        "route_file": "frontend/apps/web/src/routes/projects.$projectId.views.$viewType.tsx",
+        "component": "UNKNOWN (inline route component or dynamic dispatcher)",
+        "api_dependencies": "UNKNOWN; no audited API hook mapping",
+        "actual_source_behavior": "Artifact-specific component or route adapter mapped; runtime unknown",
+        "evidence": "frontend/apps/web/src/components/layout/sidebar-nav.ts:115",
+        "status": "SOURCE_ONLY_RUNTIME_UNKNOWN",
+        "gap_linkage": "",
+        "click_status": "NOT_CLICKED"
+      }
+    },
+    {
+      "id": "G09.view-10",
+      "claim": "Project Settings => Project Settings",
+      "Implementation": {
+        "verdict": "PASS",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/routes/projects.$projectId.settings.tsx:1",
+        "limit": "Route file existence only; complete artifact binding not accepted"
+      },
+      "Usability": {
+        "verdict": "NOT_RUN",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/routes/projects.$projectId.settings.tsx:1",
+        "limit": "Source inspected; no matching external journey executed"
+      },
+      "Validation": {
+        "verdict": "NOT_RUN",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/routes/projects.$projectId.settings.tsx:1",
+        "limit": "Static checks do not prove UI runtime"
+      },
+      "Assurance": {
+        "verdict": "UNKNOWN",
+        "evidence": null,
+        "limit": "No independent complete journey witness"
+      },
+      "historical_mapping": {
+        "menu_label": "Project Settings",
+        "expected_artifact": "Project Settings",
+        "frontend_route": "/projects/${activeId}/settings",
+        "route_file": "frontend/apps/web/src/routes/projects.$projectId.settings.tsx",
+        "component": "frontend/apps/web/src/views/ProjectSettingsView.tsx",
+        "api_dependencies": "{'api_hooks': ['useProject', 'useUpdateProject'], 'resolved_http_endpoints': 'UNKNOWN; not inferred from function names'}",
+        "actual_source_behavior": "Artifact-specific component or route adapter mapped; runtime unknown",
+        "evidence": "frontend/apps/web/src/components/layout/sidebar-nav.ts:121",
+        "status": "SOURCE_ONLY_RUNTIME_UNKNOWN",
+        "gap_linkage": "",
+        "click_status": "NOT_CLICKED"
+      }
+    },
+    {
+      "id": "G09.view-11",
+      "claim": "Dashboard => Dashboard",
+      "Implementation": {
+        "verdict": "PASS",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/routes/projects.$projectId.specifications.tsx:1",
+        "limit": "Route file existence only; complete artifact binding not accepted"
+      },
+      "Usability": {
+        "verdict": "NOT_RUN",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/routes/projects.$projectId.specifications.tsx:1",
+        "limit": "Source inspected; no matching external journey executed"
+      },
+      "Validation": {
+        "verdict": "NOT_RUN",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/routes/projects.$projectId.specifications.tsx:1",
+        "limit": "Static checks do not prove UI runtime"
+      },
+      "Assurance": {
+        "verdict": "UNKNOWN",
+        "evidence": null,
+        "limit": "No independent complete journey witness"
+      },
+      "historical_mapping": {
+        "menu_label": "Dashboard",
+        "expected_artifact": "Dashboard",
+        "frontend_route": "/projects/${activeId}/specifications",
+        "route_file": "frontend/apps/web/src/routes/projects.$projectId.specifications.tsx",
+        "component": "frontend/apps/web/src/components/specifications/items/ItemSpecsOverview.tsx; frontend/apps/web/src/views/adr-list-view.tsx; frontend/apps/web/src/views/ComplianceView.tsx; frontend/apps/web/src/views/ContractListView.tsx; frontend/apps/web/src/views/FeatureListView.tsx; frontend/apps/web/src/views/SpecificationsDashboardView.tsx",
+        "api_dependencies": "{'api_hooks': ['useADRs', 'useContracts', 'useCreateADR', 'useDefectSpecs', 'useEpicSpecs', 'useFeatures', 'useHighRiskRequirements', 'useQualityReport', 'useRequirementSpecs', 'useTaskSpecs', 'useTestSpecs', 'useUnverifiedRequirements', 'useUserStorySpecs'], 'resolved_http_endpoints': 'UNKNOWN; not inferred from function names'}",
+        "actual_source_behavior": "Artifact-specific component or route adapter mapped; runtime unknown",
+        "evidence": "frontend/apps/web/src/components/layout/sidebar-nav.ts:135",
+        "status": "SOURCE_ONLY_RUNTIME_UNKNOWN",
+        "gap_linkage": "",
+        "click_status": "NOT_CLICKED"
+      }
+    },
+    {
+      "id": "G09.view-12",
+      "claim": "Scenario Activity => Scenario Activity",
+      "Implementation": {
+        "verdict": "PASS",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/routes/projects.$projectId.scenario-activity.tsx:1",
+        "limit": "Route file existence only; complete artifact binding not accepted"
+      },
+      "Usability": {
+        "verdict": "NOT_RUN",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/routes/projects.$projectId.scenario-activity.tsx:1",
+        "limit": "Source inspected; no matching external journey executed"
+      },
+      "Validation": {
+        "verdict": "NOT_RUN",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/routes/projects.$projectId.scenario-activity.tsx:1",
+        "limit": "Static checks do not prove UI runtime"
+      },
+      "Assurance": {
+        "verdict": "UNKNOWN",
+        "evidence": null,
+        "limit": "No independent complete journey witness"
+      },
+      "historical_mapping": {
+        "menu_label": "Scenario Activity",
+        "expected_artifact": "Scenario Activity",
+        "frontend_route": "/projects/${activeId}/scenario-activity",
+        "route_file": "frontend/apps/web/src/routes/projects.$projectId.scenario-activity.tsx",
+        "component": "frontend/apps/web/src/views/ScenarioActivityView.tsx",
+        "api_dependencies": "{'api_hooks': ['useFeatures', 'useProjectScenarioActivities', 'useProjectScenarios', 'useScenarioActivities'], 'resolved_http_endpoints': 'UNKNOWN; not inferred from function names'}",
+        "actual_source_behavior": "Artifact-specific component or route adapter mapped; runtime unknown",
+        "evidence": "frontend/apps/web/src/components/layout/sidebar-nav.ts:141",
+        "status": "SOURCE_ONLY_RUNTIME_UNKNOWN",
+        "gap_linkage": "",
+        "click_status": "NOT_CLICKED"
+      }
+    },
+    {
+      "id": "G09.view-13",
+      "claim": "ADRs => ADRs",
+      "Implementation": {
+        "verdict": "PASS",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/routes/projects.$projectId.specifications.tsx:1",
+        "limit": "Route file existence only; complete artifact binding not accepted"
+      },
+      "Usability": {
+        "verdict": "NOT_RUN",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/routes/projects.$projectId.specifications.tsx:1",
+        "limit": "Source inspected; no matching external journey executed"
+      },
+      "Validation": {
+        "verdict": "NOT_RUN",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/routes/projects.$projectId.specifications.tsx:1",
+        "limit": "Static checks do not prove UI runtime"
+      },
+      "Assurance": {
+        "verdict": "UNKNOWN",
+        "evidence": null,
+        "limit": "No independent complete journey witness"
+      },
+      "historical_mapping": {
+        "menu_label": "ADRs",
+        "expected_artifact": "ADRs",
+        "frontend_route": "/projects/${activeId}/specifications?tab=adrs",
+        "route_file": "frontend/apps/web/src/routes/projects.$projectId.specifications.tsx",
+        "component": "frontend/apps/web/src/components/specifications/items/ItemSpecsOverview.tsx; frontend/apps/web/src/views/adr-list-view.tsx; frontend/apps/web/src/views/ComplianceView.tsx; frontend/apps/web/src/views/ContractListView.tsx; frontend/apps/web/src/views/FeatureListView.tsx; frontend/apps/web/src/views/SpecificationsDashboardView.tsx",
+        "api_dependencies": "{'api_hooks': ['useADRs', 'useContracts', 'useCreateADR', 'useDefectSpecs', 'useEpicSpecs', 'useFeatures', 'useHighRiskRequirements', 'useQualityReport', 'useRequirementSpecs', 'useTaskSpecs', 'useTestSpecs', 'useUnverifiedRequirements', 'useUserStorySpecs'], 'resolved_http_endpoints': 'UNKNOWN; not inferred from function names'}",
+        "actual_source_behavior": "Artifact-specific component or route adapter mapped; runtime unknown",
+        "evidence": "frontend/apps/web/src/components/layout/sidebar-nav.ts:147",
+        "status": "SOURCE_ONLY_RUNTIME_UNKNOWN",
+        "gap_linkage": "",
+        "click_status": "NOT_CLICKED"
+      }
+    },
+    {
+      "id": "G09.view-14",
+      "claim": "Contracts => Contracts",
+      "Implementation": {
+        "verdict": "PASS",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/routes/projects.$projectId.specifications.tsx:1",
+        "limit": "Route file existence only; complete artifact binding not accepted"
+      },
+      "Usability": {
+        "verdict": "NOT_RUN",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/routes/projects.$projectId.specifications.tsx:1",
+        "limit": "Source inspected; no matching external journey executed"
+      },
+      "Validation": {
+        "verdict": "NOT_RUN",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/routes/projects.$projectId.specifications.tsx:1",
+        "limit": "Static checks do not prove UI runtime"
+      },
+      "Assurance": {
+        "verdict": "UNKNOWN",
+        "evidence": null,
+        "limit": "No independent complete journey witness"
+      },
+      "historical_mapping": {
+        "menu_label": "Contracts",
+        "expected_artifact": "Contracts",
+        "frontend_route": "/projects/${activeId}/specifications?tab=contracts",
+        "route_file": "frontend/apps/web/src/routes/projects.$projectId.specifications.tsx",
+        "component": "frontend/apps/web/src/components/specifications/items/ItemSpecsOverview.tsx; frontend/apps/web/src/views/adr-list-view.tsx; frontend/apps/web/src/views/ComplianceView.tsx; frontend/apps/web/src/views/ContractListView.tsx; frontend/apps/web/src/views/FeatureListView.tsx; frontend/apps/web/src/views/SpecificationsDashboardView.tsx",
+        "api_dependencies": "{'api_hooks': ['useADRs', 'useContracts', 'useCreateADR', 'useDefectSpecs', 'useEpicSpecs', 'useFeatures', 'useHighRiskRequirements', 'useQualityReport', 'useRequirementSpecs', 'useTaskSpecs', 'useTestSpecs', 'useUnverifiedRequirements', 'useUserStorySpecs'], 'resolved_http_endpoints': 'UNKNOWN; not inferred from function names'}",
+        "actual_source_behavior": "Artifact-specific component or route adapter mapped; runtime unknown",
+        "evidence": "frontend/apps/web/src/components/layout/sidebar-nav.ts:153",
+        "status": "SOURCE_ONLY_RUNTIME_UNKNOWN",
+        "gap_linkage": "",
+        "click_status": "NOT_CLICKED"
+      }
+    },
+    {
+      "id": "G09.view-15",
+      "claim": "Compliance => Compliance",
+      "Implementation": {
+        "verdict": "PASS",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/routes/projects.$projectId.specifications.tsx:1",
+        "limit": "Route file existence only; complete artifact binding not accepted"
+      },
+      "Usability": {
+        "verdict": "NOT_RUN",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/routes/projects.$projectId.specifications.tsx:1",
+        "limit": "Source inspected; no matching external journey executed"
+      },
+      "Validation": {
+        "verdict": "NOT_RUN",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/routes/projects.$projectId.specifications.tsx:1",
+        "limit": "Static checks do not prove UI runtime"
+      },
+      "Assurance": {
+        "verdict": "UNKNOWN",
+        "evidence": null,
+        "limit": "No independent complete journey witness"
+      },
+      "historical_mapping": {
+        "menu_label": "Compliance",
+        "expected_artifact": "Compliance",
+        "frontend_route": "/projects/${activeId}/specifications?tab=compliance",
+        "route_file": "frontend/apps/web/src/routes/projects.$projectId.specifications.tsx",
+        "component": "frontend/apps/web/src/components/specifications/items/ItemSpecsOverview.tsx; frontend/apps/web/src/views/adr-list-view.tsx; frontend/apps/web/src/views/ComplianceView.tsx; frontend/apps/web/src/views/ContractListView.tsx; frontend/apps/web/src/views/FeatureListView.tsx; frontend/apps/web/src/views/SpecificationsDashboardView.tsx",
+        "api_dependencies": "{'api_hooks': ['useADRs', 'useContracts', 'useCreateADR', 'useDefectSpecs', 'useEpicSpecs', 'useFeatures', 'useHighRiskRequirements', 'useQualityReport', 'useRequirementSpecs', 'useTaskSpecs', 'useTestSpecs', 'useUnverifiedRequirements', 'useUserStorySpecs'], 'resolved_http_endpoints': 'UNKNOWN; not inferred from function names'}",
+        "actual_source_behavior": "Artifact-specific component or route adapter mapped; runtime unknown",
+        "evidence": "frontend/apps/web/src/components/layout/sidebar-nav.ts:159",
+        "status": "SOURCE_ONLY_RUNTIME_UNKNOWN",
+        "gap_linkage": "",
+        "click_status": "NOT_CLICKED"
+      }
+    },
+    {
+      "id": "G09.view-16",
+      "claim": "Features => Features",
+      "Implementation": {
+        "verdict": "PASS",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/routes/projects.$projectId.views.feature.tsx:1",
+        "limit": "Route file existence only; complete artifact binding not accepted"
+      },
+      "Usability": {
+        "verdict": "NOT_RUN",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/routes/projects.$projectId.views.feature.tsx:1",
+        "limit": "Source inspected; no matching external journey executed"
+      },
+      "Validation": {
+        "verdict": "NOT_RUN",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/routes/projects.$projectId.views.feature.tsx:1",
+        "limit": "Static checks do not prove UI runtime"
+      },
+      "Assurance": {
+        "verdict": "UNKNOWN",
+        "evidence": null,
+        "limit": "No independent complete journey witness"
+      },
+      "historical_mapping": {
+        "menu_label": "Features",
+        "expected_artifact": "Features",
+        "frontend_route": "/projects/${activeId}/views/feature",
+        "route_file": "frontend/apps/web/src/routes/projects.$projectId.views.feature.tsx",
+        "component": "frontend/apps/web/src/pages/projects/views/FeatureView.tsx",
+        "api_dependencies": "{'api_hooks': ['useCreateItem', 'useItems'], 'resolved_http_endpoints': 'UNKNOWN; not inferred from function names'}",
+        "actual_source_behavior": "Artifact-specific component or route adapter mapped; runtime unknown",
+        "evidence": "frontend/apps/web/src/components/layout/sidebar-nav.ts:175",
+        "status": "SOURCE_ONLY_RUNTIME_UNKNOWN",
+        "gap_linkage": "",
+        "click_status": "NOT_CLICKED"
+      }
+    },
+    {
+      "id": "G09.view-17",
+      "claim": "Domain Model => Domain Model",
+      "Implementation": {
+        "verdict": "PASS",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/routes/projects.$projectId.views.domain.tsx:1",
+        "limit": "Route file existence only; complete artifact binding not accepted"
+      },
+      "Usability": {
+        "verdict": "NOT_RUN",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/routes/projects.$projectId.views.domain.tsx:1",
+        "limit": "Source inspected; no matching external journey executed"
+      },
+      "Validation": {
+        "verdict": "NOT_RUN",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/routes/projects.$projectId.views.domain.tsx:1",
+        "limit": "Static checks do not prove UI runtime"
+      },
+      "Assurance": {
+        "verdict": "UNKNOWN",
+        "evidence": null,
+        "limit": "No independent complete journey witness"
+      },
+      "historical_mapping": {
+        "menu_label": "Domain Model",
+        "expected_artifact": "Domain Model",
+        "frontend_route": "/projects/${activeId}/views/domain",
+        "route_file": "frontend/apps/web/src/routes/projects.$projectId.views.domain.tsx",
+        "component": "frontend/apps/web/src/views/ItemsTableView.tsx",
+        "api_dependencies": "UNKNOWN; no audited API hook mapping",
+        "actual_source_behavior": "Artifact-specific component or route adapter mapped; runtime unknown",
+        "evidence": "frontend/apps/web/src/components/layout/sidebar-nav.ts:181",
+        "status": "SOURCE_ONLY_RUNTIME_UNKNOWN",
+        "gap_linkage": "",
+        "click_status": "NOT_CLICKED"
+      }
+    },
+    {
+      "id": "G09.view-18",
+      "claim": "Problem Analysis => Problem Analysis",
+      "Implementation": {
+        "verdict": "PASS",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/routes/projects.$projectId.views.problem.tsx:1",
+        "limit": "Route file existence only; complete artifact binding not accepted"
+      },
+      "Usability": {
+        "verdict": "NOT_RUN",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/routes/projects.$projectId.views.problem.tsx:1",
+        "limit": "Source inspected; no matching external journey executed"
+      },
+      "Validation": {
+        "verdict": "NOT_RUN",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/routes/projects.$projectId.views.problem.tsx:1",
+        "limit": "Static checks do not prove UI runtime"
+      },
+      "Assurance": {
+        "verdict": "UNKNOWN",
+        "evidence": null,
+        "limit": "No independent complete journey witness"
+      },
+      "historical_mapping": {
+        "menu_label": "Problem Analysis",
+        "expected_artifact": "Problem Analysis",
+        "frontend_route": "/projects/${activeId}/views/problem",
+        "route_file": "frontend/apps/web/src/routes/projects.$projectId.views.problem.tsx",
+        "component": "frontend/apps/web/src/pages/projects/views/ProblemView.tsx",
+        "api_dependencies": "UNKNOWN; no audited API hook mapping",
+        "actual_source_behavior": "Artifact-specific component or route adapter mapped; runtime unknown",
+        "evidence": "frontend/apps/web/src/components/layout/sidebar-nav.ts:187",
+        "status": "SOURCE_ONLY_RUNTIME_UNKNOWN",
+        "gap_linkage": "",
+        "click_status": "NOT_CLICKED"
+      }
+    },
+    {
+      "id": "G09.view-19",
+      "claim": "Wireframes => Wireframes",
+      "Implementation": {
+        "verdict": "PASS",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/routes/projects.$projectId.views.wireframe.tsx:1",
+        "limit": "Route file existence only; complete artifact binding not accepted"
+      },
+      "Usability": {
+        "verdict": "NOT_RUN",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/routes/projects.$projectId.views.wireframe.tsx:1",
+        "limit": "Source inspected; no matching external journey executed"
+      },
+      "Validation": {
+        "verdict": "NOT_RUN",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/routes/projects.$projectId.views.wireframe.tsx:1",
+        "limit": "Static checks do not prove UI runtime"
+      },
+      "Assurance": {
+        "verdict": "UNKNOWN",
+        "evidence": null,
+        "limit": "No independent complete journey witness"
+      },
+      "historical_mapping": {
+        "menu_label": "Wireframes",
+        "expected_artifact": "Wireframes",
+        "frontend_route": "/projects/${activeId}/views/wireframe",
+        "route_file": "frontend/apps/web/src/routes/projects.$projectId.views.wireframe.tsx",
+        "component": "frontend/apps/web/src/components/layout/LoadingSpinner.tsx",
+        "api_dependencies": "UNKNOWN; no audited API hook mapping",
+        "actual_source_behavior": "Route renders ProjectMappingGraphView; graph selects mapping or first graph and defaults to components, without wireframe filtering",
+        "evidence": "frontend/apps/web/src/components/layout/sidebar-nav.ts:193",
+        "status": "SOURCE_GAP",
+        "gap_linkage": "VIEW-005",
+        "click_status": "NOT_CLICKED"
+      }
+    },
+    {
+      "id": "G09.view-20",
+      "claim": "Code View => Code View",
+      "Implementation": {
+        "verdict": "PASS",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/routes/projects.$projectId.views.code.tsx:1",
+        "limit": "Route file existence only; complete artifact binding not accepted"
+      },
+      "Usability": {
+        "verdict": "NOT_RUN",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/routes/projects.$projectId.views.code.tsx:1",
+        "limit": "Source inspected; no matching external journey executed"
+      },
+      "Validation": {
+        "verdict": "NOT_RUN",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/routes/projects.$projectId.views.code.tsx:1",
+        "limit": "Static checks do not prove UI runtime"
+      },
+      "Assurance": {
+        "verdict": "UNKNOWN",
+        "evidence": null,
+        "limit": "No independent complete journey witness"
+      },
+      "historical_mapping": {
+        "menu_label": "Code View",
+        "expected_artifact": "Code View",
+        "frontend_route": "/projects/${activeId}/views/code",
+        "route_file": "frontend/apps/web/src/routes/projects.$projectId.views.code.tsx",
+        "component": "frontend/apps/web/src/views/ItemsTableView.tsx",
+        "api_dependencies": "UNKNOWN; no audited API hook mapping",
+        "actual_source_behavior": "Artifact-specific component or route adapter mapped; runtime unknown",
+        "evidence": "frontend/apps/web/src/components/layout/sidebar-nav.ts:205",
+        "status": "SOURCE_ONLY_RUNTIME_UNKNOWN",
+        "gap_linkage": "",
+        "click_status": "NOT_CLICKED"
+      }
+    },
+    {
+      "id": "G09.view-21",
+      "claim": "Architecture => Architecture",
+      "Implementation": {
+        "verdict": "PASS",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/routes/projects.$projectId.views.architecture.tsx:1",
+        "limit": "Route file existence only; complete artifact binding not accepted"
+      },
+      "Usability": {
+        "verdict": "NOT_RUN",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/routes/projects.$projectId.views.architecture.tsx:1",
+        "limit": "Source inspected; no matching external journey executed"
+      },
+      "Validation": {
+        "verdict": "NOT_RUN",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/routes/projects.$projectId.views.architecture.tsx:1",
+        "limit": "Static checks do not prove UI runtime"
+      },
+      "Assurance": {
+        "verdict": "UNKNOWN",
+        "evidence": null,
+        "limit": "No independent complete journey witness"
+      },
+      "historical_mapping": {
+        "menu_label": "Architecture",
+        "expected_artifact": "Architecture",
+        "frontend_route": "/projects/${activeId}/views/architecture",
+        "route_file": "frontend/apps/web/src/routes/projects.$projectId.views.architecture.tsx",
+        "component": "frontend/apps/web/src/views/ItemsTableView.tsx",
+        "api_dependencies": "UNKNOWN; no audited API hook mapping",
+        "actual_source_behavior": "Artifact-specific component or route adapter mapped; runtime unknown",
+        "evidence": "frontend/apps/web/src/components/layout/sidebar-nav.ts:211",
+        "status": "SOURCE_ONLY_RUNTIME_UNKNOWN",
+        "gap_linkage": "",
+        "click_status": "NOT_CLICKED"
+      }
+    },
+    {
+      "id": "G09.view-22",
+      "claim": "API Documentation => API Documentation",
+      "Implementation": {
+        "verdict": "PASS",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/routes/projects.$projectId.views.api.tsx:1",
+        "limit": "Route file existence only; complete artifact binding not accepted"
+      },
+      "Usability": {
+        "verdict": "NOT_RUN",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/routes/projects.$projectId.views.api.tsx:1",
+        "limit": "Source inspected; no matching external journey executed"
+      },
+      "Validation": {
+        "verdict": "NOT_RUN",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/routes/projects.$projectId.views.api.tsx:1",
+        "limit": "Static checks do not prove UI runtime"
+      },
+      "Assurance": {
+        "verdict": "UNKNOWN",
+        "evidence": null,
+        "limit": "No independent complete journey witness"
+      },
+      "historical_mapping": {
+        "menu_label": "API Documentation",
+        "expected_artifact": "API Documentation",
+        "frontend_route": "/projects/${activeId}/views/api",
+        "route_file": "frontend/apps/web/src/routes/projects.$projectId.views.api.tsx",
+        "component": "frontend/apps/web/src/pages/projects/views/ApiView.tsx",
+        "api_dependencies": "{'api_hooks': ['useItems'], 'resolved_http_endpoints': 'UNKNOWN; not inferred from function names'}",
+        "actual_source_behavior": "Page includes hard-coded Tracera platform API groups/status/examples regardless of selected project alongside project items",
+        "evidence": "frontend/apps/web/src/components/layout/sidebar-nav.ts:217",
+        "status": "SOURCE_GAP",
+        "gap_linkage": "VIEW-016",
+        "click_status": "NOT_CLICKED"
+      }
+    },
+    {
+      "id": "G09.view-23",
+      "claim": "Database Schema => Database Schema",
+      "Implementation": {
+        "verdict": "PASS",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/routes/projects.$projectId.views.database.tsx:1",
+        "limit": "Route file existence only; complete artifact binding not accepted"
+      },
+      "Usability": {
+        "verdict": "NOT_RUN",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/routes/projects.$projectId.views.database.tsx:1",
+        "limit": "Source inspected; no matching external journey executed"
+      },
+      "Validation": {
+        "verdict": "NOT_RUN",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/routes/projects.$projectId.views.database.tsx:1",
+        "limit": "Static checks do not prove UI runtime"
+      },
+      "Assurance": {
+        "verdict": "UNKNOWN",
+        "evidence": null,
+        "limit": "No independent complete journey witness"
+      },
+      "historical_mapping": {
+        "menu_label": "Database Schema",
+        "expected_artifact": "Database Schema",
+        "frontend_route": "/projects/${activeId}/views/database",
+        "route_file": "frontend/apps/web/src/routes/projects.$projectId.views.database.tsx",
+        "component": "frontend/apps/web/src/views/ItemsTableView.tsx",
+        "api_dependencies": "UNKNOWN; no audited API hook mapping",
+        "actual_source_behavior": "Route only renders generic item table; no artifact-specific renderer is invoked",
+        "evidence": "frontend/apps/web/src/components/layout/sidebar-nav.ts:223",
+        "status": "SOURCE_GAP",
+        "gap_linkage": "VIEW-004",
+        "click_status": "NOT_CLICKED"
+      }
+    },
+    {
+      "id": "G09.view-24",
+      "claim": "Data Flow => Data Flow",
+      "Implementation": {
+        "verdict": "PASS",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/routes/projects.$projectId.views.dataflow.tsx:1",
+        "limit": "Route file existence only; complete artifact binding not accepted"
+      },
+      "Usability": {
+        "verdict": "NOT_RUN",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/routes/projects.$projectId.views.dataflow.tsx:1",
+        "limit": "Source inspected; no matching external journey executed"
+      },
+      "Validation": {
+        "verdict": "NOT_RUN",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/routes/projects.$projectId.views.dataflow.tsx:1",
+        "limit": "Static checks do not prove UI runtime"
+      },
+      "Assurance": {
+        "verdict": "UNKNOWN",
+        "evidence": null,
+        "limit": "No independent complete journey witness"
+      },
+      "historical_mapping": {
+        "menu_label": "Data Flow",
+        "expected_artifact": "Data Flow",
+        "frontend_route": "/projects/${activeId}/views/dataflow",
+        "route_file": "frontend/apps/web/src/routes/projects.$projectId.views.dataflow.tsx",
+        "component": "frontend/apps/web/src/views/ItemsTableView.tsx",
+        "api_dependencies": "UNKNOWN; no audited API hook mapping",
+        "actual_source_behavior": "Route only renders generic item table; no artifact-specific renderer is invoked",
+        "evidence": "frontend/apps/web/src/components/layout/sidebar-nav.ts:229",
+        "status": "SOURCE_GAP",
+        "gap_linkage": "VIEW-003",
+        "click_status": "NOT_CLICKED"
+      }
+    },
+    {
+      "id": "G09.view-25",
+      "claim": "Test Cases => Test Cases",
+      "Implementation": {
+        "verdict": "PASS",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/routes/projects.$projectId.views.test-cases.tsx:1",
+        "limit": "Route file existence only; complete artifact binding not accepted"
+      },
+      "Usability": {
+        "verdict": "NOT_RUN",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/routes/projects.$projectId.views.test-cases.tsx:1",
+        "limit": "Source inspected; no matching external journey executed"
+      },
+      "Validation": {
+        "verdict": "NOT_RUN",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/routes/projects.$projectId.views.test-cases.tsx:1",
+        "limit": "Static checks do not prove UI runtime"
+      },
+      "Assurance": {
+        "verdict": "UNKNOWN",
+        "evidence": null,
+        "limit": "No independent complete journey witness"
+      },
+      "historical_mapping": {
+        "menu_label": "Test Cases",
+        "expected_artifact": "Test Cases",
+        "frontend_route": "/projects/${activeId}/views/test-cases",
+        "route_file": "frontend/apps/web/src/routes/projects.$projectId.views.test-cases.tsx",
+        "component": "UNKNOWN (inline route component or dynamic dispatcher)",
+        "api_dependencies": "UNKNOWN; no audited API hook mapping",
+        "actual_source_behavior": "Artifact-specific component or route adapter mapped; runtime unknown",
+        "evidence": "frontend/apps/web/src/components/layout/sidebar-nav.ts:241",
+        "status": "SOURCE_ONLY_RUNTIME_UNKNOWN",
+        "gap_linkage": "",
+        "click_status": "NOT_CLICKED"
+      }
+    },
+    {
+      "id": "G09.view-26",
+      "claim": "Test Suites => Test Suites",
+      "Implementation": {
+        "verdict": "PASS",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/routes/projects.$projectId.views.test-suites.tsx:1",
+        "limit": "Route file existence only; complete artifact binding not accepted"
+      },
+      "Usability": {
+        "verdict": "NOT_RUN",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/routes/projects.$projectId.views.test-suites.tsx:1",
+        "limit": "Source inspected; no matching external journey executed"
+      },
+      "Validation": {
+        "verdict": "NOT_RUN",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/routes/projects.$projectId.views.test-suites.tsx:1",
+        "limit": "Static checks do not prove UI runtime"
+      },
+      "Assurance": {
+        "verdict": "UNKNOWN",
+        "evidence": null,
+        "limit": "No independent complete journey witness"
+      },
+      "historical_mapping": {
+        "menu_label": "Test Suites",
+        "expected_artifact": "Test Suites",
+        "frontend_route": "/projects/${activeId}/views/test-suites",
+        "route_file": "frontend/apps/web/src/routes/projects.$projectId.views.test-suites.tsx",
+        "component": "UNKNOWN (inline route component or dynamic dispatcher)",
+        "api_dependencies": "UNKNOWN; no audited API hook mapping",
+        "actual_source_behavior": "Artifact-specific component or route adapter mapped; runtime unknown",
+        "evidence": "frontend/apps/web/src/components/layout/sidebar-nav.ts:247",
+        "status": "SOURCE_ONLY_RUNTIME_UNKNOWN",
+        "gap_linkage": "",
+        "click_status": "NOT_CLICKED"
+      }
+    },
+    {
+      "id": "G09.view-27",
+      "claim": "Test Runs => Test Runs",
+      "Implementation": {
+        "verdict": "PASS",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/routes/projects.$projectId.views.test-runs.tsx:1",
+        "limit": "Route file existence only; complete artifact binding not accepted"
+      },
+      "Usability": {
+        "verdict": "NOT_RUN",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/routes/projects.$projectId.views.test-runs.tsx:1",
+        "limit": "Source inspected; no matching external journey executed"
+      },
+      "Validation": {
+        "verdict": "NOT_RUN",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/routes/projects.$projectId.views.test-runs.tsx:1",
+        "limit": "Static checks do not prove UI runtime"
+      },
+      "Assurance": {
+        "verdict": "UNKNOWN",
+        "evidence": null,
+        "limit": "No independent complete journey witness"
+      },
+      "historical_mapping": {
+        "menu_label": "Test Runs",
+        "expected_artifact": "Test Runs",
+        "frontend_route": "/projects/${activeId}/views/test-runs",
+        "route_file": "frontend/apps/web/src/routes/projects.$projectId.views.test-runs.tsx",
+        "component": "UNKNOWN (inline route component or dynamic dispatcher)",
+        "api_dependencies": "UNKNOWN; no audited API hook mapping",
+        "actual_source_behavior": "Artifact-specific component or route adapter mapped; runtime unknown",
+        "evidence": "frontend/apps/web/src/components/layout/sidebar-nav.ts:253",
+        "status": "SOURCE_ONLY_RUNTIME_UNKNOWN",
+        "gap_linkage": "",
+        "click_status": "NOT_CLICKED"
+      }
+    },
+    {
+      "id": "G09.view-28",
+      "claim": "QA Dashboard => QA Dashboard",
+      "Implementation": {
+        "verdict": "PASS",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/routes/projects.$projectId.views.qa-dashboard.tsx:1",
+        "limit": "Route file existence only; complete artifact binding not accepted"
+      },
+      "Usability": {
+        "verdict": "NOT_RUN",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/routes/projects.$projectId.views.qa-dashboard.tsx:1",
+        "limit": "Source inspected; no matching external journey executed"
+      },
+      "Validation": {
+        "verdict": "NOT_RUN",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/routes/projects.$projectId.views.qa-dashboard.tsx:1",
+        "limit": "Static checks do not prove UI runtime"
+      },
+      "Assurance": {
+        "verdict": "UNKNOWN",
+        "evidence": null,
+        "limit": "No independent complete journey witness"
+      },
+      "historical_mapping": {
+        "menu_label": "QA Dashboard",
+        "expected_artifact": "QA Dashboard",
+        "frontend_route": "/projects/${activeId}/views/qa-dashboard",
+        "route_file": "frontend/apps/web/src/routes/projects.$projectId.views.qa-dashboard.tsx",
+        "component": "UNKNOWN (inline route component or dynamic dispatcher)",
+        "api_dependencies": "UNKNOWN; no audited API hook mapping",
+        "actual_source_behavior": "Artifact-specific component or route adapter mapped; runtime unknown",
+        "evidence": "frontend/apps/web/src/components/layout/sidebar-nav.ts:259",
+        "status": "SOURCE_ONLY_RUNTIME_UNKNOWN",
+        "gap_linkage": "",
+        "click_status": "NOT_CLICKED"
+      }
+    },
+    {
+      "id": "G09.view-29",
+      "claim": "Coverage Report => Coverage Report",
+      "Implementation": {
+        "verdict": "PASS",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/routes/projects.$projectId.views.coverage.tsx:1",
+        "limit": "Route file existence only; complete artifact binding not accepted"
+      },
+      "Usability": {
+        "verdict": "NOT_RUN",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/routes/projects.$projectId.views.coverage.tsx:1",
+        "limit": "Source inspected; no matching external journey executed"
+      },
+      "Validation": {
+        "verdict": "NOT_RUN",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/routes/projects.$projectId.views.coverage.tsx:1",
+        "limit": "Static checks do not prove UI runtime"
+      },
+      "Assurance": {
+        "verdict": "UNKNOWN",
+        "evidence": null,
+        "limit": "No independent complete journey witness"
+      },
+      "historical_mapping": {
+        "menu_label": "Coverage Report",
+        "expected_artifact": "Coverage Report",
+        "frontend_route": "/projects/${activeId}/views/coverage",
+        "route_file": "frontend/apps/web/src/routes/projects.$projectId.views.coverage.tsx",
+        "component": "UNKNOWN (inline route component or dynamic dispatcher)",
+        "api_dependencies": "UNKNOWN; no audited API hook mapping",
+        "actual_source_behavior": "Artifact-specific component or route adapter mapped; runtime unknown",
+        "evidence": "frontend/apps/web/src/components/layout/sidebar-nav.ts:265",
+        "status": "SOURCE_ONLY_RUNTIME_UNKNOWN",
+        "gap_linkage": "",
+        "click_status": "NOT_CLICKED"
+      }
+    },
+    {
+      "id": "G09.view-30",
+      "claim": "Journey Map => Journey Map",
+      "Implementation": {
+        "verdict": "PASS",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/routes/projects.$projectId.views.journey.tsx:1",
+        "limit": "Route file existence only; complete artifact binding not accepted"
+      },
+      "Usability": {
+        "verdict": "NOT_RUN",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/routes/projects.$projectId.views.journey.tsx:1",
+        "limit": "Source inspected; no matching external journey executed"
+      },
+      "Validation": {
+        "verdict": "NOT_RUN",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/routes/projects.$projectId.views.journey.tsx:1",
+        "limit": "Static checks do not prove UI runtime"
+      },
+      "Assurance": {
+        "verdict": "UNKNOWN",
+        "evidence": null,
+        "limit": "No independent complete journey witness"
+      },
+      "historical_mapping": {
+        "menu_label": "Journey Map",
+        "expected_artifact": "Journey Map",
+        "frontend_route": "/projects/${activeId}/views/journey",
+        "route_file": "frontend/apps/web/src/routes/projects.$projectId.views.journey.tsx",
+        "component": "frontend/apps/web/src/views/ItemsTableView.tsx",
+        "api_dependencies": "UNKNOWN; no audited API hook mapping",
+        "actual_source_behavior": "Route only renders generic item table; no artifact-specific renderer is invoked",
+        "evidence": "frontend/apps/web/src/components/layout/sidebar-nav.ts:277",
+        "status": "SOURCE_GAP",
+        "gap_linkage": "VIEW-002",
+        "click_status": "NOT_CLICKED"
+      }
+    },
+    {
+      "id": "G09.view-31",
+      "claim": "Process Flow => Process Flow",
+      "Implementation": {
+        "verdict": "PASS",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/routes/projects.$projectId.views.process.tsx:1",
+        "limit": "Route file existence only; complete artifact binding not accepted"
+      },
+      "Usability": {
+        "verdict": "NOT_RUN",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/routes/projects.$projectId.views.process.tsx:1",
+        "limit": "Source inspected; no matching external journey executed"
+      },
+      "Validation": {
+        "verdict": "NOT_RUN",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/routes/projects.$projectId.views.process.tsx:1",
+        "limit": "Static checks do not prove UI runtime"
+      },
+      "Assurance": {
+        "verdict": "UNKNOWN",
+        "evidence": null,
+        "limit": "No independent complete journey witness"
+      },
+      "historical_mapping": {
+        "menu_label": "Process Flow",
+        "expected_artifact": "Process Flow",
+        "frontend_route": "/projects/${activeId}/views/process",
+        "route_file": "frontend/apps/web/src/routes/projects.$projectId.views.process.tsx",
+        "component": "frontend/apps/web/src/pages/projects/views/ProcessView.tsx",
+        "api_dependencies": "UNKNOWN; no audited API hook mapping",
+        "actual_source_behavior": "Artifact-specific component or route adapter mapped; runtime unknown",
+        "evidence": "frontend/apps/web/src/components/layout/sidebar-nav.ts:283",
+        "status": "SOURCE_ONLY_RUNTIME_UNKNOWN",
+        "gap_linkage": "",
+        "click_status": "NOT_CLICKED"
+      }
+    },
+    {
+      "id": "G09.view-32",
+      "claim": "Timeline => Timeline",
+      "Implementation": {
+        "verdict": "PASS",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/routes/projects.$projectId.views.monitoring.tsx:1",
+        "limit": "Route file existence only; complete artifact binding not accepted"
+      },
+      "Usability": {
+        "verdict": "NOT_RUN",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/routes/projects.$projectId.views.monitoring.tsx:1",
+        "limit": "Source inspected; no matching external journey executed"
+      },
+      "Validation": {
+        "verdict": "NOT_RUN",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/routes/projects.$projectId.views.monitoring.tsx:1",
+        "limit": "Static checks do not prove UI runtime"
+      },
+      "Assurance": {
+        "verdict": "UNKNOWN",
+        "evidence": null,
+        "limit": "No independent complete journey witness"
+      },
+      "historical_mapping": {
+        "menu_label": "Timeline",
+        "expected_artifact": "Timeline",
+        "frontend_route": "/projects/${activeId}/views/monitoring",
+        "route_file": "frontend/apps/web/src/routes/projects.$projectId.views.monitoring.tsx",
+        "component": "frontend/apps/web/src/pages/projects/views/MonitoringView.tsx",
+        "api_dependencies": "{'api_hooks': ['useItems'], 'resolved_http_endpoints': 'UNKNOWN; not inferred from function names'}",
+        "actual_source_behavior": "Timeline and Monitoring Dashboard share monitoring route; renderer produces item-status cards/table, not timeline",
+        "evidence": "frontend/apps/web/src/components/layout/sidebar-nav.ts:289",
+        "status": "SOURCE_GAP",
+        "gap_linkage": "VIEW-006",
+        "click_status": "NOT_CLICKED"
+      }
+    },
+    {
+      "id": "G09.view-33",
+      "claim": "Reports => Reports",
+      "Implementation": {
+        "verdict": "PASS",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/routes/projects.$projectId.views.performance.tsx:1",
+        "limit": "Route file existence only; complete artifact binding not accepted"
+      },
+      "Usability": {
+        "verdict": "NOT_RUN",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/routes/projects.$projectId.views.performance.tsx:1",
+        "limit": "Source inspected; no matching external journey executed"
+      },
+      "Validation": {
+        "verdict": "NOT_RUN",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/routes/projects.$projectId.views.performance.tsx:1",
+        "limit": "Static checks do not prove UI runtime"
+      },
+      "Assurance": {
+        "verdict": "UNKNOWN",
+        "evidence": null,
+        "limit": "No independent complete journey witness"
+      },
+      "historical_mapping": {
+        "menu_label": "Reports",
+        "expected_artifact": "Reports",
+        "frontend_route": "/projects/${activeId}/views/performance",
+        "route_file": "frontend/apps/web/src/routes/projects.$projectId.views.performance.tsx",
+        "component": "frontend/apps/web/src/views/ItemsTableView.tsx",
+        "api_dependencies": "UNKNOWN; no audited API hook mapping",
+        "actual_source_behavior": "Reports and Performance Metrics share performance route, which renders ItemsTableView(view=performance)",
+        "evidence": "frontend/apps/web/src/components/layout/sidebar-nav.ts:295",
+        "status": "SOURCE_GAP",
+        "gap_linkage": "VIEW-007",
+        "click_status": "NOT_CLICKED"
+      }
+    },
+    {
+      "id": "G09.view-34",
+      "claim": "Impact Analysis => Impact Analysis",
+      "Implementation": {
+        "verdict": "PASS",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/routes/projects.$projectId.views.$viewType.tsx:1",
+        "limit": "Route file existence only; complete artifact binding not accepted"
+      },
+      "Usability": {
+        "verdict": "NOT_RUN",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/routes/projects.$projectId.views.$viewType.tsx:1",
+        "limit": "Source inspected; no matching external journey executed"
+      },
+      "Validation": {
+        "verdict": "NOT_RUN",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/routes/projects.$projectId.views.$viewType.tsx:1",
+        "limit": "Static checks do not prove UI runtime"
+      },
+      "Assurance": {
+        "verdict": "UNKNOWN",
+        "evidence": null,
+        "limit": "No independent complete journey witness"
+      },
+      "historical_mapping": {
+        "menu_label": "Impact Analysis",
+        "expected_artifact": "Impact Analysis",
+        "frontend_route": "/projects/${activeId}/views/impact-analysis",
+        "route_file": "frontend/apps/web/src/routes/projects.$projectId.views.$viewType.tsx",
+        "component": "UNKNOWN (inline route component or dynamic dispatcher)",
+        "api_dependencies": "UNKNOWN; no audited API hook mapping",
+        "actual_source_behavior": "Artifact-specific component or route adapter mapped; runtime unknown",
+        "evidence": "frontend/apps/web/src/components/layout/sidebar-nav.ts:307",
+        "status": "SOURCE_ONLY_RUNTIME_UNKNOWN",
+        "gap_linkage": "",
+        "click_status": "NOT_CLICKED"
+      }
+    },
+    {
+      "id": "G09.view-35",
+      "claim": "Traceability Matrix => Traceability Matrix",
+      "Implementation": {
+        "verdict": "PASS",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/routes/projects.$projectId.views.$viewType.tsx:1",
+        "limit": "Route file existence only; complete artifact binding not accepted"
+      },
+      "Usability": {
+        "verdict": "NOT_RUN",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/routes/projects.$projectId.views.$viewType.tsx:1",
+        "limit": "Source inspected; no matching external journey executed"
+      },
+      "Validation": {
+        "verdict": "NOT_RUN",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/routes/projects.$projectId.views.$viewType.tsx:1",
+        "limit": "Static checks do not prove UI runtime"
+      },
+      "Assurance": {
+        "verdict": "UNKNOWN",
+        "evidence": null,
+        "limit": "No independent complete journey witness"
+      },
+      "historical_mapping": {
+        "menu_label": "Traceability Matrix",
+        "expected_artifact": "Traceability Matrix",
+        "frontend_route": "/projects/${activeId}/views/traceability",
+        "route_file": "frontend/apps/web/src/routes/projects.$projectId.views.$viewType.tsx",
+        "component": "UNKNOWN (inline route component or dynamic dispatcher)",
+        "api_dependencies": "UNKNOWN; no audited API hook mapping",
+        "actual_source_behavior": "Artifact-specific component or route adapter mapped; runtime unknown",
+        "evidence": "frontend/apps/web/src/components/layout/sidebar-nav.ts:313",
+        "status": "SOURCE_ONLY_RUNTIME_UNKNOWN",
+        "gap_linkage": "",
+        "click_status": "NOT_CLICKED"
+      }
+    },
+    {
+      "id": "G09.view-36",
+      "claim": "Dependency Graph => Dependency Graph",
+      "Implementation": {
+        "verdict": "PASS",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/routes/projects.$projectId.views.dependency.tsx:1",
+        "limit": "Route file existence only; complete artifact binding not accepted"
+      },
+      "Usability": {
+        "verdict": "NOT_RUN",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/routes/projects.$projectId.views.dependency.tsx:1",
+        "limit": "Source inspected; no matching external journey executed"
+      },
+      "Validation": {
+        "verdict": "NOT_RUN",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/routes/projects.$projectId.views.dependency.tsx:1",
+        "limit": "Static checks do not prove UI runtime"
+      },
+      "Assurance": {
+        "verdict": "UNKNOWN",
+        "evidence": null,
+        "limit": "No independent complete journey witness"
+      },
+      "historical_mapping": {
+        "menu_label": "Dependency Graph",
+        "expected_artifact": "Dependency Graph",
+        "frontend_route": "/projects/${activeId}/views/dependency",
+        "route_file": "frontend/apps/web/src/routes/projects.$projectId.views.dependency.tsx",
+        "component": "frontend/apps/web/src/views/ItemsTableView.tsx",
+        "api_dependencies": "UNKNOWN; no audited API hook mapping",
+        "actual_source_behavior": "Route only renders generic item table; no artifact-specific renderer is invoked",
+        "evidence": "frontend/apps/web/src/components/layout/sidebar-nav.ts:319",
+        "status": "SOURCE_GAP",
+        "gap_linkage": "VIEW-001",
+        "click_status": "NOT_CLICKED"
+      }
+    },
+    {
+      "id": "G09.view-37",
+      "claim": "Performance Metrics => Performance Metrics",
+      "Implementation": {
+        "verdict": "PASS",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/routes/projects.$projectId.views.performance.tsx:1",
+        "limit": "Route file existence only; complete artifact binding not accepted"
+      },
+      "Usability": {
+        "verdict": "NOT_RUN",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/routes/projects.$projectId.views.performance.tsx:1",
+        "limit": "Source inspected; no matching external journey executed"
+      },
+      "Validation": {
+        "verdict": "NOT_RUN",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/routes/projects.$projectId.views.performance.tsx:1",
+        "limit": "Static checks do not prove UI runtime"
+      },
+      "Assurance": {
+        "verdict": "UNKNOWN",
+        "evidence": null,
+        "limit": "No independent complete journey witness"
+      },
+      "historical_mapping": {
+        "menu_label": "Performance Metrics",
+        "expected_artifact": "Performance Metrics",
+        "frontend_route": "/projects/${activeId}/views/performance",
+        "route_file": "frontend/apps/web/src/routes/projects.$projectId.views.performance.tsx",
+        "component": "frontend/apps/web/src/views/ItemsTableView.tsx",
+        "api_dependencies": "UNKNOWN; no audited API hook mapping",
+        "actual_source_behavior": "Reports and Performance Metrics share performance route, which renders ItemsTableView(view=performance)",
+        "evidence": "frontend/apps/web/src/components/layout/sidebar-nav.ts:325",
+        "status": "SOURCE_GAP",
+        "gap_linkage": "VIEW-007",
+        "click_status": "NOT_CLICKED"
+      }
+    },
+    {
+      "id": "G09.view-38",
+      "claim": "Security Analysis => Security Analysis",
+      "Implementation": {
+        "verdict": "PASS",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/routes/projects.$projectId.views.security.tsx:1",
+        "limit": "Route file existence only; complete artifact binding not accepted"
+      },
+      "Usability": {
+        "verdict": "NOT_RUN",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/routes/projects.$projectId.views.security.tsx:1",
+        "limit": "Source inspected; no matching external journey executed"
+      },
+      "Validation": {
+        "verdict": "NOT_RUN",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/routes/projects.$projectId.views.security.tsx:1",
+        "limit": "Static checks do not prove UI runtime"
+      },
+      "Assurance": {
+        "verdict": "UNKNOWN",
+        "evidence": null,
+        "limit": "No independent complete journey witness"
+      },
+      "historical_mapping": {
+        "menu_label": "Security Analysis",
+        "expected_artifact": "Security Analysis",
+        "frontend_route": "/projects/${activeId}/views/security",
+        "route_file": "frontend/apps/web/src/routes/projects.$projectId.views.security.tsx",
+        "component": "frontend/apps/web/src/views/ItemsTableView.tsx",
+        "api_dependencies": "UNKNOWN; no audited API hook mapping",
+        "actual_source_behavior": "Artifact-specific component or route adapter mapped; runtime unknown",
+        "evidence": "frontend/apps/web/src/components/layout/sidebar-nav.ts:337",
+        "status": "SOURCE_ONLY_RUNTIME_UNKNOWN",
+        "gap_linkage": "",
+        "click_status": "NOT_CLICKED"
+      }
+    },
+    {
+      "id": "G09.view-39",
+      "claim": "Monitoring Dashboard => Monitoring Dashboard",
+      "Implementation": {
+        "verdict": "PASS",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/routes/projects.$projectId.views.monitoring.tsx:1",
+        "limit": "Route file existence only; complete artifact binding not accepted"
+      },
+      "Usability": {
+        "verdict": "NOT_RUN",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/routes/projects.$projectId.views.monitoring.tsx:1",
+        "limit": "Source inspected; no matching external journey executed"
+      },
+      "Validation": {
+        "verdict": "NOT_RUN",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/routes/projects.$projectId.views.monitoring.tsx:1",
+        "limit": "Static checks do not prove UI runtime"
+      },
+      "Assurance": {
+        "verdict": "UNKNOWN",
+        "evidence": null,
+        "limit": "No independent complete journey witness"
+      },
+      "historical_mapping": {
+        "menu_label": "Monitoring Dashboard",
+        "expected_artifact": "Monitoring Dashboard",
+        "frontend_route": "/projects/${activeId}/views/monitoring",
+        "route_file": "frontend/apps/web/src/routes/projects.$projectId.views.monitoring.tsx",
+        "component": "frontend/apps/web/src/pages/projects/views/MonitoringView.tsx",
+        "api_dependencies": "{'api_hooks': ['useItems'], 'resolved_http_endpoints': 'UNKNOWN; not inferred from function names'}",
+        "actual_source_behavior": "Timeline and Monitoring Dashboard share monitoring route; renderer produces item-status cards/table, not timeline",
+        "evidence": "frontend/apps/web/src/components/layout/sidebar-nav.ts:343",
+        "status": "SOURCE_GAP",
+        "gap_linkage": "VIEW-006",
+        "click_status": "NOT_CLICKED"
+      }
+    },
+    {
+      "id": "G09.view-40",
+      "claim": "Bug Tracking => Bug Tracking",
+      "Implementation": {
+        "verdict": "PASS",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/routes/projects.$projectId.views.problem.tsx:1",
+        "limit": "Route file existence only; complete artifact binding not accepted"
+      },
+      "Usability": {
+        "verdict": "NOT_RUN",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/routes/projects.$projectId.views.problem.tsx:1",
+        "limit": "Source inspected; no matching external journey executed"
+      },
+      "Validation": {
+        "verdict": "NOT_RUN",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/routes/projects.$projectId.views.problem.tsx:1",
+        "limit": "Static checks do not prove UI runtime"
+      },
+      "Assurance": {
+        "verdict": "UNKNOWN",
+        "evidence": null,
+        "limit": "No independent complete journey witness"
+      },
+      "historical_mapping": {
+        "menu_label": "Bug Tracking",
+        "expected_artifact": "Bug Tracking",
+        "frontend_route": "/projects/${activeId}/views/problem",
+        "route_file": "frontend/apps/web/src/routes/projects.$projectId.views.problem.tsx",
+        "component": "frontend/apps/web/src/pages/projects/views/ProblemView.tsx",
+        "api_dependencies": "UNKNOWN; no audited API hook mapping",
+        "actual_source_behavior": "Artifact-specific component or route adapter mapped; runtime unknown",
+        "evidence": "frontend/apps/web/src/components/layout/sidebar-nav.ts:349",
+        "status": "SOURCE_ONLY_RUNTIME_UNKNOWN",
+        "gap_linkage": "",
+        "click_status": "NOT_CLICKED"
+      }
+    },
+    {
+      "id": "G09.view-41",
+      "claim": "Integrations => Integrations",
+      "Implementation": {
+        "verdict": "PASS",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/routes/projects.$projectId.views.integrations.tsx:1",
+        "limit": "Route file existence only; complete artifact binding not accepted"
+      },
+      "Usability": {
+        "verdict": "NOT_RUN",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/routes/projects.$projectId.views.integrations.tsx:1",
+        "limit": "Source inspected; no matching external journey executed"
+      },
+      "Validation": {
+        "verdict": "NOT_RUN",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/routes/projects.$projectId.views.integrations.tsx:1",
+        "limit": "Static checks do not prove UI runtime"
+      },
+      "Assurance": {
+        "verdict": "UNKNOWN",
+        "evidence": null,
+        "limit": "No independent complete journey witness"
+      },
+      "historical_mapping": {
+        "menu_label": "Integrations",
+        "expected_artifact": "Integrations",
+        "frontend_route": "/projects/${activeId}/views/integrations",
+        "route_file": "frontend/apps/web/src/routes/projects.$projectId.views.integrations.tsx",
+        "component": "UNKNOWN (inline route component or dynamic dispatcher)",
+        "api_dependencies": "UNKNOWN; no audited API hook mapping",
+        "actual_source_behavior": "Artifact-specific component or route adapter mapped; runtime unknown",
+        "evidence": "frontend/apps/web/src/components/layout/sidebar-nav.ts:361",
+        "status": "SOURCE_ONLY_RUNTIME_UNKNOWN",
+        "gap_linkage": "",
+        "click_status": "NOT_CLICKED"
+      }
+    },
+    {
+      "id": "G09.view-42",
+      "claim": "Webhooks => Webhooks",
+      "Implementation": {
+        "verdict": "PASS",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/routes/projects.$projectId.views.webhooks.tsx:1",
+        "limit": "Route file existence only; complete artifact binding not accepted"
+      },
+      "Usability": {
+        "verdict": "NOT_RUN",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/routes/projects.$projectId.views.webhooks.tsx:1",
+        "limit": "Source inspected; no matching external journey executed"
+      },
+      "Validation": {
+        "verdict": "NOT_RUN",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/routes/projects.$projectId.views.webhooks.tsx:1",
+        "limit": "Static checks do not prove UI runtime"
+      },
+      "Assurance": {
+        "verdict": "UNKNOWN",
+        "evidence": null,
+        "limit": "No independent complete journey witness"
+      },
+      "historical_mapping": {
+        "menu_label": "Webhooks",
+        "expected_artifact": "Webhooks",
+        "frontend_route": "/projects/${activeId}/views/webhooks",
+        "route_file": "frontend/apps/web/src/routes/projects.$projectId.views.webhooks.tsx",
+        "component": "UNKNOWN (inline route component or dynamic dispatcher)",
+        "api_dependencies": "UNKNOWN; no audited API hook mapping",
+        "actual_source_behavior": "Artifact-specific component or route adapter mapped; runtime unknown",
+        "evidence": "frontend/apps/web/src/components/layout/sidebar-nav.ts:367",
+        "status": "SOURCE_ONLY_RUNTIME_UNKNOWN",
+        "gap_linkage": "",
+        "click_status": "NOT_CLICKED"
+      }
+    },
+    {
+      "id": "G09.view-43",
+      "claim": "Settings => Settings",
+      "Implementation": {
+        "verdict": "PASS",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/routes/projects.$projectId.settings.tsx:1",
+        "limit": "Route file existence only; complete artifact binding not accepted"
+      },
+      "Usability": {
+        "verdict": "NOT_RUN",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/routes/projects.$projectId.settings.tsx:1",
+        "limit": "Source inspected; no matching external journey executed"
+      },
+      "Validation": {
+        "verdict": "NOT_RUN",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/routes/projects.$projectId.settings.tsx:1",
+        "limit": "Static checks do not prove UI runtime"
+      },
+      "Assurance": {
+        "verdict": "UNKNOWN",
+        "evidence": null,
+        "limit": "No independent complete journey witness"
+      },
+      "historical_mapping": {
+        "menu_label": "Settings",
+        "expected_artifact": "Settings",
+        "frontend_route": "/projects/${activeId}/settings",
+        "route_file": "frontend/apps/web/src/routes/projects.$projectId.settings.tsx",
+        "component": "frontend/apps/web/src/views/ProjectSettingsView.tsx",
+        "api_dependencies": "{'api_hooks': ['useProject', 'useUpdateProject'], 'resolved_http_endpoints': 'UNKNOWN; not inferred from function names'}",
+        "actual_source_behavior": "Artifact-specific component or route adapter mapped; runtime unknown",
+        "evidence": "frontend/apps/web/src/components/layout/sidebar-nav.ts:373",
+        "status": "SOURCE_ONLY_RUNTIME_UNKNOWN",
+        "gap_linkage": "",
+        "click_status": "NOT_CLICKED"
+      }
+    },
+    {
+      "id": "G09.view-44",
+      "claim": "Settings => Settings",
+      "Implementation": {
+        "verdict": "PASS",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/routes/settings.tsx:1",
+        "limit": "Route file existence only; complete artifact binding not accepted"
+      },
+      "Usability": {
+        "verdict": "NOT_RUN",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/routes/settings.tsx:1",
+        "limit": "Source inspected; no matching external journey executed"
+      },
+      "Validation": {
+        "verdict": "NOT_RUN",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/routes/settings.tsx:1",
+        "limit": "Static checks do not prove UI runtime"
+      },
+      "Assurance": {
+        "verdict": "UNKNOWN",
+        "evidence": null,
+        "limit": "No independent complete journey witness"
+      },
+      "historical_mapping": {
+        "menu_label": "Settings",
+        "expected_artifact": "Settings",
+        "frontend_route": "/settings",
+        "route_file": "frontend/apps/web/src/routes/settings.tsx",
+        "component": "frontend/apps/web/src/views/SettingsView.tsx",
+        "api_dependencies": "{'api_hooks': ['useProjects'], 'resolved_http_endpoints': 'UNKNOWN; not inferred from function names'}",
+        "actual_source_behavior": "Artifact-specific component or route adapter mapped; runtime unknown",
+        "evidence": "frontend/apps/web/src/components/layout/sidebar-nav.ts:392",
+        "status": "SOURCE_ONLY_RUNTIME_UNKNOWN",
+        "gap_linkage": "",
+        "click_status": "NOT_CLICKED"
+      }
+    },
+    {
+      "id": "G09.view-45",
+      "claim": "direct project route => projects.$projectId.adrs.$adrId",
+      "Implementation": {
+        "verdict": "PASS",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/routes/projects.$projectId.adrs.$adrId.tsx:1",
+        "limit": "Route file existence only; complete artifact binding not accepted"
+      },
+      "Usability": {
+        "verdict": "NOT_RUN",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/routes/projects.$projectId.adrs.$adrId.tsx:1",
+        "limit": "Source inspected; no matching external journey executed"
+      },
+      "Validation": {
+        "verdict": "NOT_RUN",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/routes/projects.$projectId.adrs.$adrId.tsx:1",
+        "limit": "Static checks do not prove UI runtime"
+      },
+      "Assurance": {
+        "verdict": "UNKNOWN",
+        "evidence": null,
+        "limit": "No independent complete journey witness"
+      },
+      "historical_mapping": {
+        "menu_label": "direct project route",
+        "expected_artifact": "projects.$projectId.adrs.$adrId",
+        "frontend_route": "/projects/$projectId/adrs/$adrId",
+        "route_file": "frontend/apps/web/src/routes/projects.$projectId.adrs.$adrId.tsx",
+        "component": "frontend/apps/web/src/views/ADRDetailView.tsx",
+        "api_dependencies": "{'api_hooks': ['useADR', 'useADRActivities'], 'resolved_http_endpoints': 'UNKNOWN; not inferred from function names'}",
+        "actual_source_behavior": "Source route enumerated; runtime and data completeness unknown",
+        "evidence": "frontend/apps/web/src/routes/projects.$projectId.adrs.$adrId.tsx:1",
+        "status": "SOURCE_ONLY_RUNTIME_UNKNOWN",
+        "gap_linkage": "",
+        "click_status": "NOT_CLICKED"
+      }
+    },
+    {
+      "id": "G09.view-46",
+      "claim": "direct project route => projects.$projectId.adrs",
+      "Implementation": {
+        "verdict": "PASS",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/routes/projects.$projectId.adrs.tsx:1",
+        "limit": "Route file existence only; complete artifact binding not accepted"
+      },
+      "Usability": {
+        "verdict": "NOT_RUN",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/routes/projects.$projectId.adrs.tsx:1",
+        "limit": "Source inspected; no matching external journey executed"
+      },
+      "Validation": {
+        "verdict": "NOT_RUN",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/routes/projects.$projectId.adrs.tsx:1",
+        "limit": "Static checks do not prove UI runtime"
+      },
+      "Assurance": {
+        "verdict": "UNKNOWN",
+        "evidence": null,
+        "limit": "No independent complete journey witness"
+      },
+      "historical_mapping": {
+        "menu_label": "direct project route",
+        "expected_artifact": "projects.$projectId.adrs",
+        "frontend_route": "/projects/$projectId/adrs",
+        "route_file": "frontend/apps/web/src/routes/projects.$projectId.adrs.tsx",
+        "component": "UNKNOWN (inline route component or dynamic dispatcher)",
+        "api_dependencies": "UNKNOWN; no audited API hook mapping",
+        "actual_source_behavior": "Source route enumerated; runtime and data completeness unknown",
+        "evidence": "frontend/apps/web/src/routes/projects.$projectId.adrs.tsx:1",
+        "status": "SOURCE_ONLY_RUNTIME_UNKNOWN",
+        "gap_linkage": "",
+        "click_status": "NOT_CLICKED"
+      }
+    },
+    {
+      "id": "G09.view-47",
+      "claim": "direct project route => projects.$projectId.agents",
+      "Implementation": {
+        "verdict": "PASS",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/routes/projects.$projectId.agents.tsx:1",
+        "limit": "Route file existence only; complete artifact binding not accepted"
+      },
+      "Usability": {
+        "verdict": "NOT_RUN",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/routes/projects.$projectId.agents.tsx:1",
+        "limit": "Source inspected; no matching external journey executed"
+      },
+      "Validation": {
+        "verdict": "NOT_RUN",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/routes/projects.$projectId.agents.tsx:1",
+        "limit": "Static checks do not prove UI runtime"
+      },
+      "Assurance": {
+        "verdict": "UNKNOWN",
+        "evidence": null,
+        "limit": "No independent complete journey witness"
+      },
+      "historical_mapping": {
+        "menu_label": "direct project route",
+        "expected_artifact": "projects.$projectId.agents",
+        "frontend_route": "/projects/$projectId/agents",
+        "route_file": "frontend/apps/web/src/routes/projects.$projectId.agents.tsx",
+        "component": "frontend/apps/web/src/views/AgentWorkflowView.tsx",
+        "api_dependencies": "UNKNOWN; no audited API hook mapping",
+        "actual_source_behavior": "Source route enumerated; runtime and data completeness unknown",
+        "evidence": "frontend/apps/web/src/routes/projects.$projectId.agents.tsx:1",
+        "status": "SOURCE_ONLY_RUNTIME_UNKNOWN",
+        "gap_linkage": "",
+        "click_status": "NOT_CLICKED"
+      }
+    },
+    {
+      "id": "G09.view-48",
+      "claim": "direct project route => projects.$projectId.compliance",
+      "Implementation": {
+        "verdict": "PASS",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/routes/projects.$projectId.compliance.tsx:1",
+        "limit": "Route file existence only; complete artifact binding not accepted"
+      },
+      "Usability": {
+        "verdict": "NOT_RUN",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/routes/projects.$projectId.compliance.tsx:1",
+        "limit": "Source inspected; no matching external journey executed"
+      },
+      "Validation": {
+        "verdict": "NOT_RUN",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/routes/projects.$projectId.compliance.tsx:1",
+        "limit": "Static checks do not prove UI runtime"
+      },
+      "Assurance": {
+        "verdict": "UNKNOWN",
+        "evidence": null,
+        "limit": "No independent complete journey witness"
+      },
+      "historical_mapping": {
+        "menu_label": "direct project route",
+        "expected_artifact": "projects.$projectId.compliance",
+        "frontend_route": "/projects/$projectId/compliance",
+        "route_file": "frontend/apps/web/src/routes/projects.$projectId.compliance.tsx",
+        "component": "UNKNOWN (inline route component or dynamic dispatcher)",
+        "api_dependencies": "UNKNOWN; no audited API hook mapping",
+        "actual_source_behavior": "Source route enumerated; runtime and data completeness unknown",
+        "evidence": "frontend/apps/web/src/routes/projects.$projectId.compliance.tsx:1",
+        "status": "SOURCE_ONLY_RUNTIME_UNKNOWN",
+        "gap_linkage": "",
+        "click_status": "NOT_CLICKED"
+      }
+    },
+    {
+      "id": "G09.view-49",
+      "claim": "direct project route => projects.$projectId.contracts.$contractId",
+      "Implementation": {
+        "verdict": "PASS",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/routes/projects.$projectId.contracts.$contractId.tsx:1",
+        "limit": "Route file existence only; complete artifact binding not accepted"
+      },
+      "Usability": {
+        "verdict": "NOT_RUN",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/routes/projects.$projectId.contracts.$contractId.tsx:1",
+        "limit": "Source inspected; no matching external journey executed"
+      },
+      "Validation": {
+        "verdict": "NOT_RUN",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/routes/projects.$projectId.contracts.$contractId.tsx:1",
+        "limit": "Static checks do not prove UI runtime"
+      },
+      "Assurance": {
+        "verdict": "UNKNOWN",
+        "evidence": null,
+        "limit": "No independent complete journey witness"
+      },
+      "historical_mapping": {
+        "menu_label": "direct project route",
+        "expected_artifact": "projects.$projectId.contracts.$contractId",
+        "frontend_route": "/projects/$projectId/contracts/$contractId",
+        "route_file": "frontend/apps/web/src/routes/projects.$projectId.contracts.$contractId.tsx",
+        "component": "frontend/apps/web/src/views/ContractDetailView.tsx",
+        "api_dependencies": "{'api_hooks': ['useContract', 'useContractActivities'], 'resolved_http_endpoints': 'UNKNOWN; not inferred from function names'}",
+        "actual_source_behavior": "Source route enumerated; runtime and data completeness unknown",
+        "evidence": "frontend/apps/web/src/routes/projects.$projectId.contracts.$contractId.tsx:1",
+        "status": "SOURCE_ONLY_RUNTIME_UNKNOWN",
+        "gap_linkage": "",
+        "click_status": "NOT_CLICKED"
+      }
+    },
+    {
+      "id": "G09.view-50",
+      "claim": "direct project route => projects.$projectId.contracts",
+      "Implementation": {
+        "verdict": "PASS",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/routes/projects.$projectId.contracts.tsx:1",
+        "limit": "Route file existence only; complete artifact binding not accepted"
+      },
+      "Usability": {
+        "verdict": "NOT_RUN",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/routes/projects.$projectId.contracts.tsx:1",
+        "limit": "Source inspected; no matching external journey executed"
+      },
+      "Validation": {
+        "verdict": "NOT_RUN",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/routes/projects.$projectId.contracts.tsx:1",
+        "limit": "Static checks do not prove UI runtime"
+      },
+      "Assurance": {
+        "verdict": "UNKNOWN",
+        "evidence": null,
+        "limit": "No independent complete journey witness"
+      },
+      "historical_mapping": {
+        "menu_label": "direct project route",
+        "expected_artifact": "projects.$projectId.contracts",
+        "frontend_route": "/projects/$projectId/contracts",
+        "route_file": "frontend/apps/web/src/routes/projects.$projectId.contracts.tsx",
+        "component": "UNKNOWN (inline route component or dynamic dispatcher)",
+        "api_dependencies": "UNKNOWN; no audited API hook mapping",
+        "actual_source_behavior": "Source route enumerated; runtime and data completeness unknown",
+        "evidence": "frontend/apps/web/src/routes/projects.$projectId.contracts.tsx:1",
+        "status": "SOURCE_ONLY_RUNTIME_UNKNOWN",
+        "gap_linkage": "",
+        "click_status": "NOT_CLICKED"
+      }
+    },
+    {
+      "id": "G09.view-51",
+      "claim": "direct project route => projects.$projectId.equivalence",
+      "Implementation": {
+        "verdict": "PASS",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/routes/projects.$projectId.equivalence.tsx:1",
+        "limit": "Route file existence only; complete artifact binding not accepted"
+      },
+      "Usability": {
+        "verdict": "NOT_RUN",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/routes/projects.$projectId.equivalence.tsx:1",
+        "limit": "Source inspected; no matching external journey executed"
+      },
+      "Validation": {
+        "verdict": "NOT_RUN",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/routes/projects.$projectId.equivalence.tsx:1",
+        "limit": "Static checks do not prove UI runtime"
+      },
+      "Assurance": {
+        "verdict": "UNKNOWN",
+        "evidence": null,
+        "limit": "No independent complete journey witness"
+      },
+      "historical_mapping": {
+        "menu_label": "direct project route",
+        "expected_artifact": "projects.$projectId.equivalence",
+        "frontend_route": "/projects/$projectId/equivalence",
+        "route_file": "frontend/apps/web/src/routes/projects.$projectId.equivalence.tsx",
+        "component": "frontend/apps/web/src/components/EquivalenceManager.tsx",
+        "api_dependencies": "UNKNOWN; no audited API hook mapping",
+        "actual_source_behavior": "All links/concepts/projections/items are constant empty mock arrays; export/import/panel receive mock data; navigation callback empty",
+        "evidence": "frontend/apps/web/src/routes/projects.$projectId.equivalence.tsx:1",
+        "status": "SOURCE_GAP",
+        "gap_linkage": "VIEW-021",
+        "click_status": "NOT_CLICKED"
+      }
+    },
+    {
+      "id": "G09.view-52",
+      "claim": "direct project route => projects.$projectId.features.$featureId.scenarios.$scenarioId",
+      "Implementation": {
+        "verdict": "PASS",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/routes/projects.$projectId.features.$featureId.scenarios.$scenarioId.tsx:1",
+        "limit": "Route file existence only; complete artifact binding not accepted"
+      },
+      "Usability": {
+        "verdict": "NOT_RUN",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/routes/projects.$projectId.features.$featureId.scenarios.$scenarioId.tsx:1",
+        "limit": "Source inspected; no matching external journey executed"
+      },
+      "Validation": {
+        "verdict": "NOT_RUN",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/routes/projects.$projectId.features.$featureId.scenarios.$scenarioId.tsx:1",
+        "limit": "Static checks do not prove UI runtime"
+      },
+      "Assurance": {
+        "verdict": "UNKNOWN",
+        "evidence": null,
+        "limit": "No independent complete journey witness"
+      },
+      "historical_mapping": {
+        "menu_label": "direct project route",
+        "expected_artifact": "projects.$projectId.features.$featureId.scenarios.$scenarioId",
+        "frontend_route": "/projects/$projectId/features/$featureId/scenarios/$scenarioId",
+        "route_file": "frontend/apps/web/src/routes/projects.$projectId.features.$featureId.scenarios.$scenarioId.tsx",
+        "component": "frontend/apps/web/src/views/ScenarioDetailView.tsx",
+        "api_dependencies": "{'api_hooks': ['useScenario', 'useScenarioActivities'], 'resolved_http_endpoints': 'UNKNOWN; not inferred from function names'}",
+        "actual_source_behavior": "Source route enumerated; runtime and data completeness unknown",
+        "evidence": "frontend/apps/web/src/routes/projects.$projectId.features.$featureId.scenarios.$scenarioId.tsx:1",
+        "status": "SOURCE_ONLY_RUNTIME_UNKNOWN",
+        "gap_linkage": "",
+        "click_status": "NOT_CLICKED"
+      }
+    },
+    {
+      "id": "G09.view-53",
+      "claim": "direct project route => projects.$projectId.features.$featureId",
+      "Implementation": {
+        "verdict": "PASS",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/routes/projects.$projectId.features.$featureId.tsx:1",
+        "limit": "Route file existence only; complete artifact binding not accepted"
+      },
+      "Usability": {
+        "verdict": "NOT_RUN",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/routes/projects.$projectId.features.$featureId.tsx:1",
+        "limit": "Source inspected; no matching external journey executed"
+      },
+      "Validation": {
+        "verdict": "NOT_RUN",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/routes/projects.$projectId.features.$featureId.tsx:1",
+        "limit": "Static checks do not prove UI runtime"
+      },
+      "Assurance": {
+        "verdict": "UNKNOWN",
+        "evidence": null,
+        "limit": "No independent complete journey witness"
+      },
+      "historical_mapping": {
+        "menu_label": "direct project route",
+        "expected_artifact": "projects.$projectId.features.$featureId",
+        "frontend_route": "/projects/$projectId/features/$featureId",
+        "route_file": "frontend/apps/web/src/routes/projects.$projectId.features.$featureId.tsx",
+        "component": "frontend/apps/web/src/views/FeatureDetailView.tsx",
+        "api_dependencies": "{'api_hooks': ['useFeature', 'useFeatureActivities', 'useScenarioActivities', 'useScenarios'], 'resolved_http_endpoints': 'UNKNOWN; not inferred from function names'}",
+        "actual_source_behavior": "Source route enumerated; runtime and data completeness unknown",
+        "evidence": "frontend/apps/web/src/routes/projects.$projectId.features.$featureId.tsx:1",
+        "status": "SOURCE_ONLY_RUNTIME_UNKNOWN",
+        "gap_linkage": "",
+        "click_status": "NOT_CLICKED"
+      }
+    },
+    {
+      "id": "G09.view-54",
+      "claim": "direct project route => projects.$projectId.features",
+      "Implementation": {
+        "verdict": "PASS",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/routes/projects.$projectId.features.tsx:1",
+        "limit": "Route file existence only; complete artifact binding not accepted"
+      },
+      "Usability": {
+        "verdict": "NOT_RUN",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/routes/projects.$projectId.features.tsx:1",
+        "limit": "Source inspected; no matching external journey executed"
+      },
+      "Validation": {
+        "verdict": "NOT_RUN",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/routes/projects.$projectId.features.tsx:1",
+        "limit": "Static checks do not prove UI runtime"
+      },
+      "Assurance": {
+        "verdict": "UNKNOWN",
+        "evidence": null,
+        "limit": "No independent complete journey witness"
+      },
+      "historical_mapping": {
+        "menu_label": "direct project route",
+        "expected_artifact": "projects.$projectId.features",
+        "frontend_route": "/projects/$projectId/features",
+        "route_file": "frontend/apps/web/src/routes/projects.$projectId.features.tsx",
+        "component": "UNKNOWN (inline route component or dynamic dispatcher)",
+        "api_dependencies": "UNKNOWN; no audited API hook mapping",
+        "actual_source_behavior": "Source route enumerated; runtime and data completeness unknown",
+        "evidence": "frontend/apps/web/src/routes/projects.$projectId.features.tsx:1",
+        "status": "SOURCE_ONLY_RUNTIME_UNKNOWN",
+        "gap_linkage": "",
+        "click_status": "NOT_CLICKED"
+      }
+    },
+    {
+      "id": "G09.view-55",
+      "claim": "direct project route => projects.$projectId.temporal",
+      "Implementation": {
+        "verdict": "PASS",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/routes/projects.$projectId.temporal.tsx:1",
+        "limit": "Route file existence only; complete artifact binding not accepted"
+      },
+      "Usability": {
+        "verdict": "NOT_RUN",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/routes/projects.$projectId.temporal.tsx:1",
+        "limit": "Source inspected; no matching external journey executed"
+      },
+      "Validation": {
+        "verdict": "NOT_RUN",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/routes/projects.$projectId.temporal.tsx:1",
+        "limit": "Static checks do not prove UI runtime"
+      },
+      "Assurance": {
+        "verdict": "UNKNOWN",
+        "evidence": null,
+        "limit": "No independent complete journey witness"
+      },
+      "historical_mapping": {
+        "menu_label": "direct project route",
+        "expected_artifact": "projects.$projectId.temporal",
+        "frontend_route": "/projects/$projectId/temporal",
+        "route_file": "frontend/apps/web/src/routes/projects.$projectId.temporal.tsx",
+        "component": "frontend/apps/web/src/components/temporal/TemporalNavigator.tsx; frontend/apps/web/src/components/temporal/ProgressDashboard.tsx; frontend/apps/web/src/components/temporal/TemporalNavigator.tsx",
+        "api_dependencies": "UNKNOWN; no audited API hook mapping",
+        "actual_source_behavior": "Fabricates Main branch and Version 1.0 with current timestamps; milestones/sprints empty; no backend calls",
+        "evidence": "frontend/apps/web/src/routes/projects.$projectId.temporal.tsx:1",
+        "status": "SOURCE_GAP",
+        "gap_linkage": "VIEW-020",
+        "click_status": "NOT_CLICKED"
+      }
+    },
+    {
+      "id": "G09.view-56",
+      "claim": "direct project route => projects.$projectId.views.$viewType.$itemId",
+      "Implementation": {
+        "verdict": "PASS",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/routes/projects.$projectId.views.$viewType.$itemId.tsx:1",
+        "limit": "Route file existence only; complete artifact binding not accepted"
+      },
+      "Usability": {
+        "verdict": "NOT_RUN",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/routes/projects.$projectId.views.$viewType.$itemId.tsx:1",
+        "limit": "Source inspected; no matching external journey executed"
+      },
+      "Validation": {
+        "verdict": "NOT_RUN",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/routes/projects.$projectId.views.$viewType.$itemId.tsx:1",
+        "limit": "Static checks do not prove UI runtime"
+      },
+      "Assurance": {
+        "verdict": "UNKNOWN",
+        "evidence": null,
+        "limit": "No independent complete journey witness"
+      },
+      "historical_mapping": {
+        "menu_label": "direct project route",
+        "expected_artifact": "projects.$projectId.views.$viewType.$itemId",
+        "frontend_route": "/projects/$projectId/views/$viewType/$itemId",
+        "route_file": "frontend/apps/web/src/routes/projects.$projectId.views.$viewType.$itemId.tsx",
+        "component": "frontend/apps/web/src/components/layout/FullScreenPage.tsx; frontend/apps/web/src/views/details/ItemDetailRouter.tsx",
+        "api_dependencies": "{'api_hooks': ['useItem'], 'resolved_http_endpoints': 'UNKNOWN; not inferred from function names'}",
+        "actual_source_behavior": "Source route enumerated; runtime and data completeness unknown",
+        "evidence": "frontend/apps/web/src/routes/projects.$projectId.views.$viewType.$itemId.tsx:1",
+        "status": "SOURCE_ONLY_RUNTIME_UNKNOWN",
+        "gap_linkage": "",
+        "click_status": "NOT_CLICKED"
+      }
+    },
+    {
+      "id": "G09.view-57",
+      "claim": "direct project route => projects.$projectId.views.$viewType",
+      "Implementation": {
+        "verdict": "PASS",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/routes/projects.$projectId.views.$viewType.tsx:1",
+        "limit": "Route file existence only; complete artifact binding not accepted"
+      },
+      "Usability": {
+        "verdict": "NOT_RUN",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/routes/projects.$projectId.views.$viewType.tsx:1",
+        "limit": "Source inspected; no matching external journey executed"
+      },
+      "Validation": {
+        "verdict": "NOT_RUN",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/routes/projects.$projectId.views.$viewType.tsx:1",
+        "limit": "Static checks do not prove UI runtime"
+      },
+      "Assurance": {
+        "verdict": "UNKNOWN",
+        "evidence": null,
+        "limit": "No independent complete journey witness"
+      },
+      "historical_mapping": {
+        "menu_label": "direct project route",
+        "expected_artifact": "projects.$projectId.views.$viewType",
+        "frontend_route": "/projects/$projectId/views/$viewType",
+        "route_file": "frontend/apps/web/src/routes/projects.$projectId.views.$viewType.tsx",
+        "component": "UNKNOWN (inline route component or dynamic dispatcher)",
+        "api_dependencies": "UNKNOWN; no audited API hook mapping",
+        "actual_source_behavior": "Source route enumerated; runtime and data completeness unknown",
+        "evidence": "frontend/apps/web/src/routes/projects.$projectId.views.$viewType.tsx:1",
+        "status": "SOURCE_ONLY_RUNTIME_UNKNOWN",
+        "gap_linkage": "",
+        "click_status": "NOT_CLICKED"
+      }
+    },
+    {
+      "id": "G09.view-58",
+      "claim": "direct project route => projects.$projectId.views.configuration",
+      "Implementation": {
+        "verdict": "PASS",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/routes/projects.$projectId.views.configuration.tsx:1",
+        "limit": "Route file existence only; complete artifact binding not accepted"
+      },
+      "Usability": {
+        "verdict": "NOT_RUN",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/routes/projects.$projectId.views.configuration.tsx:1",
+        "limit": "Source inspected; no matching external journey executed"
+      },
+      "Validation": {
+        "verdict": "NOT_RUN",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/routes/projects.$projectId.views.configuration.tsx:1",
+        "limit": "Static checks do not prove UI runtime"
+      },
+      "Assurance": {
+        "verdict": "UNKNOWN",
+        "evidence": null,
+        "limit": "No independent complete journey witness"
+      },
+      "historical_mapping": {
+        "menu_label": "direct project route",
+        "expected_artifact": "projects.$projectId.views.configuration",
+        "frontend_route": "/projects/$projectId/views/configuration",
+        "route_file": "frontend/apps/web/src/routes/projects.$projectId.views.configuration.tsx",
+        "component": "frontend/apps/web/src/views/ItemsTableView.tsx",
+        "api_dependencies": "UNKNOWN; no audited API hook mapping",
+        "actual_source_behavior": "Source route enumerated; runtime and data completeness unknown",
+        "evidence": "frontend/apps/web/src/routes/projects.$projectId.views.configuration.tsx:1",
+        "status": "SOURCE_ONLY_RUNTIME_UNKNOWN",
+        "gap_linkage": "",
+        "click_status": "NOT_CLICKED"
+      }
+    },
+    {
+      "id": "G09.view-59",
+      "claim": "direct project route => projects.$projectId.views.infrastructure",
+      "Implementation": {
+        "verdict": "PASS",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/routes/projects.$projectId.views.infrastructure.tsx:1",
+        "limit": "Route file existence only; complete artifact binding not accepted"
+      },
+      "Usability": {
+        "verdict": "NOT_RUN",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/routes/projects.$projectId.views.infrastructure.tsx:1",
+        "limit": "Source inspected; no matching external journey executed"
+      },
+      "Validation": {
+        "verdict": "NOT_RUN",
+        "evidence": "912303f689f0e335d4dad77a7767ef1e26098af7:frontend/apps/web/src/routes/projects.$projectId.views.infrastructure.tsx:1",
+        "limit": "Static checks do not prove UI runtime"
+      },
+      "Assurance": {
+        "verdict": "UNKNOWN",
+        "evidence": null,
+        "limit": "No independent complete journey witness"
+      },
+      "historical_mapping": {
+        "menu_label": "direct project route",
+        "expected_artifact": "projects.$projectId.views.infrastructure",
+        "frontend_route": "/projects/$projectId/views/infrastructure",
+        "route_file": "frontend/apps/web/src/routes/projects.$projectId.views.infrastructure.tsx",
+        "component": "frontend/apps/web/src/views/ItemsTableView.tsx",
+        "api_dependencies": "UNKNOWN; no audited API hook mapping",
+        "actual_source_behavior": "Source route enumerated; runtime and data completeness unknown",
+        "evidence": "frontend/apps/web/src/routes/projects.$projectId.views.infrastructure.tsx:1",
+        "status": "SOURCE_ONLY_RUNTIME_UNKNOWN",
+        "gap_linkage": "",
+        "click_status": "NOT_CLICKED"
+      }
+    }
+  ],
+  "seven_baselines": {
+    "source_sha": "3d02c5279ad30e5da61e037669955d37f6d8f7c7",
+    "promise_count": 652,
+    "sources": [
+      "docs/04-guides/mcp-cli-api-matrix.md",
+      "docs/FEATURE_INVENTORY.md",
+      "docs/governance/policy/endpoint_traceability_map.md",
+      "docs/ops/TRACEABILITY.json",
+      "docs/sessions/20260722-rich-dashboard-recovery/07_FRONTEND_CONVERGENCE_MATRIX.md",
+      "docs/sessions/20260726-frontend-convergence/02_PARITY_MATRIX.md",
+      "docs/traceability.md"
+    ],
+    "status": "DOCUMENTED_ONLY; not individually verified; no supersession authority inferred",
+    "input": "/Users/kooshapari/Documents/Tracera-State-Forward-2026-10-17/inputs/TRACERA-BASELINE-PROMISES.csv"
+  },
+  "historical_view_count": 59,
+  "limits": [
+    "No browser/desktop capture used",
+    "No full build or UI browser runtime executed",
+    "No source mutations during census",
+    "No installed app upgrade/recovery attempted",
+    "Detailed current route and API candidates are inventory.json; regex candidates are not exhaustive proof",
+    "Current runtime auth owner provides separate backend/storage witnesses"
+  ]
+}

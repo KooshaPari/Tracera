@@ -1,0 +1,188 @@
+{
+  "subject": "KooshaPari/Tracera",
+  "base_sha": "ae68aea7febd772282606bf1e142d507316cfea0",
+  "candidate_sha": "3fd3310fb98fdd2f9bca99eddd669f974fb1fb61",
+  "branch": "feat/instinct-product-observations-20261017",
+  "pr": "https://github.com/KooshaPari/Tracera/pull/1157",
+  "worktree": "/tmp/tracera-q1-20261017",
+  "observed_at": "2026-10-17T09:34:03.568105+00:00",
+  "changes": [
+    "crates/tracera-mcp/src/bin/mcp-server.rs",
+    "crates/tracera-server/migrations-postgres/0012_product_observations.sql",
+    "crates/tracera-server/migrations-sqlite/0012_product_observations.sql",
+    "crates/tracera-server/src/main.rs",
+    "crates/tracera-server/src/not_implemented.rs",
+    "crates/tracera-server/src/pg_store/mod.rs",
+    "crates/tracera-server/src/pg_store/product_observations.rs",
+    "crates/tracera-server/src/product/detectors.rs",
+    "crates/tracera-server/src/product/detectors_tests.rs",
+    "crates/tracera-server/src/product/ingest.rs",
+    "crates/tracera-server/src/product/mod.rs",
+    "crates/tracera-server/src/product/persistence.rs",
+    "crates/tracera-server/src/router.rs",
+    "crates/tracera-server/src/routes/auth.rs",
+    "crates/tracera-server/src/routes/export_import.rs",
+    "crates/tracera-server/src/routes/journeys.rs",
+    "crates/tracera-server/src/routes/product_observation_tests.rs",
+    "crates/tracera-server/src/routes/product_observations.rs",
+    "crates/tracera-server/src/routes/search.rs",
+    "crates/tracera-server/src/sqlite_store/mod.rs",
+    "crates/tracera-server/src/sqlite_store/product_observations.rs",
+    "crates/tracera-server/src/store.rs",
+    "crates/tracera-server/tests/product_persistence.rs",
+    "docs/contracts/product-observations.openapi.json",
+    "docs/sessions/20261017-product-observations/README.md",
+    "docs/sessions/20261017-product-observations/runtime-receipt.json"
+  ],
+  "tests": {
+    "detector": {
+      "red": 4,
+      "green": 17
+    },
+    "library": 96,
+    "binary": 121,
+    "existing_db": 4,
+    "new_sqlite": 5,
+    "postgres_explicit": 1,
+    "strict_clippy": "pass",
+    "fmt": "pass",
+    "diff": "pass"
+  },
+  "runtime": {
+    "binary_sha256": "47a7a5bba1eaff02264b6c338ee0d748312c83b8012cd3b1d4512f91656e0daf",
+    "first": [
+      200,
+      {
+        "accepted": 1,
+        "replayed": false
+      }
+    ],
+    "before": [
+      200,
+      {
+        "product_id": "q1-runtime",
+        "baseline": 1,
+        "intents": [
+          {
+            "id": "durable-read",
+            "kind": "Capability",
+            "title": "Evidence persists",
+            "description": "Read evidence after restart",
+            "status": "Accepted",
+            "baseline": 1
+          }
+        ],
+        "observations": [
+          {
+            "id": "runtime-check",
+            "product_id": "q1-runtime",
+            "baseline": 1,
+            "kind": "TestResult",
+            "result": "Failed",
+            "source": {
+              "collector": "q1-runtime",
+              "version": "1",
+              "artifact_ref": "file:runtime-assertion.txt"
+            },
+            "recorded_at": "2026-10-15T00:00:00Z",
+            "capability_id": "durable-read"
+          }
+        ]
+      }
+    ],
+    "after": [
+      200,
+      {
+        "product_id": "q1-runtime",
+        "baseline": 1,
+        "intents": [
+          {
+            "id": "durable-read",
+            "kind": "Capability",
+            "title": "Evidence persists",
+            "description": "Read evidence after restart",
+            "status": "Accepted",
+            "baseline": 1
+          }
+        ],
+        "observations": [
+          {
+            "id": "runtime-check",
+            "product_id": "q1-runtime",
+            "baseline": 1,
+            "kind": "TestResult",
+            "result": "Failed",
+            "source": {
+              "collector": "q1-runtime",
+              "version": "1",
+              "artifact_ref": "file:runtime-assertion.txt"
+            },
+            "recorded_at": "2026-10-15T00:00:00Z",
+            "capability_id": "durable-read"
+          }
+        ]
+      }
+    ],
+    "replay": [
+      200,
+      {
+        "accepted": 0,
+        "replayed": true
+      }
+    ],
+    "findings": [
+      200,
+      {
+        "findings": [
+          {
+            "kind": "Freshness",
+            "product_id": "q1-runtime",
+            "capability_id": "durable-read",
+            "message": "Observation 'runtime-check' is 206869 seconds old (max: 86400s). The result may no longer be current.",
+            "evidence": ["runtime-check"],
+            "detector_version": "1.1.0",
+            "detected_at": "2026-10-17T09:27:49.705085Z",
+            "severity": "High"
+          }
+        ],
+        "products_scanned": 1,
+        "capabilities_scanned": 1,
+        "detector_version": "1.1.0",
+        "ran_at": "2026-10-17T09:27:49.708578Z"
+      }
+    ],
+    "restart_exact_equality": true,
+    "candidate_stopped": true
+  },
+  "goal_delta": {
+    "TRC-G01": "separate identity and detector isolation verified",
+    "TRC-G02": "atomic durable SQLite and PostgreSQL ingestion verified",
+    "TRC-G03": "mounted typed API persistence and actual detector path verified"
+  },
+  "remaining": [
+    "automated trace/session and repository source bridge",
+    "UI user journey",
+    "per-product authorization",
+    "real-product discrepancy and user acceptance"
+  ],
+  "artifacts": {
+    "runtime-server.log": "f4d331480f467df85d6e4dc71cde36f9aff244fde783a36e5521bb357f6efaae",
+    "persistence-green.log": "930b8d400346353ea624f01a33b93be1729fe0e1d901b42dda560e638a869865",
+    "red.log": "c050be6d155aeadf7d852f05181d6289ce6dde51ee5e4329737ed0e492be1e7c",
+    "clippy-final.log": "42246af8c26f60698439dcbfbff665926f576055152482d3454d15908104552d",
+    "router-red.log": "df7d90299e4c548c78e038155171c4e35af4d137d9acd7f4cca490b13ffc3370",
+    "persistence-red.log": "5da470f1b2a96b26d2f58c3cdf705f45fbaf8bb304f711ea57814a3e31994272",
+    "detector-red.log": "e614b2944f5274f072cc99002de231002e45242ff35a7787dc477d8538efe6c6",
+    "clippy.log": "33eb930dd6edd915ae6168f16c1f362327e3d789f6522b379a1b777de18be620",
+    "detector-green.log": "124727dc02929e11a4997efa4762afc84feef651b08af208d197ef1d851bf26b",
+    "pg-init.log": "35a3f091670410cf5bea53d7791878e89986815fd188e801f69fcce1c6a7dff1",
+    "postgres.log": "a20d4fb3196cc3fc0f6730693a2d42f294789d573b390326657742ed743013db",
+    "full-tests.log": "9ea20e98c10cc852644eeb029d5c7f11d1220c54eb86d185991009a81a10b820",
+    "postgres-final.log": "4e0f8dc42e0861bb406c0c6681cb7028e25f6476e1849b15879eed3a194b508b",
+    "router-green.log": "6fbd79f00a821e98749d4d255c17c8324c855deadd38a52b6ddc0c269cc0ba49",
+    "red-combined.log": "a65176f0b807302d2ffce03ba5d29c057a2cf4876215460130912513470965dc",
+    "full-tests-final.log": "82237b674ccf91e20db2403d6f2bb276688ead5736bce76a8e1c955dfd7d18c6",
+    "persistence-extended.log": "6edb8c60e54e79a970bb1327f8d9cc7079c9b48fe7c540d3c48a29cdd36f2a30",
+    "pg-server.log": "dc4fb18ff1a477bf17535def651b98bc2185745ba34ea98b50d2aefd934cd774"
+  }
+}

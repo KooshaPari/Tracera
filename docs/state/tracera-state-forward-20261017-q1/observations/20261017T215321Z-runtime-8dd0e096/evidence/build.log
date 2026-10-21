@@ -1,0 +1,8 @@
+   Compiling tracera-workos v0.1.0 (/private/tmp/tracera-runtime-8dd-20261017/crates/tracera-workos)
+   Compiling tracera-server v0.2.0 (/private/tmp/tracera-runtime-8dd-20261017/crates/tracera-server)
+warning: linker stderr: rust-lld: Option `-no_compact_unwind' is undocumented. Should lld implement it?
+  |
+  = note: `#[warn(linker_messages)]` on by default
+
+warning: `tracera-server` (bin "tracera-server") generated 1 warning
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 30.41s

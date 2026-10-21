@@ -1,0 +1,63 @@
+{
+  "source_sha": "2f1d36dc5264e0b36811036913ed9b47083ef968",
+  "dirty": "",
+  "binary_sha256": "6be5a8d8c29091ccd46a192b27467f6f78626a5d5262f6c6dc19882f249c08c9",
+  "build_command": "SDKROOT=/Library/Developer/CommandLineTools/SDKs/MacOSX26.sdk MACOSX_DEPLOYMENT_TARGET=15.0 CC=/usr/bin/clang CXX=/usr/bin/clang++ cargo build --locked -p tracera-server --bin tracera-server --target-dir /tmp/tracera-runtime-resume-20261017/target -j 2",
+  "placement": "local cached APFS private target, j2",
+  "host": "ProductName:\t\tmacOS\nProductVersion:\t\t27.0\nBuildVersion:\t\t26A5353q\n",
+  "utc": "2026-10-17T19:56:05Z",
+  "port": 19267,
+  "checks": {
+    "ready": [
+      200,
+      {
+        "status": "ready",
+        "service": "tracera-server",
+        "version": "0.2.0",
+        "backend": "sqlite",
+        "uptime_seconds": 0
+      }
+    ],
+    "anonymous": [
+      401,
+      "unauthorized"
+    ],
+    "missing": [
+      404,
+      {
+        "error": "product_baseline_not_found"
+      }
+    ],
+    "csrf_missing": [
+      403,
+      ""
+    ],
+    "invalid_batch": [
+      422,
+      "Failed to deserialize the JSON body into the target type: missing field `product_id` at line 1 column 2"
+    ]
+  },
+  "producer_journey": "NOT_EXERCISED: waiting authentic receipt and explicit mapping; no fixture ingestion performed",
+  "owned_process_stopped": true,
+  "port_closed": true,
+  "evaluator": {
+    "python": "Python 3.9.6",
+    "rustc": "rustc 1.99.0-nightly (d0babd8b6 2026-07-15)",
+    "cargo": "cargo 1.99.0-nightly (59800466c 2026-07-07)"
+  },
+  "source_remote": {
+    "repository": "KooshaPari/Tracera",
+    "pr": 1157,
+    "verified_head": "2f1d36dc5264e0b36811036913ed9b47083ef968",
+    "state": "OPEN"
+  },
+  "build_duration_seconds": 33.09,
+  "build_warning": "rust-lld -no_compact_unwind undocumented option warning; build exit 0",
+  "scope_limits": [
+    "No authentic producer artifact ingested",
+    "Global candidate bearer is not producer ownership authentication",
+    "Readiness checks isolated SQLite Store only",
+    "No deployed or GUI qualification",
+    "No product scope authorization acceptance"
+  ]
+}

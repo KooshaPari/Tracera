@@ -1,0 +1,1453 @@
+{
+  "generated_at_utc": "2026-10-18T00:00:27.953546+00:00",
+  "subject": "Desk deployed8091 via owned19281, codeprovenanceUNKNOWN",
+  "source_sha_for_census_only": "912303f689f0e335d4dad77a7767ef1e26098af7",
+  "deployed_source_sha": "UNKNOWN",
+  "capture_policy": {
+    "screenshot": false,
+    "trace": false,
+    "video": false
+  },
+  "positive_feasibility": "/tmp/tracera-interface-census-20261017/live-feasibility.json",
+  "live_readonly_witness": "/tmp/tracera-interface-census-20261017/live-direct-paths.json",
+  "listener_observation": {
+    "at_utc": "2026-10-17T23:49:07Z",
+    "command": "ssh desk powershell Get-NetTCPConnection -LocalPort 8091 -State Listen",
+    "exit": 1,
+    "result": "No matching MSFT_NetTCPConnection objects found; frontend listener absent"
+  },
+  "owned_cleanup": {
+    "browser": "closed in finally",
+    "ssh_forward": "session99851 stopped exit255",
+    "local19281_listener": "lsof exit1 no listener",
+    "local19282_listener": "ownedSSH91691 stopped exit255; lsof verification follows"
+  },
+  "leaves": [
+    {
+      "id": "G09.view-01",
+      "label": "Dashboard",
+      "path_template": "/",
+      "criterion": "Read-only deployed named artifact/project/type/detail fidelity; source912303f equivalence is not assumed",
+      "Implementation": {
+        "verdict": "UNKNOWN",
+        "reason": "Deployed bundle provenance not tied to current source"
+      },
+      "Usability": {
+        "verdict": "FAIL",
+        "evidence": "/tmp/tracera-interface-census-20261017/live-direct-paths.json",
+        "reason": "Observed ERR_EMPTY_RESPONSE for this direct path"
+      },
+      "Validation": {
+        "verdict": "FAIL",
+        "evidence": "/tmp/tracera-interface-census-20261017/live-direct-paths.json",
+        "reason": "Guarded owned headless navigation executed; no artifact rendered"
+      },
+      "Assurance": {
+        "verdict": "UNKNOWN",
+        "reason": "Fresh CLI witness concerns transport, not independent full artifact correctness"
+      }
+    },
+    {
+      "id": "G09.view-02",
+      "label": "Projects",
+      "path_template": "/projects",
+      "criterion": "Read-only deployed named artifact/project/type/detail fidelity; source912303f equivalence is not assumed",
+      "Implementation": {
+        "verdict": "UNKNOWN",
+        "reason": "Deployed bundle provenance not tied to current source"
+      },
+      "Usability": {
+        "verdict": "FAIL",
+        "evidence": "/tmp/tracera-interface-census-20261017/live-direct-paths.json",
+        "reason": "Observed ERR_EMPTY_RESPONSE for this direct path"
+      },
+      "Validation": {
+        "verdict": "FAIL",
+        "evidence": "/tmp/tracera-interface-census-20261017/live-direct-paths.json",
+        "reason": "Guarded owned headless navigation executed; no artifact rendered"
+      },
+      "Assurance": {
+        "verdict": "UNKNOWN",
+        "reason": "Fresh CLI witness concerns transport, not independent full artifact correctness"
+      }
+    },
+    {
+      "id": "G09.view-03",
+      "label": "Items",
+      "path_template": "/items",
+      "criterion": "Read-only deployed named artifact/project/type/detail fidelity; source912303f equivalence is not assumed",
+      "Implementation": {
+        "verdict": "UNKNOWN",
+        "reason": "Deployed bundle provenance not tied to current source"
+      },
+      "Usability": {
+        "verdict": "FAIL",
+        "evidence": "/tmp/tracera-interface-census-20261017/live-direct-paths.json",
+        "reason": "Observed ERR_EMPTY_RESPONSE for this direct path"
+      },
+      "Validation": {
+        "verdict": "FAIL",
+        "evidence": "/tmp/tracera-interface-census-20261017/live-direct-paths.json",
+        "reason": "Guarded owned headless navigation executed; no artifact rendered"
+      },
+      "Assurance": {
+        "verdict": "UNKNOWN",
+        "reason": "Fresh CLI witness concerns transport, not independent full artifact correctness"
+      }
+    },
+    {
+      "id": "G09.view-04",
+      "label": "Agents",
+      "path_template": "/agents",
+      "criterion": "Read-only deployed named artifact/project/type/detail fidelity; source912303f equivalence is not assumed",
+      "Implementation": {
+        "verdict": "UNKNOWN",
+        "reason": "Deployed bundle provenance not tied to current source"
+      },
+      "Usability": {
+        "verdict": "FAIL",
+        "evidence": "/tmp/tracera-interface-census-20261017/live-direct-paths.json",
+        "reason": "Observed ERR_EMPTY_RESPONSE for this direct path"
+      },
+      "Validation": {
+        "verdict": "FAIL",
+        "evidence": "/tmp/tracera-interface-census-20261017/live-direct-paths.json",
+        "reason": "Guarded owned headless navigation executed; no artifact rendered"
+      },
+      "Assurance": {
+        "verdict": "UNKNOWN",
+        "reason": "Fresh CLI witness concerns transport, not independent full artifact correctness"
+      }
+    },
+    {
+      "id": "G09.view-05",
+      "label": "Overview",
+      "path_template": "/projects/${activeId}",
+      "criterion": "Read-only deployed named artifact/project/type/detail fidelity; source912303f equivalence is not assumed",
+      "Implementation": {
+        "verdict": "UNKNOWN",
+        "reason": "Deployed bundle provenance not tied to current source"
+      },
+      "Usability": {
+        "verdict": "NOT_RUN",
+        "evidence": "/tmp/tracera-interface-census-20261017/live-direct-paths.json",
+        "reason": "Deployed8091 frontend listener absent; direct8080 root404 despite API200. Existing project IDs are known, but no served UI subject remains for per-artifact navigation."
+      },
+      "Validation": {
+        "verdict": "NOT_RUN",
+        "evidence": "/tmp/tracera-interface-census-20261017/live-direct-paths.json",
+        "reason": "Deployed8091 frontend listener absent; direct8080 root404 despite API200. Existing project IDs are known, but no served UI subject remains for per-artifact navigation."
+      },
+      "Assurance": {
+        "verdict": "UNKNOWN",
+        "reason": "Fresh CLI witness concerns transport, not independent full artifact correctness"
+      }
+    },
+    {
+      "id": "G09.view-06",
+      "label": "Feature Layer",
+      "path_template": "/projects/${activeId}/views/feature",
+      "criterion": "Read-only deployed named artifact/project/type/detail fidelity; source912303f equivalence is not assumed",
+      "Implementation": {
+        "verdict": "UNKNOWN",
+        "reason": "Deployed bundle provenance not tied to current source"
+      },
+      "Usability": {
+        "verdict": "NOT_RUN",
+        "evidence": "/tmp/tracera-interface-census-20261017/live-direct-paths.json",
+        "reason": "Deployed8091 frontend listener absent; direct8080 root404 despite API200. Existing project IDs are known, but no served UI subject remains for per-artifact navigation."
+      },
+      "Validation": {
+        "verdict": "NOT_RUN",
+        "evidence": "/tmp/tracera-interface-census-20261017/live-direct-paths.json",
+        "reason": "Deployed8091 frontend listener absent; direct8080 root404 despite API200. Existing project IDs are known, but no served UI subject remains for per-artifact navigation."
+      },
+      "Assurance": {
+        "verdict": "UNKNOWN",
+        "reason": "Fresh CLI witness concerns transport, not independent full artifact correctness"
+      }
+    },
+    {
+      "id": "G09.view-07",
+      "label": "Source Map",
+      "path_template": "/projects/${activeId}/views/code",
+      "criterion": "Read-only deployed named artifact/project/type/detail fidelity; source912303f equivalence is not assumed",
+      "Implementation": {
+        "verdict": "UNKNOWN",
+        "reason": "Deployed bundle provenance not tied to current source"
+      },
+      "Usability": {
+        "verdict": "NOT_RUN",
+        "evidence": "/tmp/tracera-interface-census-20261017/live-direct-paths.json",
+        "reason": "Deployed8091 frontend listener absent; direct8080 root404 despite API200. Existing project IDs are known, but no served UI subject remains for per-artifact navigation."
+      },
+      "Validation": {
+        "verdict": "NOT_RUN",
+        "evidence": "/tmp/tracera-interface-census-20261017/live-direct-paths.json",
+        "reason": "Deployed8091 frontend listener absent; direct8080 root404 despite API200. Existing project IDs are known, but no served UI subject remains for per-artifact navigation."
+      },
+      "Assurance": {
+        "verdict": "UNKNOWN",
+        "reason": "Fresh CLI witness concerns transport, not independent full artifact correctness"
+      }
+    },
+    {
+      "id": "G09.view-08",
+      "label": "Validation",
+      "path_template": "/projects/${activeId}/views/test",
+      "criterion": "Read-only deployed named artifact/project/type/detail fidelity; source912303f equivalence is not assumed",
+      "Implementation": {
+        "verdict": "UNKNOWN",
+        "reason": "Deployed bundle provenance not tied to current source"
+      },
+      "Usability": {
+        "verdict": "NOT_RUN",
+        "evidence": "/tmp/tracera-interface-census-20261017/live-direct-paths.json",
+        "reason": "Deployed8091 frontend listener absent; direct8080 root404 despite API200. Existing project IDs are known, but no served UI subject remains for per-artifact navigation."
+      },
+      "Validation": {
+        "verdict": "NOT_RUN",
+        "evidence": "/tmp/tracera-interface-census-20261017/live-direct-paths.json",
+        "reason": "Deployed8091 frontend listener absent; direct8080 root404 despite API200. Existing project IDs are known, but no served UI subject remains for per-artifact navigation."
+      },
+      "Assurance": {
+        "verdict": "UNKNOWN",
+        "reason": "Fresh CLI witness concerns transport, not independent full artifact correctness"
+      }
+    },
+    {
+      "id": "G09.view-09",
+      "label": "Workflow Runs",
+      "path_template": "/projects/${activeId}/views/workflows",
+      "criterion": "Read-only deployed named artifact/project/type/detail fidelity; source912303f equivalence is not assumed",
+      "Implementation": {
+        "verdict": "UNKNOWN",
+        "reason": "Deployed bundle provenance not tied to current source"
+      },
+      "Usability": {
+        "verdict": "NOT_RUN",
+        "evidence": "/tmp/tracera-interface-census-20261017/live-direct-paths.json",
+        "reason": "Deployed8091 frontend listener absent; direct8080 root404 despite API200. Existing project IDs are known, but no served UI subject remains for per-artifact navigation."
+      },
+      "Validation": {
+        "verdict": "NOT_RUN",
+        "evidence": "/tmp/tracera-interface-census-20261017/live-direct-paths.json",
+        "reason": "Deployed8091 frontend listener absent; direct8080 root404 despite API200. Existing project IDs are known, but no served UI subject remains for per-artifact navigation."
+      },
+      "Assurance": {
+        "verdict": "UNKNOWN",
+        "reason": "Fresh CLI witness concerns transport, not independent full artifact correctness"
+      }
+    },
+    {
+      "id": "G09.view-10",
+      "label": "Project Settings",
+      "path_template": "/projects/${activeId}/settings",
+      "criterion": "Read-only deployed named artifact/project/type/detail fidelity; source912303f equivalence is not assumed",
+      "Implementation": {
+        "verdict": "UNKNOWN",
+        "reason": "Deployed bundle provenance not tied to current source"
+      },
+      "Usability": {
+        "verdict": "NOT_RUN",
+        "evidence": "/tmp/tracera-interface-census-20261017/live-direct-paths.json",
+        "reason": "Deployed8091 frontend listener absent; direct8080 root404 despite API200. Existing project IDs are known, but no served UI subject remains for per-artifact navigation."
+      },
+      "Validation": {
+        "verdict": "NOT_RUN",
+        "evidence": "/tmp/tracera-interface-census-20261017/live-direct-paths.json",
+        "reason": "Deployed8091 frontend listener absent; direct8080 root404 despite API200. Existing project IDs are known, but no served UI subject remains for per-artifact navigation."
+      },
+      "Assurance": {
+        "verdict": "UNKNOWN",
+        "reason": "Fresh CLI witness concerns transport, not independent full artifact correctness"
+      }
+    },
+    {
+      "id": "G09.view-11",
+      "label": "Dashboard",
+      "path_template": "/projects/${activeId}/specifications",
+      "criterion": "Read-only deployed named artifact/project/type/detail fidelity; source912303f equivalence is not assumed",
+      "Implementation": {
+        "verdict": "UNKNOWN",
+        "reason": "Deployed bundle provenance not tied to current source"
+      },
+      "Usability": {
+        "verdict": "NOT_RUN",
+        "evidence": "/tmp/tracera-interface-census-20261017/live-direct-paths.json",
+        "reason": "Deployed8091 frontend listener absent; direct8080 root404 despite API200. Existing project IDs are known, but no served UI subject remains for per-artifact navigation."
+      },
+      "Validation": {
+        "verdict": "NOT_RUN",
+        "evidence": "/tmp/tracera-interface-census-20261017/live-direct-paths.json",
+        "reason": "Deployed8091 frontend listener absent; direct8080 root404 despite API200. Existing project IDs are known, but no served UI subject remains for per-artifact navigation."
+      },
+      "Assurance": {
+        "verdict": "UNKNOWN",
+        "reason": "Fresh CLI witness concerns transport, not independent full artifact correctness"
+      }
+    },
+    {
+      "id": "G09.view-12",
+      "label": "Scenario Activity",
+      "path_template": "/projects/${activeId}/scenario-activity",
+      "criterion": "Read-only deployed named artifact/project/type/detail fidelity; source912303f equivalence is not assumed",
+      "Implementation": {
+        "verdict": "UNKNOWN",
+        "reason": "Deployed bundle provenance not tied to current source"
+      },
+      "Usability": {
+        "verdict": "NOT_RUN",
+        "evidence": "/tmp/tracera-interface-census-20261017/live-direct-paths.json",
+        "reason": "Deployed8091 frontend listener absent; direct8080 root404 despite API200. Existing project IDs are known, but no served UI subject remains for per-artifact navigation."
+      },
+      "Validation": {
+        "verdict": "NOT_RUN",
+        "evidence": "/tmp/tracera-interface-census-20261017/live-direct-paths.json",
+        "reason": "Deployed8091 frontend listener absent; direct8080 root404 despite API200. Existing project IDs are known, but no served UI subject remains for per-artifact navigation."
+      },
+      "Assurance": {
+        "verdict": "UNKNOWN",
+        "reason": "Fresh CLI witness concerns transport, not independent full artifact correctness"
+      }
+    },
+    {
+      "id": "G09.view-13",
+      "label": "ADRs",
+      "path_template": "/projects/${activeId}/specifications?tab=adrs",
+      "criterion": "Read-only deployed named artifact/project/type/detail fidelity; source912303f equivalence is not assumed",
+      "Implementation": {
+        "verdict": "UNKNOWN",
+        "reason": "Deployed bundle provenance not tied to current source"
+      },
+      "Usability": {
+        "verdict": "NOT_RUN",
+        "evidence": "/tmp/tracera-interface-census-20261017/live-direct-paths.json",
+        "reason": "Deployed8091 frontend listener absent; direct8080 root404 despite API200. Existing project IDs are known, but no served UI subject remains for per-artifact navigation."
+      },
+      "Validation": {
+        "verdict": "NOT_RUN",
+        "evidence": "/tmp/tracera-interface-census-20261017/live-direct-paths.json",
+        "reason": "Deployed8091 frontend listener absent; direct8080 root404 despite API200. Existing project IDs are known, but no served UI subject remains for per-artifact navigation."
+      },
+      "Assurance": {
+        "verdict": "UNKNOWN",
+        "reason": "Fresh CLI witness concerns transport, not independent full artifact correctness"
+      }
+    },
+    {
+      "id": "G09.view-14",
+      "label": "Contracts",
+      "path_template": "/projects/${activeId}/specifications?tab=contracts",
+      "criterion": "Read-only deployed named artifact/project/type/detail fidelity; source912303f equivalence is not assumed",
+      "Implementation": {
+        "verdict": "UNKNOWN",
+        "reason": "Deployed bundle provenance not tied to current source"
+      },
+      "Usability": {
+        "verdict": "NOT_RUN",
+        "evidence": "/tmp/tracera-interface-census-20261017/live-direct-paths.json",
+        "reason": "Deployed8091 frontend listener absent; direct8080 root404 despite API200. Existing project IDs are known, but no served UI subject remains for per-artifact navigation."
+      },
+      "Validation": {
+        "verdict": "NOT_RUN",
+        "evidence": "/tmp/tracera-interface-census-20261017/live-direct-paths.json",
+        "reason": "Deployed8091 frontend listener absent; direct8080 root404 despite API200. Existing project IDs are known, but no served UI subject remains for per-artifact navigation."
+      },
+      "Assurance": {
+        "verdict": "UNKNOWN",
+        "reason": "Fresh CLI witness concerns transport, not independent full artifact correctness"
+      }
+    },
+    {
+      "id": "G09.view-15",
+      "label": "Compliance",
+      "path_template": "/projects/${activeId}/specifications?tab=compliance",
+      "criterion": "Read-only deployed named artifact/project/type/detail fidelity; source912303f equivalence is not assumed",
+      "Implementation": {
+        "verdict": "UNKNOWN",
+        "reason": "Deployed bundle provenance not tied to current source"
+      },
+      "Usability": {
+        "verdict": "NOT_RUN",
+        "evidence": "/tmp/tracera-interface-census-20261017/live-direct-paths.json",
+        "reason": "Deployed8091 frontend listener absent; direct8080 root404 despite API200. Existing project IDs are known, but no served UI subject remains for per-artifact navigation."
+      },
+      "Validation": {
+        "verdict": "NOT_RUN",
+        "evidence": "/tmp/tracera-interface-census-20261017/live-direct-paths.json",
+        "reason": "Deployed8091 frontend listener absent; direct8080 root404 despite API200. Existing project IDs are known, but no served UI subject remains for per-artifact navigation."
+      },
+      "Assurance": {
+        "verdict": "UNKNOWN",
+        "reason": "Fresh CLI witness concerns transport, not independent full artifact correctness"
+      }
+    },
+    {
+      "id": "G09.view-16",
+      "label": "Features",
+      "path_template": "/projects/${activeId}/views/feature",
+      "criterion": "Read-only deployed named artifact/project/type/detail fidelity; source912303f equivalence is not assumed",
+      "Implementation": {
+        "verdict": "UNKNOWN",
+        "reason": "Deployed bundle provenance not tied to current source"
+      },
+      "Usability": {
+        "verdict": "NOT_RUN",
+        "evidence": "/tmp/tracera-interface-census-20261017/live-direct-paths.json",
+        "reason": "Deployed8091 frontend listener absent; direct8080 root404 despite API200. Existing project IDs are known, but no served UI subject remains for per-artifact navigation."
+      },
+      "Validation": {
+        "verdict": "NOT_RUN",
+        "evidence": "/tmp/tracera-interface-census-20261017/live-direct-paths.json",
+        "reason": "Deployed8091 frontend listener absent; direct8080 root404 despite API200. Existing project IDs are known, but no served UI subject remains for per-artifact navigation."
+      },
+      "Assurance": {
+        "verdict": "UNKNOWN",
+        "reason": "Fresh CLI witness concerns transport, not independent full artifact correctness"
+      }
+    },
+    {
+      "id": "G09.view-17",
+      "label": "Domain Model",
+      "path_template": "/projects/${activeId}/views/domain",
+      "criterion": "Read-only deployed named artifact/project/type/detail fidelity; source912303f equivalence is not assumed",
+      "Implementation": {
+        "verdict": "UNKNOWN",
+        "reason": "Deployed bundle provenance not tied to current source"
+      },
+      "Usability": {
+        "verdict": "NOT_RUN",
+        "evidence": "/tmp/tracera-interface-census-20261017/live-direct-paths.json",
+        "reason": "Deployed8091 frontend listener absent; direct8080 root404 despite API200. Existing project IDs are known, but no served UI subject remains for per-artifact navigation."
+      },
+      "Validation": {
+        "verdict": "NOT_RUN",
+        "evidence": "/tmp/tracera-interface-census-20261017/live-direct-paths.json",
+        "reason": "Deployed8091 frontend listener absent; direct8080 root404 despite API200. Existing project IDs are known, but no served UI subject remains for per-artifact navigation."
+      },
+      "Assurance": {
+        "verdict": "UNKNOWN",
+        "reason": "Fresh CLI witness concerns transport, not independent full artifact correctness"
+      }
+    },
+    {
+      "id": "G09.view-18",
+      "label": "Problem Analysis",
+      "path_template": "/projects/${activeId}/views/problem",
+      "criterion": "Read-only deployed named artifact/project/type/detail fidelity; source912303f equivalence is not assumed",
+      "Implementation": {
+        "verdict": "UNKNOWN",
+        "reason": "Deployed bundle provenance not tied to current source"
+      },
+      "Usability": {
+        "verdict": "NOT_RUN",
+        "evidence": "/tmp/tracera-interface-census-20261017/live-direct-paths.json",
+        "reason": "Deployed8091 frontend listener absent; direct8080 root404 despite API200. Existing project IDs are known, but no served UI subject remains for per-artifact navigation."
+      },
+      "Validation": {
+        "verdict": "NOT_RUN",
+        "evidence": "/tmp/tracera-interface-census-20261017/live-direct-paths.json",
+        "reason": "Deployed8091 frontend listener absent; direct8080 root404 despite API200. Existing project IDs are known, but no served UI subject remains for per-artifact navigation."
+      },
+      "Assurance": {
+        "verdict": "UNKNOWN",
+        "reason": "Fresh CLI witness concerns transport, not independent full artifact correctness"
+      }
+    },
+    {
+      "id": "G09.view-19",
+      "label": "Wireframes",
+      "path_template": "/projects/${activeId}/views/wireframe",
+      "criterion": "Read-only deployed named artifact/project/type/detail fidelity; source912303f equivalence is not assumed",
+      "Implementation": {
+        "verdict": "UNKNOWN",
+        "reason": "Deployed bundle provenance not tied to current source"
+      },
+      "Usability": {
+        "verdict": "NOT_RUN",
+        "evidence": "/tmp/tracera-interface-census-20261017/live-direct-paths.json",
+        "reason": "Deployed8091 frontend listener absent; direct8080 root404 despite API200. Existing project IDs are known, but no served UI subject remains for per-artifact navigation."
+      },
+      "Validation": {
+        "verdict": "NOT_RUN",
+        "evidence": "/tmp/tracera-interface-census-20261017/live-direct-paths.json",
+        "reason": "Deployed8091 frontend listener absent; direct8080 root404 despite API200. Existing project IDs are known, but no served UI subject remains for per-artifact navigation."
+      },
+      "Assurance": {
+        "verdict": "UNKNOWN",
+        "reason": "Fresh CLI witness concerns transport, not independent full artifact correctness"
+      }
+    },
+    {
+      "id": "G09.view-20",
+      "label": "Code View",
+      "path_template": "/projects/${activeId}/views/code",
+      "criterion": "Read-only deployed named artifact/project/type/detail fidelity; source912303f equivalence is not assumed",
+      "Implementation": {
+        "verdict": "UNKNOWN",
+        "reason": "Deployed bundle provenance not tied to current source"
+      },
+      "Usability": {
+        "verdict": "NOT_RUN",
+        "evidence": "/tmp/tracera-interface-census-20261017/live-direct-paths.json",
+        "reason": "Deployed8091 frontend listener absent; direct8080 root404 despite API200. Existing project IDs are known, but no served UI subject remains for per-artifact navigation."
+      },
+      "Validation": {
+        "verdict": "NOT_RUN",
+        "evidence": "/tmp/tracera-interface-census-20261017/live-direct-paths.json",
+        "reason": "Deployed8091 frontend listener absent; direct8080 root404 despite API200. Existing project IDs are known, but no served UI subject remains for per-artifact navigation."
+      },
+      "Assurance": {
+        "verdict": "UNKNOWN",
+        "reason": "Fresh CLI witness concerns transport, not independent full artifact correctness"
+      }
+    },
+    {
+      "id": "G09.view-21",
+      "label": "Architecture",
+      "path_template": "/projects/${activeId}/views/architecture",
+      "criterion": "Read-only deployed named artifact/project/type/detail fidelity; source912303f equivalence is not assumed",
+      "Implementation": {
+        "verdict": "UNKNOWN",
+        "reason": "Deployed bundle provenance not tied to current source"
+      },
+      "Usability": {
+        "verdict": "NOT_RUN",
+        "evidence": "/tmp/tracera-interface-census-20261017/live-direct-paths.json",
+        "reason": "Deployed8091 frontend listener absent; direct8080 root404 despite API200. Existing project IDs are known, but no served UI subject remains for per-artifact navigation."
+      },
+      "Validation": {
+        "verdict": "NOT_RUN",
+        "evidence": "/tmp/tracera-interface-census-20261017/live-direct-paths.json",
+        "reason": "Deployed8091 frontend listener absent; direct8080 root404 despite API200. Existing project IDs are known, but no served UI subject remains for per-artifact navigation."
+      },
+      "Assurance": {
+        "verdict": "UNKNOWN",
+        "reason": "Fresh CLI witness concerns transport, not independent full artifact correctness"
+      }
+    },
+    {
+      "id": "G09.view-22",
+      "label": "API Documentation",
+      "path_template": "/projects/${activeId}/views/api",
+      "criterion": "Read-only deployed named artifact/project/type/detail fidelity; source912303f equivalence is not assumed",
+      "Implementation": {
+        "verdict": "UNKNOWN",
+        "reason": "Deployed bundle provenance not tied to current source"
+      },
+      "Usability": {
+        "verdict": "NOT_RUN",
+        "evidence": "/tmp/tracera-interface-census-20261017/live-direct-paths.json",
+        "reason": "Deployed8091 frontend listener absent; direct8080 root404 despite API200. Existing project IDs are known, but no served UI subject remains for per-artifact navigation."
+      },
+      "Validation": {
+        "verdict": "NOT_RUN",
+        "evidence": "/tmp/tracera-interface-census-20261017/live-direct-paths.json",
+        "reason": "Deployed8091 frontend listener absent; direct8080 root404 despite API200. Existing project IDs are known, but no served UI subject remains for per-artifact navigation."
+      },
+      "Assurance": {
+        "verdict": "UNKNOWN",
+        "reason": "Fresh CLI witness concerns transport, not independent full artifact correctness"
+      }
+    },
+    {
+      "id": "G09.view-23",
+      "label": "Database Schema",
+      "path_template": "/projects/${activeId}/views/database",
+      "criterion": "Read-only deployed named artifact/project/type/detail fidelity; source912303f equivalence is not assumed",
+      "Implementation": {
+        "verdict": "UNKNOWN",
+        "reason": "Deployed bundle provenance not tied to current source"
+      },
+      "Usability": {
+        "verdict": "NOT_RUN",
+        "evidence": "/tmp/tracera-interface-census-20261017/live-direct-paths.json",
+        "reason": "Deployed8091 frontend listener absent; direct8080 root404 despite API200. Existing project IDs are known, but no served UI subject remains for per-artifact navigation."
+      },
+      "Validation": {
+        "verdict": "NOT_RUN",
+        "evidence": "/tmp/tracera-interface-census-20261017/live-direct-paths.json",
+        "reason": "Deployed8091 frontend listener absent; direct8080 root404 despite API200. Existing project IDs are known, but no served UI subject remains for per-artifact navigation."
+      },
+      "Assurance": {
+        "verdict": "UNKNOWN",
+        "reason": "Fresh CLI witness concerns transport, not independent full artifact correctness"
+      }
+    },
+    {
+      "id": "G09.view-24",
+      "label": "Data Flow",
+      "path_template": "/projects/${activeId}/views/dataflow",
+      "criterion": "Read-only deployed named artifact/project/type/detail fidelity; source912303f equivalence is not assumed",
+      "Implementation": {
+        "verdict": "UNKNOWN",
+        "reason": "Deployed bundle provenance not tied to current source"
+      },
+      "Usability": {
+        "verdict": "NOT_RUN",
+        "evidence": "/tmp/tracera-interface-census-20261017/live-direct-paths.json",
+        "reason": "Deployed8091 frontend listener absent; direct8080 root404 despite API200. Existing project IDs are known, but no served UI subject remains for per-artifact navigation."
+      },
+      "Validation": {
+        "verdict": "NOT_RUN",
+        "evidence": "/tmp/tracera-interface-census-20261017/live-direct-paths.json",
+        "reason": "Deployed8091 frontend listener absent; direct8080 root404 despite API200. Existing project IDs are known, but no served UI subject remains for per-artifact navigation."
+      },
+      "Assurance": {
+        "verdict": "UNKNOWN",
+        "reason": "Fresh CLI witness concerns transport, not independent full artifact correctness"
+      }
+    },
+    {
+      "id": "G09.view-25",
+      "label": "Test Cases",
+      "path_template": "/projects/${activeId}/views/test-cases",
+      "criterion": "Read-only deployed named artifact/project/type/detail fidelity; source912303f equivalence is not assumed",
+      "Implementation": {
+        "verdict": "UNKNOWN",
+        "reason": "Deployed bundle provenance not tied to current source"
+      },
+      "Usability": {
+        "verdict": "NOT_RUN",
+        "evidence": "/tmp/tracera-interface-census-20261017/live-direct-paths.json",
+        "reason": "Deployed8091 frontend listener absent; direct8080 root404 despite API200. Existing project IDs are known, but no served UI subject remains for per-artifact navigation."
+      },
+      "Validation": {
+        "verdict": "NOT_RUN",
+        "evidence": "/tmp/tracera-interface-census-20261017/live-direct-paths.json",
+        "reason": "Deployed8091 frontend listener absent; direct8080 root404 despite API200. Existing project IDs are known, but no served UI subject remains for per-artifact navigation."
+      },
+      "Assurance": {
+        "verdict": "UNKNOWN",
+        "reason": "Fresh CLI witness concerns transport, not independent full artifact correctness"
+      }
+    },
+    {
+      "id": "G09.view-26",
+      "label": "Test Suites",
+      "path_template": "/projects/${activeId}/views/test-suites",
+      "criterion": "Read-only deployed named artifact/project/type/detail fidelity; source912303f equivalence is not assumed",
+      "Implementation": {
+        "verdict": "UNKNOWN",
+        "reason": "Deployed bundle provenance not tied to current source"
+      },
+      "Usability": {
+        "verdict": "NOT_RUN",
+        "evidence": "/tmp/tracera-interface-census-20261017/live-direct-paths.json",
+        "reason": "Deployed8091 frontend listener absent; direct8080 root404 despite API200. Existing project IDs are known, but no served UI subject remains for per-artifact navigation."
+      },
+      "Validation": {
+        "verdict": "NOT_RUN",
+        "evidence": "/tmp/tracera-interface-census-20261017/live-direct-paths.json",
+        "reason": "Deployed8091 frontend listener absent; direct8080 root404 despite API200. Existing project IDs are known, but no served UI subject remains for per-artifact navigation."
+      },
+      "Assurance": {
+        "verdict": "UNKNOWN",
+        "reason": "Fresh CLI witness concerns transport, not independent full artifact correctness"
+      }
+    },
+    {
+      "id": "G09.view-27",
+      "label": "Test Runs",
+      "path_template": "/projects/${activeId}/views/test-runs",
+      "criterion": "Read-only deployed named artifact/project/type/detail fidelity; source912303f equivalence is not assumed",
+      "Implementation": {
+        "verdict": "UNKNOWN",
+        "reason": "Deployed bundle provenance not tied to current source"
+      },
+      "Usability": {
+        "verdict": "NOT_RUN",
+        "evidence": "/tmp/tracera-interface-census-20261017/live-direct-paths.json",
+        "reason": "Deployed8091 frontend listener absent; direct8080 root404 despite API200. Existing project IDs are known, but no served UI subject remains for per-artifact navigation."
+      },
+      "Validation": {
+        "verdict": "NOT_RUN",
+        "evidence": "/tmp/tracera-interface-census-20261017/live-direct-paths.json",
+        "reason": "Deployed8091 frontend listener absent; direct8080 root404 despite API200. Existing project IDs are known, but no served UI subject remains for per-artifact navigation."
+      },
+      "Assurance": {
+        "verdict": "UNKNOWN",
+        "reason": "Fresh CLI witness concerns transport, not independent full artifact correctness"
+      }
+    },
+    {
+      "id": "G09.view-28",
+      "label": "QA Dashboard",
+      "path_template": "/projects/${activeId}/views/qa-dashboard",
+      "criterion": "Read-only deployed named artifact/project/type/detail fidelity; source912303f equivalence is not assumed",
+      "Implementation": {
+        "verdict": "UNKNOWN",
+        "reason": "Deployed bundle provenance not tied to current source"
+      },
+      "Usability": {
+        "verdict": "NOT_RUN",
+        "evidence": "/tmp/tracera-interface-census-20261017/live-direct-paths.json",
+        "reason": "Deployed8091 frontend listener absent; direct8080 root404 despite API200. Existing project IDs are known, but no served UI subject remains for per-artifact navigation."
+      },
+      "Validation": {
+        "verdict": "NOT_RUN",
+        "evidence": "/tmp/tracera-interface-census-20261017/live-direct-paths.json",
+        "reason": "Deployed8091 frontend listener absent; direct8080 root404 despite API200. Existing project IDs are known, but no served UI subject remains for per-artifact navigation."
+      },
+      "Assurance": {
+        "verdict": "UNKNOWN",
+        "reason": "Fresh CLI witness concerns transport, not independent full artifact correctness"
+      }
+    },
+    {
+      "id": "G09.view-29",
+      "label": "Coverage Report",
+      "path_template": "/projects/${activeId}/views/coverage",
+      "criterion": "Read-only deployed named artifact/project/type/detail fidelity; source912303f equivalence is not assumed",
+      "Implementation": {
+        "verdict": "UNKNOWN",
+        "reason": "Deployed bundle provenance not tied to current source"
+      },
+      "Usability": {
+        "verdict": "NOT_RUN",
+        "evidence": "/tmp/tracera-interface-census-20261017/live-direct-paths.json",
+        "reason": "Deployed8091 frontend listener absent; direct8080 root404 despite API200. Existing project IDs are known, but no served UI subject remains for per-artifact navigation."
+      },
+      "Validation": {
+        "verdict": "NOT_RUN",
+        "evidence": "/tmp/tracera-interface-census-20261017/live-direct-paths.json",
+        "reason": "Deployed8091 frontend listener absent; direct8080 root404 despite API200. Existing project IDs are known, but no served UI subject remains for per-artifact navigation."
+      },
+      "Assurance": {
+        "verdict": "UNKNOWN",
+        "reason": "Fresh CLI witness concerns transport, not independent full artifact correctness"
+      }
+    },
+    {
+      "id": "G09.view-30",
+      "label": "Journey Map",
+      "path_template": "/projects/${activeId}/views/journey",
+      "criterion": "Read-only deployed named artifact/project/type/detail fidelity; source912303f equivalence is not assumed",
+      "Implementation": {
+        "verdict": "UNKNOWN",
+        "reason": "Deployed bundle provenance not tied to current source"
+      },
+      "Usability": {
+        "verdict": "NOT_RUN",
+        "evidence": "/tmp/tracera-interface-census-20261017/live-direct-paths.json",
+        "reason": "Deployed8091 frontend listener absent; direct8080 root404 despite API200. Existing project IDs are known, but no served UI subject remains for per-artifact navigation."
+      },
+      "Validation": {
+        "verdict": "NOT_RUN",
+        "evidence": "/tmp/tracera-interface-census-20261017/live-direct-paths.json",
+        "reason": "Deployed8091 frontend listener absent; direct8080 root404 despite API200. Existing project IDs are known, but no served UI subject remains for per-artifact navigation."
+      },
+      "Assurance": {
+        "verdict": "UNKNOWN",
+        "reason": "Fresh CLI witness concerns transport, not independent full artifact correctness"
+      }
+    },
+    {
+      "id": "G09.view-31",
+      "label": "Process Flow",
+      "path_template": "/projects/${activeId}/views/process",
+      "criterion": "Read-only deployed named artifact/project/type/detail fidelity; source912303f equivalence is not assumed",
+      "Implementation": {
+        "verdict": "UNKNOWN",
+        "reason": "Deployed bundle provenance not tied to current source"
+      },
+      "Usability": {
+        "verdict": "NOT_RUN",
+        "evidence": "/tmp/tracera-interface-census-20261017/live-direct-paths.json",
+        "reason": "Deployed8091 frontend listener absent; direct8080 root404 despite API200. Existing project IDs are known, but no served UI subject remains for per-artifact navigation."
+      },
+      "Validation": {
+        "verdict": "NOT_RUN",
+        "evidence": "/tmp/tracera-interface-census-20261017/live-direct-paths.json",
+        "reason": "Deployed8091 frontend listener absent; direct8080 root404 despite API200. Existing project IDs are known, but no served UI subject remains for per-artifact navigation."
+      },
+      "Assurance": {
+        "verdict": "UNKNOWN",
+        "reason": "Fresh CLI witness concerns transport, not independent full artifact correctness"
+      }
+    },
+    {
+      "id": "G09.view-32",
+      "label": "Timeline",
+      "path_template": "/projects/${activeId}/views/monitoring",
+      "criterion": "Read-only deployed named artifact/project/type/detail fidelity; source912303f equivalence is not assumed",
+      "Implementation": {
+        "verdict": "UNKNOWN",
+        "reason": "Deployed bundle provenance not tied to current source"
+      },
+      "Usability": {
+        "verdict": "NOT_RUN",
+        "evidence": "/tmp/tracera-interface-census-20261017/live-direct-paths.json",
+        "reason": "Deployed8091 frontend listener absent; direct8080 root404 despite API200. Existing project IDs are known, but no served UI subject remains for per-artifact navigation."
+      },
+      "Validation": {
+        "verdict": "NOT_RUN",
+        "evidence": "/tmp/tracera-interface-census-20261017/live-direct-paths.json",
+        "reason": "Deployed8091 frontend listener absent; direct8080 root404 despite API200. Existing project IDs are known, but no served UI subject remains for per-artifact navigation."
+      },
+      "Assurance": {
+        "verdict": "UNKNOWN",
+        "reason": "Fresh CLI witness concerns transport, not independent full artifact correctness"
+      }
+    },
+    {
+      "id": "G09.view-33",
+      "label": "Reports",
+      "path_template": "/projects/${activeId}/views/performance",
+      "criterion": "Read-only deployed named artifact/project/type/detail fidelity; source912303f equivalence is not assumed",
+      "Implementation": {
+        "verdict": "UNKNOWN",
+        "reason": "Deployed bundle provenance not tied to current source"
+      },
+      "Usability": {
+        "verdict": "NOT_RUN",
+        "evidence": "/tmp/tracera-interface-census-20261017/live-direct-paths.json",
+        "reason": "Deployed8091 frontend listener absent; direct8080 root404 despite API200. Existing project IDs are known, but no served UI subject remains for per-artifact navigation."
+      },
+      "Validation": {
+        "verdict": "NOT_RUN",
+        "evidence": "/tmp/tracera-interface-census-20261017/live-direct-paths.json",
+        "reason": "Deployed8091 frontend listener absent; direct8080 root404 despite API200. Existing project IDs are known, but no served UI subject remains for per-artifact navigation."
+      },
+      "Assurance": {
+        "verdict": "UNKNOWN",
+        "reason": "Fresh CLI witness concerns transport, not independent full artifact correctness"
+      }
+    },
+    {
+      "id": "G09.view-34",
+      "label": "Impact Analysis",
+      "path_template": "/projects/${activeId}/views/impact-analysis",
+      "criterion": "Read-only deployed named artifact/project/type/detail fidelity; source912303f equivalence is not assumed",
+      "Implementation": {
+        "verdict": "UNKNOWN",
+        "reason": "Deployed bundle provenance not tied to current source"
+      },
+      "Usability": {
+        "verdict": "NOT_RUN",
+        "evidence": "/tmp/tracera-interface-census-20261017/live-direct-paths.json",
+        "reason": "Deployed8091 frontend listener absent; direct8080 root404 despite API200. Existing project IDs are known, but no served UI subject remains for per-artifact navigation."
+      },
+      "Validation": {
+        "verdict": "NOT_RUN",
+        "evidence": "/tmp/tracera-interface-census-20261017/live-direct-paths.json",
+        "reason": "Deployed8091 frontend listener absent; direct8080 root404 despite API200. Existing project IDs are known, but no served UI subject remains for per-artifact navigation."
+      },
+      "Assurance": {
+        "verdict": "UNKNOWN",
+        "reason": "Fresh CLI witness concerns transport, not independent full artifact correctness"
+      }
+    },
+    {
+      "id": "G09.view-35",
+      "label": "Traceability Matrix",
+      "path_template": "/projects/${activeId}/views/traceability",
+      "criterion": "Read-only deployed named artifact/project/type/detail fidelity; source912303f equivalence is not assumed",
+      "Implementation": {
+        "verdict": "UNKNOWN",
+        "reason": "Deployed bundle provenance not tied to current source"
+      },
+      "Usability": {
+        "verdict": "NOT_RUN",
+        "evidence": "/tmp/tracera-interface-census-20261017/live-direct-paths.json",
+        "reason": "Deployed8091 frontend listener absent; direct8080 root404 despite API200. Existing project IDs are known, but no served UI subject remains for per-artifact navigation."
+      },
+      "Validation": {
+        "verdict": "NOT_RUN",
+        "evidence": "/tmp/tracera-interface-census-20261017/live-direct-paths.json",
+        "reason": "Deployed8091 frontend listener absent; direct8080 root404 despite API200. Existing project IDs are known, but no served UI subject remains for per-artifact navigation."
+      },
+      "Assurance": {
+        "verdict": "UNKNOWN",
+        "reason": "Fresh CLI witness concerns transport, not independent full artifact correctness"
+      }
+    },
+    {
+      "id": "G09.view-36",
+      "label": "Dependency Graph",
+      "path_template": "/projects/${activeId}/views/dependency",
+      "criterion": "Read-only deployed named artifact/project/type/detail fidelity; source912303f equivalence is not assumed",
+      "Implementation": {
+        "verdict": "UNKNOWN",
+        "reason": "Deployed bundle provenance not tied to current source"
+      },
+      "Usability": {
+        "verdict": "NOT_RUN",
+        "evidence": "/tmp/tracera-interface-census-20261017/live-direct-paths.json",
+        "reason": "Deployed8091 frontend listener absent; direct8080 root404 despite API200. Existing project IDs are known, but no served UI subject remains for per-artifact navigation."
+      },
+      "Validation": {
+        "verdict": "NOT_RUN",
+        "evidence": "/tmp/tracera-interface-census-20261017/live-direct-paths.json",
+        "reason": "Deployed8091 frontend listener absent; direct8080 root404 despite API200. Existing project IDs are known, but no served UI subject remains for per-artifact navigation."
+      },
+      "Assurance": {
+        "verdict": "UNKNOWN",
+        "reason": "Fresh CLI witness concerns transport, not independent full artifact correctness"
+      }
+    },
+    {
+      "id": "G09.view-37",
+      "label": "Performance Metrics",
+      "path_template": "/projects/${activeId}/views/performance",
+      "criterion": "Read-only deployed named artifact/project/type/detail fidelity; source912303f equivalence is not assumed",
+      "Implementation": {
+        "verdict": "UNKNOWN",
+        "reason": "Deployed bundle provenance not tied to current source"
+      },
+      "Usability": {
+        "verdict": "NOT_RUN",
+        "evidence": "/tmp/tracera-interface-census-20261017/live-direct-paths.json",
+        "reason": "Deployed8091 frontend listener absent; direct8080 root404 despite API200. Existing project IDs are known, but no served UI subject remains for per-artifact navigation."
+      },
+      "Validation": {
+        "verdict": "NOT_RUN",
+        "evidence": "/tmp/tracera-interface-census-20261017/live-direct-paths.json",
+        "reason": "Deployed8091 frontend listener absent; direct8080 root404 despite API200. Existing project IDs are known, but no served UI subject remains for per-artifact navigation."
+      },
+      "Assurance": {
+        "verdict": "UNKNOWN",
+        "reason": "Fresh CLI witness concerns transport, not independent full artifact correctness"
+      }
+    },
+    {
+      "id": "G09.view-38",
+      "label": "Security Analysis",
+      "path_template": "/projects/${activeId}/views/security",
+      "criterion": "Read-only deployed named artifact/project/type/detail fidelity; source912303f equivalence is not assumed",
+      "Implementation": {
+        "verdict": "UNKNOWN",
+        "reason": "Deployed bundle provenance not tied to current source"
+      },
+      "Usability": {
+        "verdict": "NOT_RUN",
+        "evidence": "/tmp/tracera-interface-census-20261017/live-direct-paths.json",
+        "reason": "Deployed8091 frontend listener absent; direct8080 root404 despite API200. Existing project IDs are known, but no served UI subject remains for per-artifact navigation."
+      },
+      "Validation": {
+        "verdict": "NOT_RUN",
+        "evidence": "/tmp/tracera-interface-census-20261017/live-direct-paths.json",
+        "reason": "Deployed8091 frontend listener absent; direct8080 root404 despite API200. Existing project IDs are known, but no served UI subject remains for per-artifact navigation."
+      },
+      "Assurance": {
+        "verdict": "UNKNOWN",
+        "reason": "Fresh CLI witness concerns transport, not independent full artifact correctness"
+      }
+    },
+    {
+      "id": "G09.view-39",
+      "label": "Monitoring Dashboard",
+      "path_template": "/projects/${activeId}/views/monitoring",
+      "criterion": "Read-only deployed named artifact/project/type/detail fidelity; source912303f equivalence is not assumed",
+      "Implementation": {
+        "verdict": "UNKNOWN",
+        "reason": "Deployed bundle provenance not tied to current source"
+      },
+      "Usability": {
+        "verdict": "NOT_RUN",
+        "evidence": "/tmp/tracera-interface-census-20261017/live-direct-paths.json",
+        "reason": "Deployed8091 frontend listener absent; direct8080 root404 despite API200. Existing project IDs are known, but no served UI subject remains for per-artifact navigation."
+      },
+      "Validation": {
+        "verdict": "NOT_RUN",
+        "evidence": "/tmp/tracera-interface-census-20261017/live-direct-paths.json",
+        "reason": "Deployed8091 frontend listener absent; direct8080 root404 despite API200. Existing project IDs are known, but no served UI subject remains for per-artifact navigation."
+      },
+      "Assurance": {
+        "verdict": "UNKNOWN",
+        "reason": "Fresh CLI witness concerns transport, not independent full artifact correctness"
+      }
+    },
+    {
+      "id": "G09.view-40",
+      "label": "Bug Tracking",
+      "path_template": "/projects/${activeId}/views/problem",
+      "criterion": "Read-only deployed named artifact/project/type/detail fidelity; source912303f equivalence is not assumed",
+      "Implementation": {
+        "verdict": "UNKNOWN",
+        "reason": "Deployed bundle provenance not tied to current source"
+      },
+      "Usability": {
+        "verdict": "NOT_RUN",
+        "evidence": "/tmp/tracera-interface-census-20261017/live-direct-paths.json",
+        "reason": "Deployed8091 frontend listener absent; direct8080 root404 despite API200. Existing project IDs are known, but no served UI subject remains for per-artifact navigation."
+      },
+      "Validation": {
+        "verdict": "NOT_RUN",
+        "evidence": "/tmp/tracera-interface-census-20261017/live-direct-paths.json",
+        "reason": "Deployed8091 frontend listener absent; direct8080 root404 despite API200. Existing project IDs are known, but no served UI subject remains for per-artifact navigation."
+      },
+      "Assurance": {
+        "verdict": "UNKNOWN",
+        "reason": "Fresh CLI witness concerns transport, not independent full artifact correctness"
+      }
+    },
+    {
+      "id": "G09.view-41",
+      "label": "Integrations",
+      "path_template": "/projects/${activeId}/views/integrations",
+      "criterion": "Read-only deployed named artifact/project/type/detail fidelity; source912303f equivalence is not assumed",
+      "Implementation": {
+        "verdict": "UNKNOWN",
+        "reason": "Deployed bundle provenance not tied to current source"
+      },
+      "Usability": {
+        "verdict": "NOT_RUN",
+        "evidence": "/tmp/tracera-interface-census-20261017/live-direct-paths.json",
+        "reason": "Deployed8091 frontend listener absent; direct8080 root404 despite API200. Existing project IDs are known, but no served UI subject remains for per-artifact navigation."
+      },
+      "Validation": {
+        "verdict": "NOT_RUN",
+        "evidence": "/tmp/tracera-interface-census-20261017/live-direct-paths.json",
+        "reason": "Deployed8091 frontend listener absent; direct8080 root404 despite API200. Existing project IDs are known, but no served UI subject remains for per-artifact navigation."
+      },
+      "Assurance": {
+        "verdict": "UNKNOWN",
+        "reason": "Fresh CLI witness concerns transport, not independent full artifact correctness"
+      }
+    },
+    {
+      "id": "G09.view-42",
+      "label": "Webhooks",
+      "path_template": "/projects/${activeId}/views/webhooks",
+      "criterion": "Read-only deployed named artifact/project/type/detail fidelity; source912303f equivalence is not assumed",
+      "Implementation": {
+        "verdict": "UNKNOWN",
+        "reason": "Deployed bundle provenance not tied to current source"
+      },
+      "Usability": {
+        "verdict": "NOT_RUN",
+        "evidence": "/tmp/tracera-interface-census-20261017/live-direct-paths.json",
+        "reason": "Deployed8091 frontend listener absent; direct8080 root404 despite API200. Existing project IDs are known, but no served UI subject remains for per-artifact navigation."
+      },
+      "Validation": {
+        "verdict": "NOT_RUN",
+        "evidence": "/tmp/tracera-interface-census-20261017/live-direct-paths.json",
+        "reason": "Deployed8091 frontend listener absent; direct8080 root404 despite API200. Existing project IDs are known, but no served UI subject remains for per-artifact navigation."
+      },
+      "Assurance": {
+        "verdict": "UNKNOWN",
+        "reason": "Fresh CLI witness concerns transport, not independent full artifact correctness"
+      }
+    },
+    {
+      "id": "G09.view-43",
+      "label": "Settings",
+      "path_template": "/projects/${activeId}/settings",
+      "criterion": "Read-only deployed named artifact/project/type/detail fidelity; source912303f equivalence is not assumed",
+      "Implementation": {
+        "verdict": "UNKNOWN",
+        "reason": "Deployed bundle provenance not tied to current source"
+      },
+      "Usability": {
+        "verdict": "NOT_RUN",
+        "evidence": "/tmp/tracera-interface-census-20261017/live-direct-paths.json",
+        "reason": "Deployed8091 frontend listener absent; direct8080 root404 despite API200. Existing project IDs are known, but no served UI subject remains for per-artifact navigation."
+      },
+      "Validation": {
+        "verdict": "NOT_RUN",
+        "evidence": "/tmp/tracera-interface-census-20261017/live-direct-paths.json",
+        "reason": "Deployed8091 frontend listener absent; direct8080 root404 despite API200. Existing project IDs are known, but no served UI subject remains for per-artifact navigation."
+      },
+      "Assurance": {
+        "verdict": "UNKNOWN",
+        "reason": "Fresh CLI witness concerns transport, not independent full artifact correctness"
+      }
+    },
+    {
+      "id": "G09.view-44",
+      "label": "Settings",
+      "path_template": "/settings",
+      "criterion": "Read-only deployed named artifact/project/type/detail fidelity; source912303f equivalence is not assumed",
+      "Implementation": {
+        "verdict": "UNKNOWN",
+        "reason": "Deployed bundle provenance not tied to current source"
+      },
+      "Usability": {
+        "verdict": "FAIL",
+        "evidence": "/tmp/tracera-interface-census-20261017/live-direct-paths.json",
+        "reason": "Observed ERR_EMPTY_RESPONSE for this direct path"
+      },
+      "Validation": {
+        "verdict": "FAIL",
+        "evidence": "/tmp/tracera-interface-census-20261017/live-direct-paths.json",
+        "reason": "Guarded owned headless navigation executed; no artifact rendered"
+      },
+      "Assurance": {
+        "verdict": "UNKNOWN",
+        "reason": "Fresh CLI witness concerns transport, not independent full artifact correctness"
+      }
+    },
+    {
+      "id": "G09.view-45",
+      "label": "direct project route",
+      "path_template": "/projects/$projectId/adrs/$adrId",
+      "criterion": "Read-only deployed named artifact/project/type/detail fidelity; source912303f equivalence is not assumed",
+      "Implementation": {
+        "verdict": "UNKNOWN",
+        "reason": "Deployed bundle provenance not tied to current source"
+      },
+      "Usability": {
+        "verdict": "NOT_RUN",
+        "evidence": "/tmp/tracera-interface-census-20261017/live-direct-paths.json",
+        "reason": "Deployed8091 frontend listener absent; direct8080 root404 despite API200. Existing project IDs are known, but no served UI subject remains for per-artifact navigation."
+      },
+      "Validation": {
+        "verdict": "NOT_RUN",
+        "evidence": "/tmp/tracera-interface-census-20261017/live-direct-paths.json",
+        "reason": "Deployed8091 frontend listener absent; direct8080 root404 despite API200. Existing project IDs are known, but no served UI subject remains for per-artifact navigation."
+      },
+      "Assurance": {
+        "verdict": "UNKNOWN",
+        "reason": "Fresh CLI witness concerns transport, not independent full artifact correctness"
+      }
+    },
+    {
+      "id": "G09.view-46",
+      "label": "direct project route",
+      "path_template": "/projects/$projectId/adrs",
+      "criterion": "Read-only deployed named artifact/project/type/detail fidelity; source912303f equivalence is not assumed",
+      "Implementation": {
+        "verdict": "UNKNOWN",
+        "reason": "Deployed bundle provenance not tied to current source"
+      },
+      "Usability": {
+        "verdict": "NOT_RUN",
+        "evidence": "/tmp/tracera-interface-census-20261017/live-direct-paths.json",
+        "reason": "Deployed8091 frontend listener absent; direct8080 root404 despite API200. Existing project IDs are known, but no served UI subject remains for per-artifact navigation."
+      },
+      "Validation": {
+        "verdict": "NOT_RUN",
+        "evidence": "/tmp/tracera-interface-census-20261017/live-direct-paths.json",
+        "reason": "Deployed8091 frontend listener absent; direct8080 root404 despite API200. Existing project IDs are known, but no served UI subject remains for per-artifact navigation."
+      },
+      "Assurance": {
+        "verdict": "UNKNOWN",
+        "reason": "Fresh CLI witness concerns transport, not independent full artifact correctness"
+      }
+    },
+    {
+      "id": "G09.view-47",
+      "label": "direct project route",
+      "path_template": "/projects/$projectId/agents",
+      "criterion": "Read-only deployed named artifact/project/type/detail fidelity; source912303f equivalence is not assumed",
+      "Implementation": {
+        "verdict": "UNKNOWN",
+        "reason": "Deployed bundle provenance not tied to current source"
+      },
+      "Usability": {
+        "verdict": "NOT_RUN",
+        "evidence": "/tmp/tracera-interface-census-20261017/live-direct-paths.json",
+        "reason": "Deployed8091 frontend listener absent; direct8080 root404 despite API200. Existing project IDs are known, but no served UI subject remains for per-artifact navigation."
+      },
+      "Validation": {
+        "verdict": "NOT_RUN",
+        "evidence": "/tmp/tracera-interface-census-20261017/live-direct-paths.json",
+        "reason": "Deployed8091 frontend listener absent; direct8080 root404 despite API200. Existing project IDs are known, but no served UI subject remains for per-artifact navigation."
+      },
+      "Assurance": {
+        "verdict": "UNKNOWN",
+        "reason": "Fresh CLI witness concerns transport, not independent full artifact correctness"
+      }
+    },
+    {
+      "id": "G09.view-48",
+      "label": "direct project route",
+      "path_template": "/projects/$projectId/compliance",
+      "criterion": "Read-only deployed named artifact/project/type/detail fidelity; source912303f equivalence is not assumed",
+      "Implementation": {
+        "verdict": "UNKNOWN",
+        "reason": "Deployed bundle provenance not tied to current source"
+      },
+      "Usability": {
+        "verdict": "NOT_RUN",
+        "evidence": "/tmp/tracera-interface-census-20261017/live-direct-paths.json",
+        "reason": "Deployed8091 frontend listener absent; direct8080 root404 despite API200. Existing project IDs are known, but no served UI subject remains for per-artifact navigation."
+      },
+      "Validation": {
+        "verdict": "NOT_RUN",
+        "evidence": "/tmp/tracera-interface-census-20261017/live-direct-paths.json",
+        "reason": "Deployed8091 frontend listener absent; direct8080 root404 despite API200. Existing project IDs are known, but no served UI subject remains for per-artifact navigation."
+      },
+      "Assurance": {
+        "verdict": "UNKNOWN",
+        "reason": "Fresh CLI witness concerns transport, not independent full artifact correctness"
+      }
+    },
+    {
+      "id": "G09.view-49",
+      "label": "direct project route",
+      "path_template": "/projects/$projectId/contracts/$contractId",
+      "criterion": "Read-only deployed named artifact/project/type/detail fidelity; source912303f equivalence is not assumed",
+      "Implementation": {
+        "verdict": "UNKNOWN",
+        "reason": "Deployed bundle provenance not tied to current source"
+      },
+      "Usability": {
+        "verdict": "NOT_RUN",
+        "evidence": "/tmp/tracera-interface-census-20261017/live-direct-paths.json",
+        "reason": "Deployed8091 frontend listener absent; direct8080 root404 despite API200. Existing project IDs are known, but no served UI subject remains for per-artifact navigation."
+      },
+      "Validation": {
+        "verdict": "NOT_RUN",
+        "evidence": "/tmp/tracera-interface-census-20261017/live-direct-paths.json",
+        "reason": "Deployed8091 frontend listener absent; direct8080 root404 despite API200. Existing project IDs are known, but no served UI subject remains for per-artifact navigation."
+      },
+      "Assurance": {
+        "verdict": "UNKNOWN",
+        "reason": "Fresh CLI witness concerns transport, not independent full artifact correctness"
+      }
+    },
+    {
+      "id": "G09.view-50",
+      "label": "direct project route",
+      "path_template": "/projects/$projectId/contracts",
+      "criterion": "Read-only deployed named artifact/project/type/detail fidelity; source912303f equivalence is not assumed",
+      "Implementation": {
+        "verdict": "UNKNOWN",
+        "reason": "Deployed bundle provenance not tied to current source"
+      },
+      "Usability": {
+        "verdict": "NOT_RUN",
+        "evidence": "/tmp/tracera-interface-census-20261017/live-direct-paths.json",
+        "reason": "Deployed8091 frontend listener absent; direct8080 root404 despite API200. Existing project IDs are known, but no served UI subject remains for per-artifact navigation."
+      },
+      "Validation": {
+        "verdict": "NOT_RUN",
+        "evidence": "/tmp/tracera-interface-census-20261017/live-direct-paths.json",
+        "reason": "Deployed8091 frontend listener absent; direct8080 root404 despite API200. Existing project IDs are known, but no served UI subject remains for per-artifact navigation."
+      },
+      "Assurance": {
+        "verdict": "UNKNOWN",
+        "reason": "Fresh CLI witness concerns transport, not independent full artifact correctness"
+      }
+    },
+    {
+      "id": "G09.view-51",
+      "label": "direct project route",
+      "path_template": "/projects/$projectId/equivalence",
+      "criterion": "Read-only deployed named artifact/project/type/detail fidelity; source912303f equivalence is not assumed",
+      "Implementation": {
+        "verdict": "UNKNOWN",
+        "reason": "Deployed bundle provenance not tied to current source"
+      },
+      "Usability": {
+        "verdict": "NOT_RUN",
+        "evidence": "/tmp/tracera-interface-census-20261017/live-direct-paths.json",
+        "reason": "Deployed8091 frontend listener absent; direct8080 root404 despite API200. Existing project IDs are known, but no served UI subject remains for per-artifact navigation."
+      },
+      "Validation": {
+        "verdict": "NOT_RUN",
+        "evidence": "/tmp/tracera-interface-census-20261017/live-direct-paths.json",
+        "reason": "Deployed8091 frontend listener absent; direct8080 root404 despite API200. Existing project IDs are known, but no served UI subject remains for per-artifact navigation."
+      },
+      "Assurance": {
+        "verdict": "UNKNOWN",
+        "reason": "Fresh CLI witness concerns transport, not independent full artifact correctness"
+      }
+    },
+    {
+      "id": "G09.view-52",
+      "label": "direct project route",
+      "path_template": "/projects/$projectId/features/$featureId/scenarios/$scenarioId",
+      "criterion": "Read-only deployed named artifact/project/type/detail fidelity; source912303f equivalence is not assumed",
+      "Implementation": {
+        "verdict": "UNKNOWN",
+        "reason": "Deployed bundle provenance not tied to current source"
+      },
+      "Usability": {
+        "verdict": "NOT_RUN",
+        "evidence": "/tmp/tracera-interface-census-20261017/live-direct-paths.json",
+        "reason": "Deployed8091 frontend listener absent; direct8080 root404 despite API200. Existing project IDs are known, but no served UI subject remains for per-artifact navigation."
+      },
+      "Validation": {
+        "verdict": "NOT_RUN",
+        "evidence": "/tmp/tracera-interface-census-20261017/live-direct-paths.json",
+        "reason": "Deployed8091 frontend listener absent; direct8080 root404 despite API200. Existing project IDs are known, but no served UI subject remains for per-artifact navigation."
+      },
+      "Assurance": {
+        "verdict": "UNKNOWN",
+        "reason": "Fresh CLI witness concerns transport, not independent full artifact correctness"
+      }
+    },
+    {
+      "id": "G09.view-53",
+      "label": "direct project route",
+      "path_template": "/projects/$projectId/features/$featureId",
+      "criterion": "Read-only deployed named artifact/project/type/detail fidelity; source912303f equivalence is not assumed",
+      "Implementation": {
+        "verdict": "UNKNOWN",
+        "reason": "Deployed bundle provenance not tied to current source"
+      },
+      "Usability": {
+        "verdict": "NOT_RUN",
+        "evidence": "/tmp/tracera-interface-census-20261017/live-direct-paths.json",
+        "reason": "Deployed8091 frontend listener absent; direct8080 root404 despite API200. Existing project IDs are known, but no served UI subject remains for per-artifact navigation."
+      },
+      "Validation": {
+        "verdict": "NOT_RUN",
+        "evidence": "/tmp/tracera-interface-census-20261017/live-direct-paths.json",
+        "reason": "Deployed8091 frontend listener absent; direct8080 root404 despite API200. Existing project IDs are known, but no served UI subject remains for per-artifact navigation."
+      },
+      "Assurance": {
+        "verdict": "UNKNOWN",
+        "reason": "Fresh CLI witness concerns transport, not independent full artifact correctness"
+      }
+    },
+    {
+      "id": "G09.view-54",
+      "label": "direct project route",
+      "path_template": "/projects/$projectId/features",
+      "criterion": "Read-only deployed named artifact/project/type/detail fidelity; source912303f equivalence is not assumed",
+      "Implementation": {
+        "verdict": "UNKNOWN",
+        "reason": "Deployed bundle provenance not tied to current source"
+      },
+      "Usability": {
+        "verdict": "NOT_RUN",
+        "evidence": "/tmp/tracera-interface-census-20261017/live-direct-paths.json",
+        "reason": "Deployed8091 frontend listener absent; direct8080 root404 despite API200. Existing project IDs are known, but no served UI subject remains for per-artifact navigation."
+      },
+      "Validation": {
+        "verdict": "NOT_RUN",
+        "evidence": "/tmp/tracera-interface-census-20261017/live-direct-paths.json",
+        "reason": "Deployed8091 frontend listener absent; direct8080 root404 despite API200. Existing project IDs are known, but no served UI subject remains for per-artifact navigation."
+      },
+      "Assurance": {
+        "verdict": "UNKNOWN",
+        "reason": "Fresh CLI witness concerns transport, not independent full artifact correctness"
+      }
+    },
+    {
+      "id": "G09.view-55",
+      "label": "direct project route",
+      "path_template": "/projects/$projectId/temporal",
+      "criterion": "Read-only deployed named artifact/project/type/detail fidelity; source912303f equivalence is not assumed",
+      "Implementation": {
+        "verdict": "UNKNOWN",
+        "reason": "Deployed bundle provenance not tied to current source"
+      },
+      "Usability": {
+        "verdict": "NOT_RUN",
+        "evidence": "/tmp/tracera-interface-census-20261017/live-direct-paths.json",
+        "reason": "Deployed8091 frontend listener absent; direct8080 root404 despite API200. Existing project IDs are known, but no served UI subject remains for per-artifact navigation."
+      },
+      "Validation": {
+        "verdict": "NOT_RUN",
+        "evidence": "/tmp/tracera-interface-census-20261017/live-direct-paths.json",
+        "reason": "Deployed8091 frontend listener absent; direct8080 root404 despite API200. Existing project IDs are known, but no served UI subject remains for per-artifact navigation."
+      },
+      "Assurance": {
+        "verdict": "UNKNOWN",
+        "reason": "Fresh CLI witness concerns transport, not independent full artifact correctness"
+      }
+    },
+    {
+      "id": "G09.view-56",
+      "label": "direct project route",
+      "path_template": "/projects/$projectId/views/$viewType/$itemId",
+      "criterion": "Read-only deployed named artifact/project/type/detail fidelity; source912303f equivalence is not assumed",
+      "Implementation": {
+        "verdict": "UNKNOWN",
+        "reason": "Deployed bundle provenance not tied to current source"
+      },
+      "Usability": {
+        "verdict": "NOT_RUN",
+        "evidence": "/tmp/tracera-interface-census-20261017/live-direct-paths.json",
+        "reason": "Deployed8091 frontend listener absent; direct8080 root404 despite API200. Existing project IDs are known, but no served UI subject remains for per-artifact navigation."
+      },
+      "Validation": {
+        "verdict": "NOT_RUN",
+        "evidence": "/tmp/tracera-interface-census-20261017/live-direct-paths.json",
+        "reason": "Deployed8091 frontend listener absent; direct8080 root404 despite API200. Existing project IDs are known, but no served UI subject remains for per-artifact navigation."
+      },
+      "Assurance": {
+        "verdict": "UNKNOWN",
+        "reason": "Fresh CLI witness concerns transport, not independent full artifact correctness"
+      }
+    },
+    {
+      "id": "G09.view-57",
+      "label": "direct project route",
+      "path_template": "/projects/$projectId/views/$viewType",
+      "criterion": "Read-only deployed named artifact/project/type/detail fidelity; source912303f equivalence is not assumed",
+      "Implementation": {
+        "verdict": "UNKNOWN",
+        "reason": "Deployed bundle provenance not tied to current source"
+      },
+      "Usability": {
+        "verdict": "NOT_RUN",
+        "evidence": "/tmp/tracera-interface-census-20261017/live-direct-paths.json",
+        "reason": "Deployed8091 frontend listener absent; direct8080 root404 despite API200. Existing project IDs are known, but no served UI subject remains for per-artifact navigation."
+      },
+      "Validation": {
+        "verdict": "NOT_RUN",
+        "evidence": "/tmp/tracera-interface-census-20261017/live-direct-paths.json",
+        "reason": "Deployed8091 frontend listener absent; direct8080 root404 despite API200. Existing project IDs are known, but no served UI subject remains for per-artifact navigation."
+      },
+      "Assurance": {
+        "verdict": "UNKNOWN",
+        "reason": "Fresh CLI witness concerns transport, not independent full artifact correctness"
+      }
+    },
+    {
+      "id": "G09.view-58",
+      "label": "direct project route",
+      "path_template": "/projects/$projectId/views/configuration",
+      "criterion": "Read-only deployed named artifact/project/type/detail fidelity; source912303f equivalence is not assumed",
+      "Implementation": {
+        "verdict": "UNKNOWN",
+        "reason": "Deployed bundle provenance not tied to current source"
+      },
+      "Usability": {
+        "verdict": "NOT_RUN",
+        "evidence": "/tmp/tracera-interface-census-20261017/live-direct-paths.json",
+        "reason": "Deployed8091 frontend listener absent; direct8080 root404 despite API200. Existing project IDs are known, but no served UI subject remains for per-artifact navigation."
+      },
+      "Validation": {
+        "verdict": "NOT_RUN",
+        "evidence": "/tmp/tracera-interface-census-20261017/live-direct-paths.json",
+        "reason": "Deployed8091 frontend listener absent; direct8080 root404 despite API200. Existing project IDs are known, but no served UI subject remains for per-artifact navigation."
+      },
+      "Assurance": {
+        "verdict": "UNKNOWN",
+        "reason": "Fresh CLI witness concerns transport, not independent full artifact correctness"
+      }
+    },
+    {
+      "id": "G09.view-59",
+      "label": "direct project route",
+      "path_template": "/projects/$projectId/views/infrastructure",
+      "criterion": "Read-only deployed named artifact/project/type/detail fidelity; source912303f equivalence is not assumed",
+      "Implementation": {
+        "verdict": "UNKNOWN",
+        "reason": "Deployed bundle provenance not tied to current source"
+      },
+      "Usability": {
+        "verdict": "NOT_RUN",
+        "evidence": "/tmp/tracera-interface-census-20261017/live-direct-paths.json",
+        "reason": "Deployed8091 frontend listener absent; direct8080 root404 despite API200. Existing project IDs are known, but no served UI subject remains for per-artifact navigation."
+      },
+      "Validation": {
+        "verdict": "NOT_RUN",
+        "evidence": "/tmp/tracera-interface-census-20261017/live-direct-paths.json",
+        "reason": "Deployed8091 frontend listener absent; direct8080 root404 despite API200. Existing project IDs are known, but no served UI subject remains for per-artifact navigation."
+      },
+      "Assurance": {
+        "verdict": "UNKNOWN",
+        "reason": "Fresh CLI witness concerns transport, not independent full artifact correctness"
+      }
+    }
+  ],
+  "limitations": [
+    "Initial root200/titleTracera with JS200 at23:29Z is not artifact correctness or code provenance",
+    "Later direct5paths failed ERR_EMPTY_RESPONSE; missing listener freshly confirmed",
+    "54 dynamic project/item paths not navigated because deployed frontend listener absent; existing project IDs subsequently supplied and API reachable on direct8080.",
+    "No auth bypass, mutations, restarts, source changes or production writes attempted",
+    "Source/static evidence remains separate frontend-report.json"
+  ],
+  "followup_8080": "/tmp/tracera-interface-census-20261017/direct8080-feasibility.json",
+  "followup_conclusion": "Direct8080 API reachable200 for project and scoped items lists, root404; this listener does not currently serve frontend at /. No alias/service restart authorized or attempted.",
+  "existing_project_ids_witness": "Runtime owner prior22:27Z supplied6IDs; direct8080 current projects GET200 confirms accessible collection. TRACERA scoped items GET200; no item content recorded."
+}

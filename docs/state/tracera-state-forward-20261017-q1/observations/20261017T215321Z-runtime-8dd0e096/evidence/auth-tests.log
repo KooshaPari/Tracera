@@ -1,0 +1,21 @@
+    Blocking waiting for file lock on build directory
+   Compiling tracera-server v0.2.0 (/private/tmp/tracera-runtime-8dd-20261017/crates/tracera-server)
+warning: linker stderr: rust-lld: Option `-no_compact_unwind' is undocumented. Should lld implement it?
+  |
+  = note: `#[warn(linker_messages)]` on by default
+
+warning: `tracera-server` (bin "tracera-server" test) generated 1 warning
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 23.23s
+     Running unittests src/main.rs (/tmp/tracera-runtime-8dd-20261017/target/debug/deps/tracera_server-b27705bb95e9c228)
+
+running 7 tests
+test router::product_observation_routes::tests::immutable_replay_conflict_is_409_and_invalid_is_422 ... ok
+test router::product_observation_routes::tests::unavailable_database_fails_closed ... ok
+test router::product_observation_routes::tests::benchmark_adapter_mounts_preserves_causality_and_rejects_conflicts ... ok
+test router::product_observation_routes::tests::mounted_ingest_read_detect_and_foreign_scope ... ok
+test router::product_observation_routes::tests::mounted_routes_retain_authentication_and_body_limit ... ok
+test router::product_observation_routes::tests::unset_and_empty_product_allowlist_deny_every_route ... ok
+test router::product_observation_routes::tests::product_allowlist_denies_every_foreign_route_with_valid_bearer ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 118 filtered out; finished in 0.23s
+

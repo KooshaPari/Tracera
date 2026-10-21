@@ -1,0 +1,1184 @@
+[
+  {
+    "path": "crates/tracera-server/src/routes/accounts.rs",
+    "route": "/api/v1/accounts/{id}/switch",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/agent.rs",
+    "route": "/api/v1/agent/sessions",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/ai.rs",
+    "route": "/api/v1/ai/analyze",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/ai.rs",
+    "route": "/api/v1/ai/stream-chat",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/branches.rs",
+    "route": "/api/v1/branches/{id}",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/branches.rs",
+    "route": "/api/v1/branches/{id}/compare/{param6}",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/branches.rs",
+    "route": "/api/v1/branches/{id}/merge",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/branches.rs",
+    "route": "/api/v1/branches/{id}/versions",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/branches.rs",
+    "route": "/api/v1/projects/{project_id}/branches",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/chat.rs",
+    "route": "/api/v1/chat/stream",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/concepts.rs",
+    "route": "/api/v1/concepts/{id}",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/concepts.rs",
+    "route": "/api/v1/concepts/{id}/projections",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/concepts.rs",
+    "route": "/api/v1/concepts/{id}/projections/{param6}",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/concepts.rs",
+    "route": "/api/v1/projects/{project_id}/concepts",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/coverage.rs",
+    "route": "/api/v1/coverage",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/coverage.rs",
+    "route": "/api/v1/coverage/{id}",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/coverage.rs",
+    "route": "/api/v1/coverage/{id}/activities",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/coverage.rs",
+    "route": "/api/v1/coverage/{id}/verify",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/coverage.rs",
+    "route": "/api/v1/projects/{project_id}/coverage",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/coverage.rs",
+    "route": "/api/v1/projects/{project_id}/coverage/gaps",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/coverage.rs",
+    "route": "/api/v1/projects/{project_id}/coverage/matrix",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/coverage.rs",
+    "route": "/api/v1/projects/{project_id}/coverage/stats",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/coverage.rs",
+    "route": "/api/v1/projects/{project_id}/coverage/{param6}",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/coverage.rs",
+    "route": "/api/v1/projects/{project_id}/coverage/{param6}/verify",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/docs.rs",
+    "route": "/api/v1/docs",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/docs.rs",
+    "route": "/api/v1/docs/search",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/docs.rs",
+    "route": "/api/v1/docs/{id}",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/equivalence.rs",
+    "route": "/api/v1/projects/{project_id}/equivalence/export",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/equivalence.rs",
+    "route": "/api/v1/projects/{project_id}/equivalence/export-statistics",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/equivalence.rs",
+    "route": "/api/v1/projects/{project_id}/equivalence/import",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/equivalence.rs",
+    "route": "/api/v1/projects/{project_id}/equivalence/validate",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/events.rs",
+    "route": "/api/v1/events",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/events.rs",
+    "route": "/api/v1/events/{id}",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/execution_config.rs",
+    "route": "/api/v1/projects/{project_id}/execution-config",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/executions.rs",
+    "route": "/api/v1/executions/{id}",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/executions.rs",
+    "route": "/api/v1/executions/{id}/advance",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/executions.rs",
+    "route": "/api/v1/executions/{id}/complete",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/executions.rs",
+    "route": "/api/v1/executions/{id}/start",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/executions.rs",
+    "route": "/api/v1/projects/{project_id}/executions",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/executions.rs",
+    "route": "/api/v1/projects/{project_id}/executions/{param6}",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/executions.rs",
+    "route": "/api/v1/projects/{project_id}/executions/{param6}/artifacts",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/executions.rs",
+    "route": "/api/v1/projects/{project_id}/executions/{param6}/artifacts/{param8}/download",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/executions.rs",
+    "route": "/api/v1/projects/{project_id}/executions/{param6}/complete",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/executions.rs",
+    "route": "/api/v1/projects/{project_id}/executions/{param6}/start",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/graphs.rs",
+    "route": "/api/v1/projects/{project_id}/graphs",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/integrations.rs",
+    "route": "/api/v1/integrations/conflicts",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/integrations.rs",
+    "route": "/api/v1/integrations/conflicts/{param5}/resolve",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/integrations.rs",
+    "route": "/api/v1/integrations/credentials",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/integrations.rs",
+    "route": "/api/v1/integrations/credentials/{param5}",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/integrations.rs",
+    "route": "/api/v1/integrations/credentials/{param5}/validate",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/integrations.rs",
+    "route": "/api/v1/integrations/github/app/install-url",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/integrations.rs",
+    "route": "/api/v1/integrations/github/app/installations",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/integrations.rs",
+    "route": "/api/v1/integrations/github/app/installations/{param7}",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/integrations.rs",
+    "route": "/api/v1/integrations/github/app/installations/{param7}/link",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/integrations.rs",
+    "route": "/api/v1/integrations/github/projects",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/integrations.rs",
+    "route": "/api/v1/integrations/github/repos",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/integrations.rs",
+    "route": "/api/v1/integrations/github/repos/{param6}/{param7}/issues",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/integrations.rs",
+    "route": "/api/v1/integrations/linear/projects",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/integrations.rs",
+    "route": "/api/v1/integrations/linear/teams",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/integrations.rs",
+    "route": "/api/v1/integrations/linear/teams/{param6}/issues",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/integrations.rs",
+    "route": "/api/v1/integrations/mappings",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/integrations.rs",
+    "route": "/api/v1/integrations/mappings/{param5}",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/integrations.rs",
+    "route": "/api/v1/integrations/oauth/callback",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/integrations.rs",
+    "route": "/api/v1/integrations/oauth/start",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/integrations.rs",
+    "route": "/api/v1/integrations/stats",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/integrations.rs",
+    "route": "/api/v1/integrations/sync/queue",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/integrations.rs",
+    "route": "/api/v1/integrations/sync/status",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/integrations.rs",
+    "route": "/api/v1/integrations/sync/trigger",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/item_specs.rs",
+    "route": "/api/v1/projects/{project_id}/item-specs/analyze/coverage-gaps",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/item_specs.rs",
+    "route": "/api/v1/projects/{project_id}/item-specs/analyze/suspect-links",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/item_specs.rs",
+    "route": "/api/v1/projects/{project_id}/item-specs/defects",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/item_specs.rs",
+    "route": "/api/v1/projects/{project_id}/item-specs/defects/by-item/{param8}",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/item_specs.rs",
+    "route": "/api/v1/projects/{project_id}/item-specs/defects/{param7}",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/item_specs.rs",
+    "route": "/api/v1/projects/{project_id}/item-specs/defects/{param7}/analyze/cvss",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/item_specs.rs",
+    "route": "/api/v1/projects/{project_id}/item-specs/defects/{param7}/analyze/odc",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/item_specs.rs",
+    "route": "/api/v1/projects/{project_id}/item-specs/epics",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/item_specs.rs",
+    "route": "/api/v1/projects/{project_id}/item-specs/epics/by-item/{param8}",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/item_specs.rs",
+    "route": "/api/v1/projects/{project_id}/item-specs/epics/{param7}",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/item_specs.rs",
+    "route": "/api/v1/projects/{project_id}/item-specs/requirements",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/item_specs.rs",
+    "route": "/api/v1/projects/{project_id}/item-specs/requirements/by-item/{param8}",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/item_specs.rs",
+    "route": "/api/v1/projects/{project_id}/item-specs/requirements/high-risk",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/item_specs.rs",
+    "route": "/api/v1/projects/{project_id}/item-specs/requirements/unverified",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/item_specs.rs",
+    "route": "/api/v1/projects/{project_id}/item-specs/requirements/{param7}",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/item_specs.rs",
+    "route": "/api/v1/projects/{project_id}/item-specs/requirements/{param7}/analyze-impact",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/item_specs.rs",
+    "route": "/api/v1/projects/{project_id}/item-specs/requirements/{param7}/analyze-quality",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/item_specs.rs",
+    "route": "/api/v1/projects/{project_id}/item-specs/requirements/{param7}/analyze/ears",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/item_specs.rs",
+    "route": "/api/v1/projects/{project_id}/item-specs/requirements/{param7}/analyze/quality",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/item_specs.rs",
+    "route": "/api/v1/projects/{project_id}/item-specs/requirements/{param7}/verify",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/item_specs.rs",
+    "route": "/api/v1/projects/{project_id}/item-specs/tasks",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/item_specs.rs",
+    "route": "/api/v1/projects/{project_id}/item-specs/tasks/by-item/{param8}",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/item_specs.rs",
+    "route": "/api/v1/projects/{project_id}/item-specs/tasks/{param7}",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/item_specs.rs",
+    "route": "/api/v1/projects/{project_id}/item-specs/tests",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/item_specs.rs",
+    "route": "/api/v1/projects/{project_id}/item-specs/tests/by-item/{param8}",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/item_specs.rs",
+    "route": "/api/v1/projects/{project_id}/item-specs/tests/flaky",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/item_specs.rs",
+    "route": "/api/v1/projects/{project_id}/item-specs/tests/health-report",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/item_specs.rs",
+    "route": "/api/v1/projects/{project_id}/item-specs/tests/quarantined",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/item_specs.rs",
+    "route": "/api/v1/projects/{project_id}/item-specs/tests/{param7}",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/item_specs.rs",
+    "route": "/api/v1/projects/{project_id}/item-specs/tests/{param7}/analyze/flakiness",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/item_specs.rs",
+    "route": "/api/v1/projects/{project_id}/item-specs/tests/{param7}/quarantine",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/item_specs.rs",
+    "route": "/api/v1/projects/{project_id}/item-specs/tests/{param7}/record-run",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/item_specs.rs",
+    "route": "/api/v1/projects/{project_id}/item-specs/tests/{param7}/unquarantine",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/item_specs.rs",
+    "route": "/api/v1/projects/{project_id}/item-specs/user-stories",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/item_specs.rs",
+    "route": "/api/v1/projects/{project_id}/item-specs/user-stories/by-item/{param8}",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/item_specs.rs",
+    "route": "/api/v1/projects/{project_id}/item-specs/user-stories/{param7}",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/item_specs.rs",
+    "route": "/api/v1/projects/{project_id}/item-specs/{param6}/{param7}/analyze/impact",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/item_specs.rs",
+    "route": "/api/v1/projects/{project_id}/item-specs/{param6}/{param7}/analyze/similarity",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/item_specs.rs",
+    "route": "/api/v1/projects/{project_id}/item-specs/{param6}/{param7}/content-address",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/item_specs.rs",
+    "route": "/api/v1/projects/{project_id}/item-specs/{param6}/{param7}/merkle-proof",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/item_specs.rs",
+    "route": "/api/v1/projects/{project_id}/item-specs/{param6}/{param7}/prioritization",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/item_specs.rs",
+    "route": "/api/v1/projects/{project_id}/item-specs/{param6}/{param7}/verify-baseline",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/item_specs.rs",
+    "route": "/api/v1/projects/{project_id}/item-specs/{param6}/{param7}/version-chain",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/matrix.rs",
+    "route": "/api/v1/projects/{project_id}/matrix",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/matrix.rs",
+    "route": "/api/v1/projects/{project_id}/matrix/export",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/mcp.rs",
+    "route": "/api/v1/mcp/config",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/metrics.rs",
+    "route": "/api/v1/metrics/bundle-size",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/metrics.rs",
+    "route": "/api/v1/metrics/component-render",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/metrics.rs",
+    "route": "/api/v1/metrics/errors",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/metrics.rs",
+    "route": "/api/v1/metrics/web-vitals",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/mutations.rs",
+    "route": "/api/v1/mutations",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/notifications.rs",
+    "route": "/api/v1/notifications",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/notifications.rs",
+    "route": "/api/v1/notifications/read-all",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/notifications.rs",
+    "route": "/api/v1/notifications/stream",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/notifications.rs",
+    "route": "/api/v1/notifications/{id}",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/notifications.rs",
+    "route": "/api/v1/notifications/{id}/read",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/problems.rs",
+    "route": "/api/v1/problems",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/problems.rs",
+    "route": "/api/v1/problems/{id}",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/problems.rs",
+    "route": "/api/v1/problems/{id}/activities",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/problems.rs",
+    "route": "/api/v1/problems/{id}/close",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/problems.rs",
+    "route": "/api/v1/problems/{id}/rca",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/problems.rs",
+    "route": "/api/v1/problems/{id}/status",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/problems.rs",
+    "route": "/api/v1/projects/{project_id}/problems/stats",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/processes.rs",
+    "route": "/api/v1/processes",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/processes.rs",
+    "route": "/api/v1/processes/{id}",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/processes.rs",
+    "route": "/api/v1/processes/{id}/activate",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/processes.rs",
+    "route": "/api/v1/processes/{id}/deprecate",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/processes.rs",
+    "route": "/api/v1/processes/{id}/executions",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/processes.rs",
+    "route": "/api/v1/processes/{id}/versions",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/processes.rs",
+    "route": "/api/v1/projects/{project_id}/processes/stats",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/qa.rs",
+    "route": "/api/v1/qa/metrics/coverage",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/qa.rs",
+    "route": "/api/v1/qa/metrics/defect-density",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/qa.rs",
+    "route": "/api/v1/qa/metrics/execution-history",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/qa.rs",
+    "route": "/api/v1/qa/metrics/flaky-tests",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/qa.rs",
+    "route": "/api/v1/qa/metrics/pass-rate",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/qa.rs",
+    "route": "/api/v1/qa/metrics/summary",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/quality.rs",
+    "route": "/api/v1/quality/items/{param5}",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/reports.rs",
+    "route": "/api/v1/reports",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/reports.rs",
+    "route": "/api/v1/reports/export",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/reports.rs",
+    "route": "/api/v1/reports/templates",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/settings.rs",
+    "route": "/api/v1/settings",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/spec_analytics.rs",
+    "route": "/api/v1/spec-analytics/analyze",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/spec_analytics.rs",
+    "route": "/api/v1/spec-analytics/batch-analyze",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/spec_analytics.rs",
+    "route": "/api/v1/spec-analytics/ears-patterns",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/spec_analytics.rs",
+    "route": "/api/v1/spec-analytics/validate-iso29148",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/storage.rs",
+    "route": "/api/v1/storage/presigned-upload",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/storage.rs",
+    "route": "/api/v1/storage/{id}",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/sync.rs",
+    "route": "/api/v1/sync/status",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/test_cases.rs",
+    "route": "/api/v1/projects/{project_id}/test-cases/stats",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/test_cases.rs",
+    "route": "/api/v1/test-cases",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/test_cases.rs",
+    "route": "/api/v1/test-cases/{id}",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/test_cases.rs",
+    "route": "/api/v1/test-cases/{id}/activities",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/test_cases.rs",
+    "route": "/api/v1/test-cases/{id}/approve",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/test_cases.rs",
+    "route": "/api/v1/test-cases/{id}/deprecate",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/test_cases.rs",
+    "route": "/api/v1/test-cases/{id}/status",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/test_cases.rs",
+    "route": "/api/v1/test-cases/{id}/submit-review",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/test_runs.rs",
+    "route": "/api/v1/projects/{project_id}/test-runs/stats",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/test_runs.rs",
+    "route": "/api/v1/test-runs",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/test_runs.rs",
+    "route": "/api/v1/test-runs/{id}",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/test_runs.rs",
+    "route": "/api/v1/test-runs/{id}/activities",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/test_runs.rs",
+    "route": "/api/v1/test-runs/{id}/cancel",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/test_runs.rs",
+    "route": "/api/v1/test-runs/{id}/complete",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/test_runs.rs",
+    "route": "/api/v1/test-runs/{id}/results",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/test_runs.rs",
+    "route": "/api/v1/test-runs/{id}/results/bulk",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/test_runs.rs",
+    "route": "/api/v1/test-runs/{id}/start",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/test_suites.rs",
+    "route": "/api/v1/projects/{project_id}/test-suites/stats",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/test_suites.rs",
+    "route": "/api/v1/test-suites",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/test_suites.rs",
+    "route": "/api/v1/test-suites/{id}",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/test_suites.rs",
+    "route": "/api/v1/test-suites/{id}/activities",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/test_suites.rs",
+    "route": "/api/v1/test-suites/{id}/status",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/test_suites.rs",
+    "route": "/api/v1/test-suites/{id}/test-cases",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/test_suites.rs",
+    "route": "/api/v1/test-suites/{id}/test-cases/reorder",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/test_suites.rs",
+    "route": "/api/v1/test-suites/{id}/test-cases/{param6}",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/tokens.rs",
+    "route": "/api/v1/tokens/{id}",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/versions.rs",
+    "route": "/api/v1/projects/{project_id}/versions/compare/bulk",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/versions.rs",
+    "route": "/api/v1/projects/{project_id}/versions/compare/summary",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/versions.rs",
+    "route": "/api/v1/versions/{id}",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/versions.rs",
+    "route": "/api/v1/versions/{id}/snapshot",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/webhooks.rs",
+    "route": "/api/v1/projects/{project_id}/webhooks/stats",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/webhooks.rs",
+    "route": "/api/v1/webhooks",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/webhooks.rs",
+    "route": "/api/v1/webhooks/{id}",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/webhooks.rs",
+    "route": "/api/v1/webhooks/{id}/logs",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/webhooks.rs",
+    "route": "/api/v1/webhooks/{id}/regenerate-secret",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/webhooks.rs",
+    "route": "/api/v1/webhooks/{id}/status",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/workflows.rs",
+    "route": "/api/v1/projects/{project_id}/workflows/runs",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/workflows.rs",
+    "route": "/api/v1/projects/{project_id}/workflows/schedules",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/workflows.rs",
+    "route": "/api/v1/projects/{project_id}/workflows/schedules/bootstrap",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/workflows.rs",
+    "route": "/api/v1/projects/{project_id}/workflows/schedules/{param7}",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  },
+  {
+    "path": "crates/tracera-server/src/routes/ws.rs",
+    "route": "/api/v1/ws",
+    "revision": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "behavior": "unavailable route family source registration"
+  }
+]
