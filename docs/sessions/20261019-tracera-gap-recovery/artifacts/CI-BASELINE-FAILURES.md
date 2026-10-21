@@ -85,3 +85,29 @@ A job that produces no steps and no log did not run the tests. Treat
 `test-py (3.13)` on this branch as a runner infrastructure failure, distinct from
 the advisory failures above. The earlier `Rust Build` failure on #1173 was the
 same runner exhibiting the same signature.
+
+## A vestigial sudo step failing the format gate
+
+`Lint & Format` started failing on every self-hosted run before reaching any
+linting. The job dies at its third step:
+
+```
+sudo: The "no new privileges" flag is set, which prevents sudo from running as root.
+##[error]Process completed with exit code 1.
+```
+
+That step was `Install jq`, running `sudo apt-get update && sudo apt-get
+install -y jq`. Two things were wrong with it: `desk-tracera-1` does not grant
+passwordless sudo, and **`jq` is never used by that workflow**. It was a
+dependency of `trunk-io/trunk-action`, which the workflow's own header comment
+says it replaced with a direct prettier call. `grep -n jq
+.github/workflows/trunk-check.yml` returned only the install line itself.
+
+PR #1205 deletes the step rather than making it tolerant, so the job no longer
+needs root at all. Verified with `actionlint` and by running the workflow's own
+prettier invocation.
+
+Worth remembering: this failure looked identical to a real format violation in
+the check list. Only reading the step log showed that no formatting check ever
+ran. Do not read a red `Lint & Format` on a self-hosted runner as a formatting
+result without confirming the job got past step 3.
