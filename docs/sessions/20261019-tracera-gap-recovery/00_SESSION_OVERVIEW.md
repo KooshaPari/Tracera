@@ -439,15 +439,21 @@ other is five npm advisories that live in `frontend/bun.lock`, a file none of
 these PRs touch, so they are pre-existing debt newly surfaced by the scan rather
 than anything introduced here.
 
-| Advisory            | CVSS | Package                | Installed | Fixed in |
-| ------------------- | ---- | ---------------------- | --------- | -------- |
-| GHSA-q3jh-wrc6-jgq8 | 8.2  | `follow-redirects`     | 1.16.0    | 1.16.1   |
-| GHSA-8r9p-f939-6h3c | 8.2  | `follow-redirects`     | 1.16.0    | 1.16.1   |
-| GHSA-587h-7wmj-h5pm | 7.5  | `vite` (launch-editor) | 8.2.2     | 8.2.4    |
-| GHSA-698v-4r3x-3vcv | 6.3  | `vite` (launch-editor) | 8.2.2     | 8.2.4    |
-| GHSA-r825-w8mm-5pxw | 6.3  | `vite` (launch-editor) | 8.2.2     | 8.2.4    |
+| Advisory            | CVSS | Package                        | Installed | Fixed in |
+| ------------------- | ---- | ------------------------------ | --------- | -------- |
+| GHSA-q3jh-wrc6-jgq8 | 8.2  | `follow-redirects`             | 1.16.0    | 1.16.1   |
+| GHSA-8r9p-f939-6h3c | 8.2  | `follow-redirects`             | 1.16.0    | 1.16.1   |
+| GHSA-f2ph-cmg5-wxc8 | 9.4  | `storybook`, `@storybook/core` | 8.6.17    | 8.6.19   |
+| GHSA-587h-7wmj-h5pm | 7.5  | `vite` (launch-editor)         | 8.2.2     | 8.2.4    |
+| GHSA-698v-4r3x-3vcv | 6.3  | `vite` (launch-editor)         | 8.2.2     | 8.2.4    |
+| GHSA-r825-w8mm-5pxw | 6.3  | `vite` (launch-editor)         | 8.2.2     | 8.2.4    |
 
-Fix versions were read from `api.osv.dev`, not assumed. Both are patch-level.
+The storybook entry surfaced in a later scan run, not the first one: it is a
+critical (9.4) missing-origin-validation flaw in the Storybook **preview dev
+server**, fixed in 8.6.19. Like the `vite` ids it is dev-server only, but a 9.4
+is worth closing rather than leaving to a follow-up.
+
+Fix versions were read from `api.osv.dev`, not assumed. All are patch-level.
 They were kept out of the Rust advisory PR so a frontend lockfile bump would not
 hide inside a `Cargo.lock` change; they are fixed instead in PR #1204
 (`chore/frontend-advisory-pins`). Note the repo already documents two other
