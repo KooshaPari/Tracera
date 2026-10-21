@@ -431,3 +431,41 @@ to `webpki-roots` 1.x, and adopting it means changing the manifest to a release
 candidate of a database driver. That is an operator decision, so `lint-rust`
 stays red on #1173 and on #1203 until it is made. Do not read that check as a
 defect in the D-04 work.
+
+### 10.1 `osv`: five npm advisories, all baseline
+
+`osv` fails for two independent reasons. One is the Rust advisory above. The
+other is five npm advisories that live in `frontend/bun.lock`, a file none of
+these PRs touch, so they are pre-existing debt newly surfaced by the scan rather
+than anything introduced here.
+
+| Advisory            | CVSS | Package                | Installed | Fixed in |
+| ------------------- | ---- | ---------------------- | --------- | -------- |
+| GHSA-q3jh-wrc6-jgq8 | 8.2  | `follow-redirects`     | 1.16.0    | 1.16.1   |
+| GHSA-8r9p-f939-6h3c | 8.2  | `follow-redirects`     | 1.16.0    | 1.16.1   |
+| GHSA-587h-7wmj-h5pm | 7.5  | `vite` (launch-editor) | 8.2.2     | 8.2.4    |
+| GHSA-698v-4r3x-3vcv | 6.3  | `vite` (launch-editor) | 8.2.2     | 8.2.4    |
+| GHSA-r825-w8mm-5pxw | 6.3  | `vite` (launch-editor) | 8.2.2     | 8.2.4    |
+
+Fix versions were read from `api.osv.dev`, not assumed. Both are patch-level.
+They were deliberately left out of the Rust advisory PR: a frontend lockfile
+bump needs its own build and test cycle, and mixing it into a `Cargo.lock` change
+would hide it. Note the repo already documents two other `osv-scanner.toml`
+filters with written justifications, so there is precedent for filtering only
+where no fix exists; here a fix does exist, so upgrading is the right remedy.
+
+### 10.2 A dead self-hosted runner, not a test failure
+
+`ci-agents / test-py (3.13)` failed on PR #1173 while `3.12` passed on the same
+commit, and #1158 passed `3.13` entirely. The job's evidence shows why:
+
+| Signal  | Observed                        |
+| ------- | ------------------------------- |
+| runner  | `desk-tracera-1` (self-hosted)  |
+| steps   | empty — no step ever completed  |
+| job log | `BlobNotFound` — never uploaded |
+
+A job that produces no steps and no log did not run the tests. Treat
+`test-py (3.13)` on this branch as a runner infrastructure failure, distinct from
+the advisory failures above. The earlier `Rust Build` failure on #1173 was the
+same runner exhibiting the same signature.
