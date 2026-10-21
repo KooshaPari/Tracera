@@ -43,6 +43,8 @@ than anything introduced here.
 | GHSA-587h-7wmj-h5pm | 7.5  | `vite` (launch-editor)         | 8.2.2     | 8.2.4    |
 | GHSA-698v-4r3x-3vcv | 6.3  | `vite` (launch-editor)         | 8.2.2     | 8.2.4    |
 | GHSA-r825-w8mm-5pxw | 6.3  | `vite` (launch-editor)         | 8.2.2     | 8.2.4    |
+| GHSA-xp26-3454-mjgp | 5.9  | `@vitest/mocker`               | 4.1.11    | 4.1.12   |
+| GHSA-qxg6-89mg-rqv8 | 4.7  | `@vitest/mocker`               | 4.1.11    | 4.1.12   |
 
 The storybook entry surfaced in a later scan run, not the first one: it is a
 critical (9.4) missing-origin-validation flaw in the Storybook **preview dev
@@ -50,6 +52,10 @@ server**, fixed in 8.6.19. Like the `vite` ids it is dev-server only, but a 9.4
 is worth closing rather than leaving to a follow-up.
 
 Fix versions were read from `api.osv.dev`, not assumed. All are patch-level.
+Two of the eight are a pair: GHSA-xp26-3454-mjgp is specifically a bypass of
+the fix for GHSA-qxg6-89mg-rqv8, so taking one without the other is pointless.
+The vitest pair also surfaced only on a later scan, after the first six were
+already fixed, which is why the count grew from five to eight across passes.
 They were kept out of the Rust advisory PR so a frontend lockfile bump would not
 hide inside a `Cargo.lock` change; they are fixed instead in PR #1204
 (`chore/frontend-advisory-pins`). Note the repo already documents two other
