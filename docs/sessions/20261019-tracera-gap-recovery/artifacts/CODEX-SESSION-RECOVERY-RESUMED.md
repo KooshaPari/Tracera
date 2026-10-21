@@ -10,6 +10,21 @@ response_item:180, world_state:5, turn_context:4, token_usage_record:28,
 inter_agent_communication_metadata:24`. Six subagent task starts, four
 `spawn_agent` calls, and eight named subagents listed at digest line 164.
 
+Reproduce the digest with the extractor committed beside this report. The
+arguments are `<max_chars> <rollout.jsonl>` in that order, and the recorded
+file used `6000`:
+
+```
+python3 artifacts/extract_codex_digest.py 6000 <rollout.jsonl>
+```
+
+That command reproduces the 422-line digest byte-for-byte:
+sha256 `268152393150a7e6255bdf4cf2636b37503fe439846b36077de508c398fb4563`.
+The script committed here is a Ruff-formatted copy of the original; the two
+agree byte-for-byte on output. Passing the rollout path first makes `int()`
+receive a filename and raise `ValueError`, so the argument order is worth
+getting right before trusting any regenerated digest.
+
 Every claim below cites `digest:L<N>`. Nothing in this report was
 independently re-verified unless it says so.
 
