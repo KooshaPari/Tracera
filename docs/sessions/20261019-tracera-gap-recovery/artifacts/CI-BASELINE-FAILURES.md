@@ -20,51 +20,59 @@ closes 0382, 0383 and the 1.x instance of 0381. Verified there:
 `cargo check --workspace --all-targets` clean, `cargo test --workspace` 378
 passed / 0 failed / 1 ignored.
 
-One instance of RUSTSEC-2026-0381 remains: `webpki-roots 0.26.11`, pinned by
-`neo4rs 0.8.0`, which `crates/tracera-server` depends on. It is not suppressed.
+### Correction: RUSTSEC-2026-0381 needed no pre-release
 
-An earlier draft of this note said the pin came via both `tracera-server` and
-`tracera-neo4j`. That was wrong: `crates/tracera-neo4j` declares
-`neo4rs = "0.7"` but is **not a workspace member**, so it never builds and its
-declaration is inert. Only `tracera-server` matters, which means only one
-manifest needs to change.
+An earlier version of this note claimed one instance of `RUSTSEC-2026-0381`
+remained, pinned by `neo4rs 0.8.0` through `webpki-roots 0.26.11`, and that only
+a pre-release `neo4rs` could clear it. **That was wrong, and it was wrong in a
+way that produced an unnecessary draft PR.**
 
-Draft PR #1207 measures what closing it actually costs, rather than leaving it
-as an unknown:
+The advisory's affected ranges are `[0.0.0-0, 0.26.11)` and
+`[0.26.12-0, 1.0.10)`. So `0.26.11` is the _fix_ for the first range, not a
+vulnerable version. The copy actually flagged was `webpki-roots 1.0.9`, which
+#1203 already bumps to `1.0.10`.
 
-| Change                               | Size                                                            |
-| ------------------------------------ | --------------------------------------------------------------- |
-| `crates/tracera-server/Cargo.toml`   | 1 line, `"0.8"` to `"0.9.0-rc.10"`                              |
-| `crates/tracera-server/src/neo4j.rs` | 2 lines: `Graph::new()` is synchronous in 0.9, so `.await` goes |
-| `Cargo.lock`                         | `webpki-roots` disappears with its tree                         |
+Two independent confirmations, because the first one I ran earlier was misread:
 
-That `.await` was the only compile error in the workspace. On #1207:
-`cargo check -p tracera-server --all-targets` clean, `cargo test --workspace`
-378 passed / 0 failed / 1 ignored, `cargo deny check advisories` ok, and
-`bans`/`licenses`/`sources` ok so the pre-release trips no policy. Applying it
-together with #1203's two patch bumps yields `advisories ok` with **zero**
-advisories, verified in one probe rather than reasoned about.
+| Source                      | Observed                                                    |
+| --------------------------- | ----------------------------------------------------------- |
+| `cargo-deny` block for 0381 | names `Cargo.lock:424 │ webpki-roots 1.0.9`                 |
+| `api.osv.dev` query         | `webpki-roots@0.26.11` clean; `webpki-roots@1.0.9` affected |
 
-It is a draft because adopting a release candidate of a database driver is a
-product decision. Before asking, I checked the obvious stable alternative and it
-does not exist: `neo4rs 0.8.0`'s manifest declares `webpki-roots` as a
-**non-optional** dependency with no feature gate (`[features]` contains only
-`json`), so `default-features = false` cannot remove it. Disabling a feature is
-not an option; the dependency has to leave the graph, and only 0.9.0-rc.10 does
-that.
+The mistake was reading a `grep` for `webpki-roots <version>` and taking a
+definition line from `Cargo.lock` as the flagged line. `cargo-deny` prints the
+offending package in its own block; that is the line to read.
 
-Until the decision is made, `lint-rust`, `osv` and
-`Rust dependency policy` stay red on every branch including `main`, because
-`cargo-deny` reads the lockfile and does not care that the affected TLS path may
-be unreachable at runtime. Do not add a `deny.toml` ignore to silence it, and do
-not read the check as a defect in the D-04 work.
+Consequence: **#1203 closes all three advisories by itself.** On its branch,
+`cargo deny check advisories` reports `ok`. `neo4rs` stays on stable `0.8.0`.
+Draft PR #1207, which adopted the `0.9.0-rc.10` pre-release, was built on the
+misreading and has been closed.
 
-### 10.1 `osv`: eight npm advisories, all baseline
+The captured evidence from that probe is still worth keeping, as a fact about
+`neo4rs` rather than a recommendation: upgrading to `0.9.0-rc.10` costs one
+manifest line plus removing one `.await`, because `Graph::new()` became
+synchronous, and `webpki-roots` leaves the graph entirely. `webpki-roots` is a
+non-optional dependency of `neo4rs 0.8.0` with no feature gate, so it cannot be
+removed by configuration. None of that is needed now.
+
+What remains true: do not add a `deny.toml` ignore to silence an advisory, and do
+not read a red `lint-rust` as a defect in the D-04 work. It is a dependency
+finding, separate from the CLI behaviour under audit.
+
+### 10.1 `osv`: npm advisories, all baseline
 
 `osv` fails for two independent reasons. One is the Rust advisory above. The
-other is eight npm advisories that live in `frontend/bun.lock`, a file none of
-these PRs touch, so they are pre-existing debt newly surfaced by the scan rather
-than anything introduced here. All eight are now closed by PR #1204.
+other is npm advisories that live in `frontend/bun.lock`, a file none of these
+PRs touch, so they are pre-existing debt newly surfaced by the scan rather than
+anything introduced here. All are closed by PR #1204.
+
+**Do not treat the count as stable.** It was five on the first scan, eight by
+the time #1204 was written, and eleven by the per-version check below, because
+the advisory database keeps growing. The durable claim is not "N advisories
+fixed" but: for every package #1204 touches, the resolved version is clean
+under `api.osv.dev`, and the previously-resolved version was not. That is what
+the table below now records, and it does not rot when a new id is published
+against an old version.
 
 | Advisory            | CVSS | Package                        | Installed | Fixed in |
 | ------------------- | ---- | ------------------------------ | --------- | -------- |
@@ -83,10 +91,23 @@ server**, fixed in 8.6.19. Like the `vite` ids it is dev-server only, but a 9.4
 is worth closing rather than leaving to a follow-up.
 
 Fix versions were read from `api.osv.dev`, not assumed. All are patch-level.
-Two of the eight are a pair: GHSA-xp26-3454-mjgp is specifically a bypass of
-the fix for GHSA-qxg6-89mg-rqv8, so taking one without the other is pointless.
-The vitest pair also surfaced only on a later scan, after the first six were
-already fixed, which is why the count grew from five to eight across passes.
+Two are a pair: GHSA-xp26-3454-mjgp is specifically a bypass of the fix for
+GHSA-qxg6-89mg-rqv8, so taking one without the other is pointless.
+
+Per-version verification, queried against `api.osv.dev` directly rather than
+inferred from a scan log. This is the mapping that matters: each resolved
+version was queried individually, and the old version alongside it as a control.
+
+| Package                         | Resolved | Verdict | Old version | Verdict      |
+| ------------------------------- | -------- | ------- | ----------- | ------------ |
+| `follow-redirects`              | 1.16.1   | clean   | 1.16.0      | 2 advisories |
+| `vite`                          | 8.2.4    | clean   | 8.2.2       | 6 advisories |
+| `storybook` / `@storybook/core` | 8.6.19   | clean   | 8.6.17      | 1 advisory   |
+| `vitest` / `@vitest/mocker`     | 4.1.12   | clean   | 4.1.11      | 2 advisories |
+
+`vite` carried six, not the three the earlier table listed. The three extra ids
+are also fixed by 8.2.4, so the change already covers them, but the earlier
+count understated the work.
 They were kept out of the Rust advisory PR so a frontend lockfile bump would not
 hide inside a `Cargo.lock` change; they are fixed instead in PR #1204
 (`chore/frontend-advisory-pins`). Note the repo already documents two other
@@ -175,8 +196,26 @@ says it replaced with a direct prettier call. `grep -n jq
 .github/workflows/trunk-check.yml` returned only the install line itself.
 
 PR #1205 deletes the step rather than making it tolerant, so the job no longer
-needs root at all. Verified with `actionlint` and by running the workflow's own
-prettier invocation.
+needs root at all.
+
+What is actually established, and what is not:
+
+| Claim                                                               | Status           | Evidence                                                     |
+| ------------------------------------------------------------------- | ---------------- | ------------------------------------------------------------ |
+| The workflow no longer invokes `sudo`                               | observed         | `grep -c sudo` is 1 on `main`, 0 on the branch               |
+| The job's step list is Checkout, Install Prettier, prettier check   | observed         | workflow content on the branch                               |
+| The workflow file is valid                                          | observed         | `actionlint` clean                                           |
+| The job passes with the step removed                                | observed         | run 39691676041, job 119539098206, 6 steps, success          |
+| The job passes **on `desk-tracera-1`**, the runner it was broken on | **not observed** | only one run exists, and it landed on a GitHub-hosted runner |
+
+The last row is the honest gap. The job passed on GitHub-hosted before this
+change too, so that run does not by itself prove the fix. What does hold is
+narrower and still sound: the failing step is gone, so the job cannot fail for
+that reason, and the specific failure it removed is a missing `sudo`. That is a
+structural argument plus a partial observation, not a post-fix observation on
+the affected runner. Confirming it needs one run that lands on
+`desk-tracera-1`; re-running until it does would be scheduling luck, not
+verification.
 
 Worth remembering: this failure looked identical to a real format violation in
 the check list. Only reading the step log showed that no formatting check ever

@@ -53,11 +53,11 @@ plus the `[tool.mypy]` block in #1158 and #1173.
 Two more PRs were opened after the original four-PR simulation, and one of them
 changes the recommended order:
 
-| PR    | Purpose                                                                          | State                                                |
-| ----- | -------------------------------------------------------------------------------- | ---------------------------------------------------- |
-| #1205 | delete the unused `jq` install that fails `Lint & Format` on self-hosted runners | MERGEABLE, 61 checks, **0 failing**                  |
-| #1203 | three RUSTSEC-2026 TLS patch bumps                                               | MERGEABLE, red on the one advisory it does not close |
-| #1204 | eight npm advisories                                                             | MERGEABLE, red only on `Cargo.lock` Rust advisories  |
+| PR    | Purpose                                                                          | State                                               |
+| ----- | -------------------------------------------------------------------------------- | --------------------------------------------------- |
+| #1205 | delete the unused `jq` install that fails `Lint & Format` on self-hosted runners | MERGEABLE, 61 checks, **0 failing**                 |
+| #1203 | three RUSTSEC-2026 TLS patch bumps                                               | MERGEABLE, closes all three advisories              |
+| #1204 | npm advisories (count drifts; 11 at last check)                                  | MERGEABLE, red only on `Cargo.lock` Rust advisories |
 
 #1205 is the only fully green PR in the set, so it should land first. It removes
 the `sudo` requirement from the `Trunk Check` workflow's `Lint & Format` job,
@@ -69,7 +69,14 @@ own branch, so #1173 and #1204 keep failing it even after #1205 is approved.
 They need to be updated from `main` after #1205 merges before that check can go
 green.
 
-#1203 and #1204 cannot go fully green on their own. Both touch lockfiles that
-`osv` and `cargo-deny` scan, so both report the one advisory that needs the
-`neo4rs` decision. #1203 closes two of three Rust advisories; #1204 closes all
-eight npm advisories and verifiably drops `osv`'s npm rows to zero.
+#1203 closes all three Rust advisories on its own: `cargo deny check advisories`
+reports `ok` against its committed lockfile. An earlier note here said it closed
+only two and that the third needed an operator decision on a `neo4rs`
+pre-release. That was wrong, and the draft PR built on it (#1207) has been
+closed. `RUSTSEC-2026-0381` affects `[0.0.0-0, 0.26.11)` and
+`[0.26.12-0, 1.0.10)`, so the `0.26.11` copy that `neo4rs 0.8.0` pins is the fix
+for the earlier range; the flagged copy was `webpki-roots 1.0.9`.
+
+#1204 closes the npm set and verifiably drops `osv`'s npm rows to zero. It is
+still red on `osv` and `Rust dependency policy` only because those jobs also
+scan `Cargo.lock`, so it needs #1203 alongside it to see both sides clean.
