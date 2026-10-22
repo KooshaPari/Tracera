@@ -46,7 +46,14 @@ together with #1203's two patch bumps yields `advisories ok` with **zero**
 advisories, verified in one probe rather than reasoned about.
 
 It is a draft because adopting a release candidate of a database driver is a
-product decision. Until it is made, `lint-rust`, `osv` and
+product decision. Before asking, I checked the obvious stable alternative and it
+does not exist: `neo4rs 0.8.0`'s manifest declares `webpki-roots` as a
+**non-optional** dependency with no feature gate (`[features]` contains only
+`json`), so `default-features = false` cannot remove it. Disabling a feature is
+not an option; the dependency has to leave the graph, and only 0.9.0-rc.10 does
+that.
+
+Until the decision is made, `lint-rust`, `osv` and
 `Rust dependency policy` stay red on every branch including `main`, because
 `cargo-deny` reads the lockfile and does not care that the affected TLS path may
 be unreachable at runtime. Do not add a `deny.toml` ignore to silence it, and do
