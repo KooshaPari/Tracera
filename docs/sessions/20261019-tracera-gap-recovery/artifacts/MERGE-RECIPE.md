@@ -80,3 +80,39 @@ for the earlier range; the flagged copy was `webpki-roots 1.0.9`.
 #1204 closes the npm set and verifiably drops `osv`'s npm rows to zero. It is
 still red on `osv` and `Rust dependency policy` only because those jobs also
 scan `Cargo.lock`, so it needs #1203 alongside it to see both sides clean.
+
+## Observed gate results after re-running the advisory PRs
+
+The claims above were originally based on running the gates locally. Re-running
+the actual CI jobs gives observed results from the project's own gates, which is
+stronger, and it changed one conclusion.
+
+`RUSTSEC-2026-0381`'s affected ranges were revised upstream: the advisory now
+covers `[0.0.0-0, 0.26.11)` and `[0.26.12-0, 1.0.10)`. So the `webpki-roots
+0.26.11` copy that `neo4rs 0.8.0` pins is the fix for the earlier range, not a
+vulnerable version, and the flagged copy was `webpki-roots 1.0.9`. Two
+consequences: #1203 closes all three advisories by itself, and the draft
+`neo4rs 0.9.0-rc.10` upgrade (#1207) was unnecessary and is closed.
+
+Observed on #1203 after re-running its failed jobs:
+
+| Gate                     | Result                    | What it means                                        |
+| ------------------------ | ------------------------- | ---------------------------------------------------- |
+| `ci-agents / lint-rust`  | **success**               | `cargo deny check` passes                            |
+| `ci-agents / required`   | **success**               | the aggregator agrees                                |
+| `Rust dependency policy` | **success**               | second `cargo deny` entry point passes               |
+| `osv`                    | failure, **Rust rows: 0** | all remaining rows are npm, from `frontend/bun.lock` |
+
+That last row is the useful one. `osv` on #1203 is red only because it also
+scans `frontend/bun.lock`, which #1203 does not touch. Its 12 remaining rows are
+all npm (`storybook`, `vite` ×6, `follow-redirects` ×2, `@vitest/mocker` ×2).
+
+The mirror image holds for #1204: its `osv` run reports **zero npm rows**, and
+is red only on the Rust advisories from `Cargo.lock`. Neither PR is red on the
+surface it changes. Both must land for `osv` to be green overall.
+
+Note the count drift: `vite 8.2.2` alone carries six advisories now, not the
+three an earlier table listed. The three extra ids are also fixed by `8.2.4`.
+When reporting this work, do not lead with an advisory count — it moves. Lead
+with the per-version mapping: the resolved version is clean, the previous one
+was not.
