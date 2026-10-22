@@ -45,9 +45,9 @@ impl Neo4jClient {
             }
         };
 
-        // neo4rs 0.7.x: Graph::new(uri, user, password) returns Future<Output=Result<Graph>>
+        // neo4rs 0.9: Graph::new(uri, user, password) is synchronous.
         let url_for_log = url.clone();
-        let graph_result = Graph::new(url.clone(), user.clone(), pass.clone()).await;
+        let graph_result = Graph::new(url.clone(), user.clone(), pass.clone());
         match graph_result {
             Ok(graph) => {
                 info!("Neo4j Bolt sync enabled (endpoint {})", url_for_log);
