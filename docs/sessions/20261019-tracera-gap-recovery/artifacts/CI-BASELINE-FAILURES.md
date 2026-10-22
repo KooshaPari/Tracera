@@ -103,6 +103,25 @@ has a real cause: `ci-agents / lint-rust` (12 steps, the RUSTSEC advisory),
 `osv` (6 steps, the same advisory plus npm), and `Lint & Format` (7 steps, the
 `Install jq` step below).
 
+The runner also fails jobs _after_ they start. `ci-agents / security-scan
+(javascript-typescript)` failed on #1204 at its `Upload Trivy SARIF` step, with
+the job log truncated in the middle of Trivy's vulnerability-DB download. The
+same job, same 8 steps, same workflow commit, succeeded on GitHub-hosted runners
+for three other PRs:
+
+| PR    | Runner           | Steps | Result  |
+| ----- | ---------------- | ----- | ------- |
+| #1150 | GitHub-hosted    | 8     | success |
+| #1158 | GitHub-hosted    | 8     | success |
+| #1173 | GitHub-hosted    | 8     | success |
+| #1204 | `desk-tracera-1` | 8     | failure |
+
+Worth flagging as a near miss: the failure presented as a workflow or action
+misconfiguration, and the obvious "fix" would have been to change the SARIF
+upload inputs. The comparison above shows there is nothing to fix in the
+workflow. Do not modify CI config on the strength of a `desk-tracera-1` failure
+alone; first check whether the identical job passes on a GitHub-hosted runner.
+
 ### 10.3 A vestigial sudo step failing the format gate
 
 `Lint & Format` failed on runs scheduled to the self-hosted `desk-tracera-1`
