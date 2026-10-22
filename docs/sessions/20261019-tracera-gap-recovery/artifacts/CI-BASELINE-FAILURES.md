@@ -21,12 +21,36 @@ closes 0382, 0383 and the 1.x instance of 0381. Verified there:
 passed / 0 failed / 1 ignored.
 
 One instance of RUSTSEC-2026-0381 remains: `webpki-roots 0.26.11`, pinned by
-`neo4rs 0.8.0` via `tracera-server` and `tracera-neo4j`. It is not suppressed.
-`0.8.0` is the latest stable `neo4rs`; only `0.9.0-rc.10`, a pre-release, moves
-to `webpki-roots` 1.x, and adopting it means changing the manifest to a release
-candidate of a database driver. That is an operator decision, so `lint-rust`
-stays red on #1173 and on #1203 until it is made. Do not read that check as a
-defect in the D-04 work.
+`neo4rs 0.8.0`, which `crates/tracera-server` depends on. It is not suppressed.
+
+An earlier draft of this note said the pin came via both `tracera-server` and
+`tracera-neo4j`. That was wrong: `crates/tracera-neo4j` declares
+`neo4rs = "0.7"` but is **not a workspace member**, so it never builds and its
+declaration is inert. Only `tracera-server` matters, which means only one
+manifest needs to change.
+
+Draft PR #1207 measures what closing it actually costs, rather than leaving it
+as an unknown:
+
+| Change                               | Size                                                            |
+| ------------------------------------ | --------------------------------------------------------------- |
+| `crates/tracera-server/Cargo.toml`   | 1 line, `"0.8"` to `"0.9.0-rc.10"`                              |
+| `crates/tracera-server/src/neo4j.rs` | 2 lines: `Graph::new()` is synchronous in 0.9, so `.await` goes |
+| `Cargo.lock`                         | `webpki-roots` disappears with its tree                         |
+
+That `.await` was the only compile error in the workspace. On #1207:
+`cargo check -p tracera-server --all-targets` clean, `cargo test --workspace`
+378 passed / 0 failed / 1 ignored, `cargo deny check advisories` ok, and
+`bans`/`licenses`/`sources` ok so the pre-release trips no policy. Applying it
+together with #1203's two patch bumps yields `advisories ok` with **zero**
+advisories, verified in one probe rather than reasoned about.
+
+It is a draft because adopting a release candidate of a database driver is a
+product decision. Until it is made, `lint-rust`, `osv` and
+`Rust dependency policy` stay red on every branch including `main`, because
+`cargo-deny` reads the lockfile and does not care that the affected TLS path may
+be unreachable at runtime. Do not add a `deny.toml` ignore to silence it, and do
+not read the check as a defect in the D-04 work.
 
 ### 10.1 `osv`: eight npm advisories, all baseline
 
