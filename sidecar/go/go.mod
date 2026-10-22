@@ -1,3 +1,3 @@
 module github.com/kooshapari/tracera-sidecar
 
-go 1.26.9
+go 1.26.10
