@@ -42,6 +42,10 @@ Rule for the next session: never reformat a directory that carries a
 
 - `deploy` fails on `main` as well, so it is a pre-existing baseline failure.
 - `Vercel` fails with a deployment rate limit ("retry in 24 hours"); external.
+- `Kilo Code Review` fails with `Review failed: Assistant request was rate
+limited`. Same class as CodeRabbit's earlier "Review rate limited": a
+  third-party review bot out of quota, not a finding about the code. Read the
+  check-run summary before treating any red review bot as a code verdict.
 - GitGuardian on PR #1132 reports one "Generic High Entropy Secret" in
   `docs/audit/TRACERA-GET-METHOD-BATCH.csv` at commit `e4b6ab3ee`. Inspection
   of that file shows the only high-entropy tokens are API route strings such
