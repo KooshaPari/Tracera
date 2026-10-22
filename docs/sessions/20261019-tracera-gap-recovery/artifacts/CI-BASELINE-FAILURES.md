@@ -200,22 +200,24 @@ needs root at all.
 
 What is actually established, and what is not:
 
-| Claim                                                               | Status           | Evidence                                                     |
-| ------------------------------------------------------------------- | ---------------- | ------------------------------------------------------------ |
-| The workflow no longer invokes `sudo`                               | observed         | `grep -c sudo` is 1 on `main`, 0 on the branch               |
-| The job's step list is Checkout, Install Prettier, prettier check   | observed         | workflow content on the branch                               |
-| The workflow file is valid                                          | observed         | `actionlint` clean                                           |
-| The job passes with the step removed                                | observed         | run 39691676041, job 119539098206, 6 steps, success          |
-| The job passes **on `desk-tracera-1`**, the runner it was broken on | **not observed** | only one run exists, and it landed on a GitHub-hosted runner |
+| Claim                                                               | Status                    | Evidence                                                                                                                                                                       |
+| ------------------------------------------------------------------- | ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| The workflow no longer invokes `sudo`                               | observed                  | `grep -c sudo` is 1 on `main`, 0 on the branch                                                                                                                                 |
+| The job's step list is Checkout, Install Prettier, prettier check   | observed                  | workflow content on the branch                                                                                                                                                 |
+| The workflow file is valid                                          | observed                  | `actionlint` clean                                                                                                                                                             |
+| The job passes with the step removed                                | observed                  | run 39691676041, job 119539098206, 6 steps, success                                                                                                                            |
+| The remaining steps run with no `sudo` available                    | **observed by execution** | ran `npm install --global --ignore-scripts prettier@3.6.2` and `prettier --check` in a shell where `sudo -n` reports "a password is required"; install succeeded, check passed |
+| The job passes **on `desk-tracera-1`**, the runner it was broken on | **not observed**          | only one run exists, and it landed on a GitHub-hosted runner                                                                                                                   |
 
-The last row is the honest gap. The job passed on GitHub-hosted before this
-change too, so that run does not by itself prove the fix. What does hold is
-narrower and still sound: the failing step is gone, so the job cannot fail for
-that reason, and the specific failure it removed is a missing `sudo`. That is a
-structural argument plus a partial observation, not a post-fix observation on
-the affected runner. Confirming it needs one run that lands on
-`desk-tracera-1`; re-running until it does would be scheduling luck, not
-verification.
+The last row is a gap that is externally blocked rather than skipped. The desk
+runner registers under the same `ubuntu-latest` label as the hosted ones, and
+this workflow has no `workflow_dispatch`, so the desk slot cannot be targeted
+and the only way to obtain that observation is scheduling luck.
+
+What does hold is stronger than inspection: the offending step is deleted, the
+workflow contains no `sudo` at all, and every remaining command was executed in
+a shell with the same constraint and succeeded. The failure mode is removed
+rather than worked around, so the result is better even without a desk-slot run.
 
 Worth remembering: this failure looked identical to a real format violation in
 the check list. Only reading the step log showed that no formatting check ever
