@@ -158,3 +158,34 @@ Recorded but not fixed: `crates/tracera-go-cli/go.mod` declares `go 1.22`, also
 below the fixed versions, but that module is not in `osv`'s scan targets
 (`Cargo.lock`, `frontend/bun.lock`, `sidecar/go/go.mod`). Changing it would not
 move the gate; widening the scan surface is a separate decision.
+
+## Final shape: one advisory PR, not three
+
+Splitting the advisory work by ecosystem was a mistake worth recording. The
+dependency gates scan `Cargo.lock`, `frontend/bun.lock` and `sidecar/go/go.mod`
+together, so each ecosystem-split PR was permanently red on the surfaces the
+other two fix. None of them could go green alone, which meant the operator would
+have had to merge three partially-red PRs to discover whether the combination
+worked.
+
+Consolidated into **PR #1209** (`chore/dependency-advisories`), which carries all
+four fixes:
+
+| File                                 | Change                                                                                       |
+| ------------------------------------ | -------------------------------------------------------------------------------------------- |
+| `Cargo.lock`                         | `rustls-webpki` 0.103.16, `webpki-root-certs` 1.0.10, `webpki-roots` 1.0.10                  |
+| `frontend/package.json` + `bun.lock` | overrides for `follow-redirects` 1.16.1, `vite` ~8.2.4, `storybook` 8.6.19, `vitest` ^4.1.12 |
+| `sidecar/go/go.mod`                  | `go 1.26.9` to `go 1.26.10`                                                                  |
+
+Observed state of #1209: **0 failing, 59 passing**, one pending
+(`Kilo Code Review`, a rate-limited third-party bot). The dependency gates
+specifically: `osv` pass, `Rust dependency policy` pass, `ci-agents / lint-rust`
+pass, `Rust Test` pass.
+
+#1203, #1204 and #1208 are closed as superseded, with commit history preserved
+in #1209. Draft #1207 was closed earlier as unnecessary.
+
+One transient worth noting so it is not re-diagnosed: `plan` failed once on
+#1209 and passed on re-run. It failed on `desk-tracera-1` with `steps=0` while
+the same job on `main` ran 3 steps on a GitHub-hosted runner and succeeded. Same
+dead-runner signature as everything else above.
