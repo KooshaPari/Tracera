@@ -28,12 +28,12 @@ candidate of a database driver. That is an operator decision, so `lint-rust`
 stays red on #1173 and on #1203 until it is made. Do not read that check as a
 defect in the D-04 work.
 
-### 10.1 `osv`: five npm advisories, all baseline
+### 10.1 `osv`: eight npm advisories, all baseline
 
 `osv` fails for two independent reasons. One is the Rust advisory above. The
-other is five npm advisories that live in `frontend/bun.lock`, a file none of
+other is eight npm advisories that live in `frontend/bun.lock`, a file none of
 these PRs touch, so they are pre-existing debt newly surfaced by the scan rather
-than anything introduced here.
+than anything introduced here. All eight are now closed by PR #1204.
 
 | Advisory            | CVSS | Package                        | Installed | Fixed in |
 | ------------------- | ---- | ------------------------------ | --------- | -------- |
@@ -81,15 +81,36 @@ commit, and #1158 passed `3.13` entirely. The job's evidence shows why:
 | steps   | empty — no step ever completed  |
 | job log | `BlobNotFound` — never uploaded |
 
-A job that produces no steps and no log did not run the tests. Treat
-`test-py (3.13)` on this branch as a runner infrastructure failure, distinct from
-the advisory failures above. The earlier `Rust Build` failure on #1173 was the
-same runner exhibiting the same signature.
+A job that produces no steps and no log did not run the tests. This is a
+runner infrastructure failure, not a test failure.
 
-## A vestigial sudo step failing the format gate
+Four separate jobs have now failed this way, all on `desk-tracera-1`, all with
+an empty step list:
 
-`Lint & Format` started failing on every self-hosted run before reaching any
-linting. The job dies at its third step:
+| Job                          | PR    | Steps | Result  |
+| ---------------------------- | ----- | ----- | ------- |
+| `Rust Build`                 | #1173 | 0     | failure |
+| `ci-agents / test-py (3.13)` | #1173 | 0     | failure |
+| `Detect Languages`           | #1173 | 0     | failure |
+| `Analyze (python)`           | #1173 | 0     | failure |
+
+The rotating nature of it matters: each new run of the same commit can fail a
+different job, which reads as a fresh regression each time. The signature to
+match on is `steps=0` together with a `BlobNotFound` job log, not the job name.
+
+For contrast, the failures that _do_ have steps are different in kind and each
+has a real cause: `ci-agents / lint-rust` (12 steps, the RUSTSEC advisory),
+`osv` (6 steps, the same advisory plus npm), and `Lint & Format` (7 steps, the
+`Install jq` step below).
+
+### 10.3 A vestigial sudo step failing the format gate
+
+`Lint & Format` failed on runs scheduled to the self-hosted `desk-tracera-1`
+runner, before reaching any linting, while passing on GitHub-hosted runners. So
+the check's result depended on which runner picked it up, which is why the same
+commit could be green on one run and red on the next.
+
+On `desk-tracera-1` the job dies at its third step:
 
 ```
 sudo: The "no new privileges" flag is set, which prevents sudo from running as root.
