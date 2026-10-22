@@ -116,3 +116,45 @@ three an earlier table listed. The three extra ids are also fixed by `8.2.4`.
 When reporting this work, do not lead with an advisory count — it moves. Lead
 with the per-version mapping: the resolved version is clean, the previous one
 was not.
+
+## The full advisory chain, verified end to end
+
+Reading each PR's gate result separately was not enough, because every
+individual PR is red on a surface it does not change. Building the combined
+state and running the real workflow is what settled it.
+
+Combined branch (Rust bumps + npm overrides), `Dependency audit` run
+39720656685:
+
+| Job                      | Result                                |
+| ------------------------ | ------------------------------------- |
+| `Rust dependency policy` | success                               |
+| `osv`                    | failure, with **exactly one** finding |
+
+That one finding was:
+
+```
+GO-2026-6809 | Go | stdlib | 1.26.9 | sidecar/go/go.mod
+```
+
+`GO-2026-6809` **aliases `RUSTSEC-2026-0381`, `-0382` and `-0383`**. It is the
+same upstream certificate-distrust event reached through Go stdlib instead of
+`rustls`. So the advisory work was always a three-ecosystem problem, and the
+third one was invisible while `osv` was failing on the other two.
+
+Bumping `sidecar/go/go.mod` from `go 1.26.9` to `go 1.26.10` closes it. Same
+workflow, run 39721425994:
+
+| Job                      | Result                     |
+| ------------------------ | -------------------------- |
+| `Rust dependency policy` | success                    |
+| `osv`                    | **success, zero findings** |
+
+So the complete set is four PRs, not three: #1203 (Rust), #1204 (npm), #1208
+(Go stdlib), and #1205 for the workflow hygiene that was masking format results.
+Land all four and the dependency gates are green with no suppressions.
+
+Recorded but not fixed: `crates/tracera-go-cli/go.mod` declares `go 1.22`, also
+below the fixed versions, but that module is not in `osv`'s scan targets
+(`Cargo.lock`, `frontend/bun.lock`, `sidecar/go/go.mod`). Changing it would not
+move the gate; widening the scan surface is a separate decision.
