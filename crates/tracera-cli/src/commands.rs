@@ -42,7 +42,7 @@ pub enum Command {
     Up(UpArgs),
     /// Stop the Tracera Compose stack (containers stay on disk).
     Down(DownArgs),
-    /// Show container status (one row per service).
+    /// Show container status without creating or changing local configuration.
     Status,
     /// Tail logs from one or all services.
     Logs(LogsArgs),
@@ -54,7 +54,7 @@ pub enum Command {
     Open,
     /// Health probe — exits 0 if /health and /ready both return ok.
     Doctor(DoctorArgs),
-    /// Generate or refresh the `.env.local` file (POSTGRES_PASSWORD).
+    /// Create an absent `.env.local` file; validate and preserve existing configuration.
     Init,
 }
 
@@ -119,8 +119,20 @@ impl From<BackendArg> for Backend {
 pub async fn run(cli: Cli) -> anyhow::Result<()> {
     bump_log_level(&cli);
 
-    let backend = runtime::detect(cli.backend.map(Into::into))?;
     let layout = resolve_layout(&cli)?;
+    match &cli.command {
+        Command::Status | Command::Logs(_) | Command::Down(_) | Command::Doctor(_) => {
+            crate::env_config::validate_env_file(&layout.env_file)?;
+        }
+        Command::Up(_) | Command::Init => {
+            ensure_env_file(&layout.env_file, layout.local_port)?;
+        }
+        _ => {}
+    }
+    if matches!(&cli.command, Command::Init) {
+        return cmd_init(&layout);
+    }
+    let backend = runtime::detect(cli.backend.map(Into::into))?;
     let cwd = layout.compose_dir.clone();
 
     match cli.command {
@@ -185,8 +197,10 @@ async fn cmd_up(
     cwd: &Path,
     args: UpArgs,
 ) -> anyhow::Result<()> {
-    ensure_env_file(&layout.env_file, layout.local_port)?;
-    sync_bundle_env_symlink(&layout.compose_dir, &layout.env_file)?;
+    crate::env_config::validate_env_file(&layout.env_file)?;
+    if layout.bundled {
+        sync_bundle_env_symlink(&layout.compose_dir, &layout.env_file)?;
+    }
     let mut sub = vec!["up", "-d"];
     if args.build {
         sub.push("--build");
@@ -220,8 +234,7 @@ async fn cmd_down(
     cwd: &Path,
     args: DownArgs,
 ) -> anyhow::Result<()> {
-    ensure_env_file(&layout.env_file, layout.local_port)?;
-    sync_bundle_env_symlink(&layout.compose_dir, &layout.env_file)?;
+    crate::env_config::validate_env_file(&layout.env_file)?;
     let mut sub = vec!["down"];
     if args.volumes {
         sub.push("--volumes");
@@ -242,8 +255,7 @@ async fn cmd_down(
 }
 
 async fn cmd_status(backend: Backend, layout: &BundleLayout, cwd: &Path) -> anyhow::Result<()> {
-    ensure_env_file(&layout.env_file, layout.local_port)?;
-    sync_bundle_env_symlink(&layout.compose_dir, &layout.env_file)?;
+    crate::env_config::validate_env_file(&layout.env_file)?;
     let code = compose::run_inherited(
         backend,
         &layout.project_name,
@@ -265,8 +277,7 @@ async fn cmd_logs(
     cwd: &Path,
     args: LogsArgs,
 ) -> anyhow::Result<()> {
-    ensure_env_file(&layout.env_file, layout.local_port)?;
-    sync_bundle_env_symlink(&layout.compose_dir, &layout.env_file)?;
+    crate::env_config::validate_env_file(&layout.env_file)?;
     let code = compose::logs(
         backend,
         &layout.project_name,
@@ -322,8 +333,7 @@ async fn cmd_doctor(
     cwd: &Path,
     args: DoctorArgs,
 ) -> anyhow::Result<()> {
-    ensure_env_file(&layout.env_file, layout.local_port)?;
-    sync_bundle_env_symlink(&layout.compose_dir, &layout.env_file)?;
+    crate::env_config::validate_env_file(&layout.env_file)?;
     let mut report = serde_json::Map::new();
     report.insert(
         "backend".into(),
@@ -405,8 +415,7 @@ async fn cmd_doctor(
 }
 
 fn cmd_init(layout: &BundleLayout) -> anyhow::Result<()> {
-    ensure_env_file(&layout.env_file, layout.local_port)?;
-    sync_bundle_env_symlink(&layout.compose_dir, &layout.env_file)?;
-    println!("wrote {}", layout.env_file.display());
+    crate::env_config::validate_env_file(&layout.env_file)?;
+    println!("configuration ready: {}", layout.env_file.display());
     Ok(())
 }
