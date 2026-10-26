@@ -141,7 +141,7 @@
     "react-dom": "^19.3.1",
     "react-hook-form": "^7.90.0",
     "react-hotkeys-hook": "^5.3.3",
-    "react-is": "^19.2.8",
+    "react-is": "^19.3.1",
     "recharts": "^2.13.3",
     "redoc": "^2.5.2",
     "sigma": "^3.0.2",
