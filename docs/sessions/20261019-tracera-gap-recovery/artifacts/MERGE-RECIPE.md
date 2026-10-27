@@ -189,3 +189,38 @@ One transient worth noting so it is not re-diagnosed: `plan` failed once on
 #1209 and passed on re-run. It failed on `desk-tracera-1` with `steps=0` while
 the same job on `main` ran 3 steps on a GitHub-hosted runner and succeeded. Same
 dead-runner signature as everything else above.
+
+## Refresh note: main gained a fourth advisory
+
+Refreshing the advisory PR onto `main` (`12cf873e2`) exposed a new one that the
+branch had never seen, because it arrived on main after the work started.
+
+`cargo deny check` on a clean `origin/main` now reports **four** advisories:
+
+| Advisory          | Crate               | Disposition                |
+| ----------------- | ------------------- | -------------------------- |
+| RUSTSEC-2026-0381 | `webpki-roots`      | fixed by #1209             |
+| RUSTSEC-2026-0382 | `rustls-webpki`     | fixed by #1209             |
+| RUSTSEC-2026-0383 | `webpki-root-certs` | fixed by #1209             |
+| RUSTSEC-2026-0387 | `crypto-bigint`     | **not fixable downstream** |
+
+So #1209 takes main from 4 advisories to 1. It cannot reach zero, and its
+`Rust dependency policy` and `osv` checks will therefore stay red.
+
+0387 is a constant-time timing-variability flaw in `crypto-bigint`; its only
+fixed range is `>= 0.7.6`. The offending copy is `0.5.5`, reached through:
+
+```
+crypto-bigint 0.5.5 <- aws-sigv4 1.6.3 <- aws-runtime <- aws-sdk-s3 1.155.0 <- tracera-server
+```
+
+`aws-sigv4 1.6.3` is the newest published release and still requires
+`crypto-bigint ^0.5`, so there is nothing to bump to. The two real options are
+waiting for upstream, or a documented `deny.toml` / `osv-scanner.toml`
+exception. The second is not done in #1209 on purpose: it is a suppression
+decision, the repo has clear precedent for it, and it belongs to the operator
+rather than to a dependency-bump PR.
+
+Lesson for the next pass: an advisory branch is only as current as its base.
+Refresh it against `main` before declaring the advisory set closed, because new
+advisories arrive on `main` independently of the branch.
