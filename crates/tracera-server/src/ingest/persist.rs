@@ -119,10 +119,33 @@ pub async fn persist_issues(
 ///
 /// Fails loud with `IngestError::NoSourceConfigured` if no source has
 /// its required env vars set — never returns a fake-success empty result.
+#[allow(dead_code)] // Retained aggregate API; named routes must select one source.
 pub async fn ingest_live(store: &Arc<dyn Store>) -> Result<BulkIngestionResult, IngestError> {
-    let gh_cfg = GitHubConfig::from_env();
-    let jira_cfg = JiraConfig::from_env();
-    let agcord_cfg = AgcordConfig::from_env();
+    ingest_live_source(store, IngestSource::All).await
+}
+
+#[derive(Clone, Copy, PartialEq, Eq)]
+pub enum IngestSource {
+    All,
+    GitHub,
+    Jira,
+    Agcord,
+}
+
+/// The route selects its producer; unrelated configured sources are never fetched.
+pub async fn ingest_live_source(
+    store: &Arc<dyn Store>,
+    source: IngestSource,
+) -> Result<BulkIngestionResult, IngestError> {
+    let gh_cfg = matches!(source, IngestSource::All | IngestSource::GitHub)
+        .then(GitHubConfig::from_env)
+        .flatten();
+    let jira_cfg = matches!(source, IngestSource::All | IngestSource::Jira)
+        .then(JiraConfig::from_env)
+        .flatten();
+    let agcord_cfg = matches!(source, IngestSource::All | IngestSource::Agcord)
+        .then(AgcordConfig::from_env)
+        .flatten();
 
     if gh_cfg.is_none() && jira_cfg.is_none() && agcord_cfg.is_none() {
         return Err(IngestError::NoSourceConfigured);
