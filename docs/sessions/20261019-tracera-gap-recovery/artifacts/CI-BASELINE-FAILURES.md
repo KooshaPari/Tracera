@@ -223,3 +223,33 @@ Worth remembering: this failure looked identical to a real format violation in
 the check list. Only reading the step log showed that no formatting check ever
 ran. Do not read a red `Lint & Format` on a self-hosted runner as a formatting
 result without confirming the job got past step 3.
+
+### 10.4 A stale `bun.lock` breaks frontend CI on every PR
+
+Found while refreshing a branch that had changed nothing under `frontend/` and
+still failed `checks` at step 4 ("Install frontend deps") and `smoke` at step 5
+("Build frontend bundle").
+
+Reproduced on a clean `origin/main` checkout:
+
+```
+$ bun install --frozen-lockfile
+error: lockfile had changes, but lockfile is frozen
+```
+
+Cause: the last three Dependabot commits that touched
+`frontend/apps/web/package.json` touched `frontend/bun.lock` zero times
+(`12cf873e2` #1216, `a21c8dfd3` #1222, `72f4c799c` #1219). The manifests moved
+ahead of the lock and stayed there, so the frozen install step fails before any
+frontend test runs. Every PR touching the frontend is affected, not one branch.
+
+Fixed by PR #1249: the regenerated lockfile only, with both `package.json` files
+untouched. Verified `bun install --frozen-lockfile` clean and the full web suite
+at 216 files / 4323 tests passing.
+
+The detail worth remembering: **one `bun install` pass does not fix it.** The
+first pass rewrites the lock, a second converges, and frozen only passes after
+that. That is why the staleness survived: a plain local `bun install` reports
+success and hides it. If it recurs, check `bun install --frozen-lockfile`
+directly, and consider having Dependabot update the lock or having CI assert it
+on `main` itself.
