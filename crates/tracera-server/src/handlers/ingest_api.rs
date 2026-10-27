@@ -91,7 +91,7 @@ pub(crate) async fn ingest_github(
     }
     // Try live GitHub fetch first
     if ingest::GitHubConfig::from_env().is_some() {
-        match ingest::ingest_live(&state.store).await {
+        match ingest::ingest_live_source(&state.store, ingest::IngestSource::GitHub).await {
             Ok(result) => return (axum::http::StatusCode::OK, Json(result)),
             Err(ingest::IngestError::NoSourceConfigured) => {} // fall through
             Err(e) => {
@@ -148,7 +148,7 @@ pub(crate) async fn ingest_jira(
     }
     // Try live Jira fetch first
     if ingest::JiraConfig::from_env().is_some() {
-        match ingest::ingest_live(&state.store).await {
+        match ingest::ingest_live_source(&state.store, ingest::IngestSource::Jira).await {
             Ok(result) => return (axum::http::StatusCode::OK, Json(result)),
             Err(ingest::IngestError::NoSourceConfigured) => {}
             Err(e) => {
@@ -201,7 +201,7 @@ pub(crate) async fn ingest_agileplus(
 ) -> (axum::http::StatusCode, Json<BulkIngestionResult>) {
     // Try live AgCord fetch first
     if ingest::AgcordConfig::from_env().is_some() {
-        match ingest::ingest_live(&state.store).await {
+        match ingest::ingest_live_source(&state.store, ingest::IngestSource::Agcord).await {
             Ok(result) => return (axum::http::StatusCode::OK, Json(result)),
             Err(ingest::IngestError::NoSourceConfigured) => {}
             Err(e) => {
@@ -233,3 +233,7 @@ pub(crate) async fn ingest_agileplus(
     let result = ingest::ingest_from_payload(&req.items, "id", "agcord", &state.store).await;
     (axum::http::StatusCode::OK, Json(result))
 }
+
+#[cfg(test)]
+#[path = "ingest_source_tests.rs"]
+mod source_isolation_tests;
