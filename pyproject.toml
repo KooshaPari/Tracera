@@ -47,21 +47,15 @@ select = ["E", "F", "W", "I", "N", "UP", "B", "C4", "SIM"]
 # rejects as a duplicate module. Their integrity is enforced by
 # scripts/verify_evidence_hashes.py rather than by type checking.
 #
-# The Python SDK under crates/ is its own project with its own dependency set
-# (see the pytest note below); its test-only imports such as `respx` are not
-# installed in the root environment, so it is not checked from here.
-exclude = ["^docs/state/", "^crates/.*-py-sdk/"]
+# The Python SDK under crates/ is its own project with its own pytest project
+# and its own lint job (ci-agents.yml `lint-py`). Checking it from the repo root
+# resolves imports in an environment that only installs this package, so its
+# third-party test dependencies (for example `respx`) are reported as missing.
+exclude = ["^docs/state/", "^crates/"]
 
 [tool.pytest.ini_options]
 # The Python SDK under crates/ has its own pytest project. Collecting it from
 # the repo root imports `tracera` in an environment that only installs this
 # package.
 norecursedirs = ["crates", ".*", "build", "dist"]
-
-[tool.mypy]
-# The Python SDK under crates/ has its own pytest project and its own lint job
-# (ci-agents.yml `lint-py`). Checking it from the repo root resolves imports in
-# an environment that only installs this package, so its third-party test
-# dependencies (for example `respx`) are reported as missing.
-exclude = ["^crates/"]
 
