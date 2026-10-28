@@ -26,6 +26,10 @@
 - Endpoint traceability map: [`endpoint_traceability_map.md`](endpoint_traceability_map.md)
 - Self-application matrix: [`coverage_matrix_self_application.md`](coverage_matrix_self_application.md)
 
+## Proposed (Pending Review)
+
+- [`ADR-VIZ-001-spatial-product-projections.md`](../ADR-VIZ-001-spatial-product-projections.md) — Proposed semantic-to-spatial product projection and geometry truth boundaries
+
 ## Planned (Not Yet Accepted)
 
 - `ADR-SEC-001`: API input-validation hardening and request-shape controls (planned)
