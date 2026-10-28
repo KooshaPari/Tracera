@@ -1,0 +1,326 @@
+{
+  "schema_version": 1,
+  "baseline": "4ec07444feb36695ed648e6390130e6434bb7602",
+  "coverage": "partial_supplied_excerpt",
+  "missing_ids": [
+    "T-25",
+    "T-26",
+    "T-27",
+    "T-28",
+    "T-36",
+    "T-37",
+    "T-38"
+  ],
+  "entries": [
+    {
+      "id": "T-01",
+      "title": "Persistent cross-repository identity",
+      "status": "source_partial",
+      "horizon": "trustworthy-core",
+      "source": "June 25; July 15; September 29 product intent",
+      "evidence": "identity.rs; WP-07",
+      "proposed_acceptance": "Rename repository and reopen session; same IDs and baseline resolve",
+      "existing_requirement_id": null
+    },
+    {
+      "id": "T-02",
+      "title": "Typed cross-domain ontology",
+      "status": "partial_scope",
+      "horizon": "model-expansion",
+      "source": "October 14 RTM intent",
+      "evidence": "WP-07; SWE-E schema",
+      "proposed_acceptance": "Software/hybrid fixtures retain types; reject incompatible relations without loss",
+      "existing_requirement_id": null
+    },
+    {
+      "id": "T-03",
+      "title": "Project/item/link lifecycle",
+      "status": "source_missing_route",
+      "horizon": "trustworthy-core",
+      "source": "June 25; July 15; September 29 product intent",
+      "evidence": "router.rs",
+      "proposed_acceptance": "Create update link retire restart; exact IDs and revisions preserved",
+      "existing_requirement_id": null
+    },
+    {
+      "id": "T-04",
+      "title": "Traversal search impact dependency paths",
+      "status": "source_partial_route_missing",
+      "horizon": "trustworthy-core",
+      "source": "June 25; July 15; September 29 product intent",
+      "evidence": "router.rs; traversal.rs",
+      "proposed_acceptance": "Cycle fixture yields expected paths; permissions and truncation explicit",
+      "existing_requirement_id": null
+    },
+    {
+      "id": "T-05",
+      "title": "Synchronized domain views",
+      "status": "implementation_unverified",
+      "horizon": "graph-editing",
+      "source": "June 25; July 15; September 29 product intent",
+      "evidence": "WP-07",
+      "proposed_acceptance": "Requirement edit resolves same revision across lenses",
+      "existing_requirement_id": null
+    },
+    {
+      "id": "T-06",
+      "title": "RTM and bidirectional trace",
+      "status": "source_partial",
+      "horizon": "trustworthy-core",
+      "source": "October 14 RTM intent",
+      "evidence": "WP-07",
+      "proposed_acceptance": "Missing hardware constraint/test uncovered; reverse path reaches intent",
+      "existing_requirement_id": null
+    },
+    {
+      "id": "T-07",
+      "title": "Deterministic graph-to-product change",
+      "status": "implementation_unverified",
+      "horizon": "graph-editing",
+      "source": "June 25; July 15; September 29 product intent",
+      "evidence": "No complete consumer witness",
+      "proposed_acceptance": "Supported UI edit produces exact candidate diff and independent oracle",
+      "existing_requirement_id": null
+    },
+    {
+      "id": "T-08",
+      "title": "Human/agent work requests",
+      "status": "specified_not_executed",
+      "horizon": "graph-editing",
+      "source": "July 15 human/agent work intent",
+      "evidence": "AgilePlus issue #1124",
+      "proposed_acceptance": "Unsupported deterministic edit creates bounded linked work request",
+      "existing_requirement_id": null
+    },
+    {
+      "id": "T-09",
+      "title": "Reusable components/patterns",
+      "status": "source_missing_route",
+      "horizon": "graph-editing",
+      "source": "June 25; July 15; September 29 product intent",
+      "evidence": "router.rs",
+      "proposed_acceptance": "Two products reuse version-pinned component with isolated preview",
+      "existing_requirement_id": null
+    },
+    {
+      "id": "T-10",
+      "title": "Revision/configuration comparison",
+      "status": "source_partial",
+      "horizon": "trustworthy-core",
+      "source": "June 25; July 15; September 29 product intent",
+      "evidence": "baseline.rs; router.rs",
+      "proposed_acceptance": "Compare baselines without current evidence leaking into history",
+      "existing_requirement_id": null
+    },
+    {
+      "id": "T-11",
+      "title": "Dissatisfaction and quality assessment",
+      "status": "source_partial",
+      "horizon": "trustworthy-core",
+      "source": "June 25; July 15; September 29 product intent",
+      "evidence": "assessment.rs; detectors.rs",
+      "proposed_acceptance": "Failed latency stays failed despite green build; absent evidence unknown",
+      "existing_requirement_id": null
+    },
+    {
+      "id": "T-12",
+      "title": "Loss-accounted import/export",
+      "status": "source_missing_route",
+      "horizon": "trustworthy-core",
+      "source": "October 14 RTM intent",
+      "evidence": "router.rs",
+      "proposed_acceptance": "Roundtrip baseline/source/unsupported fields preserves semantic identity",
+      "existing_requirement_id": null
+    },
+    {
+      "id": "T-13",
+      "title": "Skeuomorphic assembly projection",
+      "status": "draft_partial",
+      "horizon": "model-expansion",
+      "source": "July 17 scene intent; October 14 emulator intent",
+      "evidence": "Drafts #1104/#1122",
+      "proposed_acceptance": "Same IDs across scene/2D/list; metaphor labeled",
+      "existing_requirement_id": null
+    },
+    {
+      "id": "T-14",
+      "title": "Geometry truth classes",
+      "status": "draft_partial",
+      "horizon": "model-expansion",
+      "source": "July 17 scene intent; October 14 emulator intent",
+      "evidence": "Drafts #1104/#1122",
+      "proposed_acceptance": "Reject physical geometry without units/source; software glyph not dimension",
+      "existing_requirement_id": null
+    },
+    {
+      "id": "T-15",
+      "title": "Dense interaction and accessible parity",
+      "status": "draft_partial",
+      "horizon": "model-expansion",
+      "source": "July 17 scene intent; October 14 emulator intent",
+      "evidence": "Draft #1122",
+      "proposed_acceptance": "Visible budget truncation; keyboard/screen reader same selection",
+      "existing_requirement_id": null
+    },
+    {
+      "id": "T-16",
+      "title": "Journey graph",
+      "status": "source_partial_route_missing",
+      "horizon": "simulation",
+      "source": "July 17 scene intent; October 14 emulator intent",
+      "evidence": "Supplied brief; no consumer witness",
+      "proposed_acceptance": "Branch/failure step persists through restart with product links",
+      "existing_requirement_id": null
+    },
+    {
+      "id": "T-17",
+      "title": "Product-world scenario simulation",
+      "status": "planned_implementation_unknown",
+      "horizon": "simulation",
+      "source": "July 17 scene intent; October 14 emulator intent",
+      "evidence": "No runtime witness",
+      "proposed_acceptance": "Replay frozen scenario with assumptions seed solver uncertainty",
+      "existing_requirement_id": null
+    },
+    {
+      "id": "T-18",
+      "title": "Embodied interactions",
+      "status": "planned_implementation_unknown",
+      "horizon": "simulation",
+      "source": "July 17 scene intent; October 14 emulator intent",
+      "evidence": "Owner scene intent",
+      "proposed_acceptance": "Hand/peripheral fixture distinguishes measured from assumed dimensions",
+      "existing_requirement_id": null
+    },
+    {
+      "id": "T-19",
+      "title": "Ergonomic/friction annotation",
+      "status": "planned_implementation_unknown",
+      "horizon": "simulation",
+      "source": "July 17 scene intent; October 14 emulator intent",
+      "evidence": "No validated measurements",
+      "proposed_acceptance": "Prediction compared with measured task; uncertainty/disagreement visible",
+      "existing_requirement_id": null
+    },
+    {
+      "id": "T-20",
+      "title": "Time/space/cost optimization",
+      "status": "planned_implementation_unknown",
+      "horizon": "simulation",
+      "source": "July 17 scene intent; October 14 emulator intent",
+      "evidence": "Owner July scene intent",
+      "proposed_acceptance": "Compare same scenario/assumptions; no invented numerical benefit",
+      "existing_requirement_id": null
+    },
+    {
+      "id": "T-21",
+      "title": "Realization and calibration",
+      "status": "planned_implementation_unknown",
+      "horizon": "simulation",
+      "source": "July 17 scene intent; October 14 emulator intent",
+      "evidence": "No realization witness",
+      "proposed_acceptance": "Model edit creates candidate; reality mismatch preserves prediction",
+      "existing_requirement_id": null
+    },
+    {
+      "id": "T-22",
+      "title": "External intelligence ingestion",
+      "status": "implementation_unverified",
+      "horizon": "research-expansion",
+      "source": "July 17 research intent",
+      "evidence": "Owner July research intent",
+      "proposed_acceptance": "Paper claim retains page/version; license retained; forum signal bounded",
+      "existing_requirement_id": null
+    },
+    {
+      "id": "T-23",
+      "title": "Experiment pool and predicted gains",
+      "status": "implementation_unverified",
+      "horizon": "research-expansion",
+      "source": "July 17 research intent",
+      "evidence": "No validated experiment loop",
+      "proposed_acceptance": "Forecast separate from measured result; experiment replayable",
+      "existing_requirement_id": null
+    },
+    {
+      "id": "T-24",
+      "title": "Truthful health/report/error state",
+      "status": "source_defect",
+      "horizon": "trustworthy-core",
+      "source": "June 25; July 15; September 29 product intent",
+      "evidence": "Supplied truncated brief; broader findings not independently checked",
+      "proposed_acceptance": "Acceptance unavailable in supplied excerpt",
+      "existing_requirement_id": null
+    },
+    {
+      "id": "T-29",
+      "title": "Typed product API view",
+      "status": "source_defect",
+      "horizon": "trustworthy-core",
+      "source": "October 14 UI report; proposed safeguards",
+      "evidence": "ApiView.tsx",
+      "proposed_acceptance": "Mixed fixture only renders typed API entities; missing method unknown; product switch changes contracts",
+      "existing_requirement_id": null
+    },
+    {
+      "id": "T-30",
+      "title": "Rich cards and decomposition",
+      "status": "owner_reported_gap",
+      "horizon": "graph-editing",
+      "source": "October 14 UI report; proposed safeguards",
+      "evidence": "Owner UI report",
+      "proposed_acceptance": "Recursive breadcrumb/refs; real artifact preview; missing media and keyboard parity",
+      "existing_requirement_id": null
+    },
+    {
+      "id": "T-31",
+      "title": "Distinct view purpose",
+      "status": "owner_reported_and_partial_source",
+      "horizon": "graph-editing",
+      "source": "October 14 UI report; proposed safeguards",
+      "evidence": "Owner report; ApiView.tsx",
+      "proposed_acceptance": "API/UI/SBOM/story have correct typed entities and meaningful interactions",
+      "existing_requirement_id": null
+    },
+    {
+      "id": "T-32",
+      "title": "Metric geometry and zero/unknown",
+      "status": "source_defect_and_visual_unverified",
+      "horizon": "trustworthy-core",
+      "source": "October 14 UI report; proposed safeguards",
+      "evidence": "matrix.ts; owner visual report",
+      "proposed_acceptance": "Labels remain within bounds; missing denominator unknown; known zero remains zero",
+      "existing_requirement_id": null
+    },
+    {
+      "id": "T-33",
+      "title": "Independent design/provenance",
+      "status": "required_review_gate",
+      "horizon": "model-expansion",
+      "source": "October 14 UI report; proposed safeguards",
+      "evidence": "Owner UI intent and proposed safeguards",
+      "proposed_acceptance": "Task-grounded alternatives and asset/code source review",
+      "existing_requirement_id": null
+    },
+    {
+      "id": "T-34",
+      "title": "Atomic linked product world",
+      "status": "intent_recovered_earliest_sources_pending",
+      "horizon": "model-expansion",
+      "source": "Feature-graph supplied current text; October 14 retrospective",
+      "evidence": "Feature-graph current text with update caveat",
+      "proposed_acceptance": "Bounded atomic behavior has provenance constraints outcome; unmodeled regions explicit",
+      "existing_requirement_id": null
+    },
+    {
+      "id": "T-35",
+      "title": "Problem mapping and constrained optimality",
+      "status": "implementation_unverified",
+      "horizon": "research-expansion",
+      "source": "Feature-graph supplied current text; October 14 retrospective",
+      "evidence": "Owner retrospective",
+      "proposed_acceptance": "Population baseline constraints metrics alternatives and pilot; conditional measured claims",
+      "existing_requirement_id": null
+    }
+  ]
+}
