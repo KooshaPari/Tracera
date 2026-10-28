@@ -1,0 +1,44 @@
+   Compiling bitflags v2.13.0
+   Compiling rustix v1.1.4
+   Compiling fastrand v2.5.0
+   Compiling security-framework v3.7.0
+   Compiling tower-http v0.6.11
+   Compiling rustls-platform-verifier v0.6.2
+   Compiling reqwest v0.13.1
+   Compiling tempfile v3.27.0
+   Compiling tracera-cli v0.1.0 (/Users/kooshapari/CodeProjects/Phenotype/repos/.wtree/tracera-pr1173-rebase/crates/tracera-cli)
+
+warning: `tracera-cli` (bin "tracera" test) generated 1 warning
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 22.55s
+     Running unittests src/main.rs (target/d04-evidence/debug/deps/tracera-aada0beca0963119)
+
+running 26 tests
+test compose::tests::compose_argv_wsl_prefixes_docker_with_distribution ... ok
+test compose::tests::compose_argv_locks_project_name_and_env_file ... ok
+test env_config::tests::fail_closed_no_secret_leakage_in_errors ... ok
+test env_config::tests::creates_absent_and_rejects_directory ... ok
+test env_config::tests::colon_syntax_validates_password ... ok
+test env_config::tests::last_wins_with_mixed_separators ... ok
+test compose::tests::sync_bundle_env_symlink_creates_link_when_missing ... ok
+test env_config::tests::missing_validation_does_not_create_parent ... ok
+test env_config::tests::preserves_valid_and_dangling_symlinks ... ok
+test env_config::tests::preserves_valid_existing_bytes ... ok
+test compose::tests::sync_bundle_env_symlink_rejects_and_preserves_stale_symlink ... ok
+test compose::tests::sync_bundle_env_symlink_leaves_user_provided_file_alone ... ok
+test env_file::tests::comment_only_value_fails_closed ... ok
+test env_file::tests::escaped_quote_inside_quoted_value ... ok
+test env_file::tests::hash_without_preceding_space_is_part_of_the_value ... ok
+test env_file::tests::interpolation_is_not_performed ... ok
+test env_file::tests::fail_closed_no_secret_leakage_in_errors ... ok
+test runtime::tests::apple_container_uses_native_binary_path ... ok
+test env_file::tests::compose_escape_sequences_expand ... ok
+test env_file::tests::key_with_whitespace_fails_closed ... ok
+test env_file::tests::parse_env_line_escape_values ... ok
+test env_file::tests::last_wins_with_mixed_separators ... ok
+test env_config::tests::quoted_escape_sequences_accepted_and_round_tripped ... ok
+test env_config::tests::compose_colon_and_quoted_escapes_accepted_preserves_bytes ... ok
+test env_config::tests::supports_quoted_hash_crlf_export_and_last_assignment ... ok
+test env_config::tests::rejects_invalid_existing_without_clobber_or_secret_errors ... ok
+
+test result: ok. 26 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+

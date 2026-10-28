@@ -1,0 +1,882 @@
+   Compiling unicode-ident v1.0.24
+   Compiling serde v1.0.229
+   Compiling serde_core v1.0.229
+   Compiling memchr v2.8.2
+   Compiling scopeguard v1.2.0
+   Compiling parking_lot_core v0.9.12
+   Compiling futures-task v0.3.32
+   Compiling futures-io v0.3.32
+   Compiling futures-sink v0.3.32
+   Compiling slab v0.4.12
+   Compiling proc-macro2 v1.0.106
+   Compiling lock_api v0.4.14
+   Compiling typenum v1.20.1
+   Compiling futures-channel v0.3.32
+   Compiling version_check v0.9.5
+   Compiling num-traits v0.2.19
+   Compiling equivalent v1.0.2
+   Compiling foldhash v0.2.0
+   Compiling allocator-api2 v0.2.21
+   Compiling subtle v2.6.1
+   Compiling form_urlencoded v1.2.2
+   Compiling const-oid v0.9.6
+   Compiling generic-array v0.14.9
+   Compiling serde_json v1.0.151
+   Compiling getrandom v0.2.17
+   Compiling quote v1.0.46
+   Compiling ryu v1.0.23
+   Compiling cpufeatures v0.2.17
+   Compiling zerocopy v0.8.52
+   Compiling cmov v0.5.4
+   Compiling core-foundation v0.9.4
+   Compiling hashbrown v0.17.1
+   Compiling num-conv v0.2.2
+   Compiling syn v2.0.118
+   Compiling syn v3.0.3
+   Compiling system-configuration-sys v0.6.0
+   Compiling ctutils v0.4.2
+   Compiling rustversion v1.0.22
+   Compiling httpdate v1.0.3
+   Compiling time-core v0.1.9
+   Compiling deranged v0.5.8
+   Compiling fnv v1.0.7
+   Compiling powerfmt v0.2.0
+   Compiling hybrid-array v0.4.13
+   Compiling time-macros v0.2.32
+   Compiling num-integer v0.1.47
+   Compiling sha1_smol v1.0.1
+   Compiling system-configuration v0.7.0
+   Compiling rand_core v0.6.4
+   Compiling security-framework-sys v2.17.0
+   Compiling getrandom v0.3.4
+   Compiling ring v0.17.14
+   Compiling cpufeatures v0.3.0
+   Compiling outref v0.5.2
+   Compiling vsimd v0.8.0
+   Compiling const-oid v0.10.2
+   Compiling block-buffer v0.12.1
+   Compiling crypto-common v0.2.2
+   Compiling security-framework v3.7.0
+   Compiling base64-simd v0.8.0
+   Compiling pin-utils v0.1.0
+   Compiling rand_core v0.9.5
+   Compiling time v0.3.55
+   Compiling rustls v0.23.46
+   Compiling futures-util v0.3.32
+   Compiling mime v0.3.17
+   Compiling crossbeam-utils v0.8.21
+   Compiling digest v0.11.3
+   Compiling indexmap v2.14.2
+   Compiling uuid v1.28.0
+   Compiling hashbrown v0.16.1
+   Compiling base64ct v1.8.3
+   Compiling pem-rfc7468 v0.7.0
+   Compiling vcpkg v0.2.15
+   Compiling siphasher v1.0.3
+   Compiling sha2 v0.11.0
+   Compiling aho-corasick v1.1.4
+   Compiling parking v2.2.1
+   Compiling crc-catalog v2.5.0
+   Compiling regex-syntax v0.8.11
+   Compiling crc v3.4.0
+   Compiling synstructure v0.13.2
+   Compiling event-listener v5.4.2
+   Compiling hashlink v0.11.1
+   Compiling data-encoding v2.11.1
+   Compiling crc32fast v1.5.1
+   Compiling hex v0.4.3
+   Compiling block-buffer v0.10.4
+   Compiling crypto-common v0.1.6
+   Compiling phf_shared v0.11.3
+   Compiling ff v0.13.1
+   Compiling base16ct v0.2.0
+   Compiling wasm-bindgen-shared v0.2.129
+   Compiling thiserror v2.0.21
+   Compiling bytes v1.12.0
+   Compiling tinyvec_macros v0.1.1
+   Compiling tinyvec v1.11.0
+   Compiling rand v0.8.8
+   Compiling group v0.13.0
+   Compiling digest v0.10.7
+   Compiling serde_derive v1.0.229
+   Compiling thiserror-impl v2.0.21
+   Compiling tokio v1.53.2
+   Compiling regex-automata v0.4.16
+   Compiling zeroize_derive v1.5.0
+   Compiling tokio-macros v2.7.0
+   Compiling futures-macro v0.3.32
+   Compiling tracing-attributes v0.1.31
+   Compiling zeroize v1.9.0
+   Compiling zerofrom-derive v0.1.7
+   Compiling yoke-derive v0.8.2
+   Compiling zerovec-derive v0.11.3
+   Compiling displaydoc v0.2.6
+   Compiling tracing v0.1.44
+   Compiling zerocopy-derive v0.8.52
+   Compiling rustls-pki-types v1.15.0
+   Compiling zerofrom v0.1.8
+   Compiling aws-lc-rs v1.18.1
+   Compiling yoke v0.8.3
+   Compiling zerotrie v0.2.4
+   Compiling zerovec v0.11.6
+   Compiling aws-smithy-runtime-api-macros v1.1.0
+   Compiling der v0.7.10
+   Compiling signature v2.2.0
+   Compiling sha1 v0.10.7
+   Compiling sha2 v0.10.9
+   Compiling rustls-native-certs v0.8.4
+   Compiling crypto-bigint v0.5.5
+   Compiling tinystr v0.8.3
+   Compiling potential_utf v0.1.5
+   Compiling icu_locale_core v2.2.0
+   Compiling icu_collections v2.2.0
+   Compiling smallvec v1.15.2
+   Compiling chrono v0.4.45
+   Compiling parking_lot v0.12.5
+   Compiling http v1.5.0
+   Compiling icu_provider v2.2.0
+   Compiling either v1.16.0
+   Compiling rustls-webpki v0.103.15
+   Compiling icu_properties v2.2.0
+   Compiling icu_normalizer v2.2.0
+   Compiling bytes-utils v0.1.4
+   Compiling serde_urlencoded v0.7.1
+   Compiling http-body v1.0.1
+   Compiling http-body-util v0.1.3
+   Compiling aws-smithy-types v1.8.1
+   Compiling spki v0.7.3
+   Compiling pkcs8 v0.10.2
+   Compiling axum-core v0.5.6
+   Compiling sec1 v0.7.3
+   Compiling idna_adapter v1.2.2
+   Compiling idna v1.1.0
+   Compiling url v2.5.8
+   Compiling serde_path_to_error v0.1.20
+   Compiling spin v0.9.8
+   Compiling tracing-core v0.1.36
+   Compiling log v0.4.33
+   Compiling matchit v0.8.4
+   Compiling aws-smithy-eventstream v0.61.4
+   Compiling futures-intrusive v0.5.0
+   Compiling ppv-lite86 v0.2.21
+   Compiling elliptic-curve v0.13.8
+   Compiling tokio-stream v0.1.18
+   Compiling rand_chacha v0.9.0
+   Compiling rand v0.9.4
+   Compiling regex v1.13.1
+   Compiling matchers v0.2.0
+   Compiling hmac v0.12.1
+   Compiling phf_generator v0.11.3
+   Compiling crossbeam-queue v0.3.12
+   Compiling unicode-normalization v0.1.25
+   Compiling libsqlite3-sys v0.37.0
+   Compiling hmac v0.13.0
+   Compiling num-bigint v0.4.8
+   Compiling unicode-properties v0.1.4
+   Compiling semver v1.0.28
+   Compiling unicode-bidi v0.3.18
+   Compiling tungstenite v0.29.0
+   Compiling base64 v0.22.1
+   Compiling tracing-subscriber v0.3.23
+   Compiling rustc_version v0.4.1
+   Compiling stringprep v0.1.5
+   Compiling parse-zoneinfo v0.3.1
+   Compiling phf_codegen v0.11.3
+   Compiling rfc6979 v0.4.0
+   Compiling futures-executor v0.3.32
+   Compiling async-trait v0.1.92
+   Compiling atoi v2.0.0
+   Compiling sqlx-core v0.9.0
+   Compiling simple_asn1 v0.6.4
+   Compiling tokio-util v0.7.18
+   Compiling aws-smithy-async v1.3.0
+   Compiling aws-smithy-runtime-api v1.19.0
+   Compiling tower v0.5.3
+   Compiling tokio-rustls v0.26.4
+   Compiling h2 v0.4.18
+   Compiling tokio-tungstenite v0.29.0
+   Compiling rustls-platform-verifier v0.6.2
+   Compiling tower-http v0.6.11
+   Compiling phf v0.11.3
+   Compiling pem v3.0.6
+   Compiling byteorder v1.5.0
+   Compiling bumpalo v3.20.3
+   Compiling dotenvy v0.15.7
+   Compiling whoami v2.1.2
+   Compiling base64 v0.23.1
+   Compiling wasm-bindgen-macro-support v0.2.129
+   Compiling aws-smithy-schema v0.2.1
+   Compiling aws-smithy-http v0.64.1
+   Compiling aws-credential-types v1.3.0
+   Compiling jsonwebtoken v11.1.0
+   Compiling chrono-tz-build v0.2.1
+   Compiling hkdf v0.13.0
+   Compiling ecdsa v0.16.9
+   Compiling aws-types v1.6.0
+   Compiling primeorder v0.13.6
+   Compiling flume v0.12.0
+   Compiling md-5 v0.11.0
+   Compiling rand v0.10.3
+   Compiling wasm-bindgen v0.2.129
+   Compiling syn v1.0.109
+   Compiling bitflags v2.13.0
+   Compiling crossbeam-epoch v0.9.20
+   Compiling unicase v2.9.0
+   Compiling sqlx-postgres v0.9.0
+   Compiling sqlx-sqlite v0.9.0
+   Compiling mime_guess v2.0.5
+   Compiling p256 v0.13.2
+   Compiling chrono-tz v0.8.6
+   Compiling aws-smithy-observability v0.3.0
+   Compiling rand_chacha v0.3.1
+   Compiling rapidhash v4.5.1
+   Compiling thiserror v1.0.69
+   Compiling spin v0.10.1
+   Compiling paste v1.0.15
+   Compiling crc-fast v1.10.0
+   Compiling metrics v0.24.6
+   Compiling aws-smithy-runtime v1.16.0
+   Compiling hyper v1.10.1
+   Compiling aws-sigv4 v1.6.0
+   Compiling hyper-util v0.1.20
+   Compiling futures v0.3.32
+   Compiling headers-core v0.3.0
+   Compiling wasm-bindgen-macro v0.2.129
+   Compiling rustls-pemfile v2.2.0
+   Compiling webpki-roots v1.0.9
+   Compiling thiserror-impl v1.0.69
+   Compiling quanta v0.12.6
+   Compiling left-right v0.11.8
+   Compiling sha1 v0.11.0
+   Compiling rand_xoshiro v0.7.0
+   Compiling security-framework v2.11.1
+   Compiling sqlx-macros-core v0.9.0
+   Compiling num_cpus v1.17.0
+   Compiling instant v0.1.13
+   Compiling hashbag v0.1.13
+   Compiling xmlparser v0.13.6
+   Compiling metrics-exporter-prometheus v0.18.3
+   Compiling deadpool-runtime v0.1.4
+   Compiling retain_mut v0.1.9
+   Compiling sketches-ddsketch v0.3.1
+   Compiling deadpool v0.9.5
+   Compiling hyper-rustls v0.27.9
+   Compiling axum v0.8.9
+   Compiling aws-smithy-xml v0.62.1
+   Compiling reqwest v0.13.1
+   Compiling metrics-util v0.20.4
+   Compiling rustls-native-certs v0.7.3
+   Compiling evmap v11.0.0
+   Compiling backoff v0.4.0
+   Compiling aws-runtime v1.10.0
+   Compiling aws-smithy-checksums v0.65.0
+   Compiling webpki-roots v0.26.11
+   Compiling headers v0.4.2
+   Compiling sqlx-macros v0.9.0
+   Compiling aws-smithy-json v0.63.1
+   Compiling neo4rs-macros v0.3.0
+   Compiling delegate v0.10.0
+   Compiling arc-swap v1.9.2
+   Compiling lru v0.18.4
+   Compiling regex-lite v0.1.9
+   Compiling http-range-header v0.4.2
+   Compiling tower-http v0.7.1
+   Compiling ident_case v1.0.1
+   Compiling darling_core v0.24.1
+   Compiling aws-sdk-s3 v1.152.0
+   Compiling ref-cast v1.0.27
+   Compiling js-sys v0.3.106
+   Compiling neo4rs v0.8.0
+   Compiling tracera-workos v0.1.0 (/Users/kooshapari/CodeProjects/Phenotype/repos/.wtree/tracera-pr1173-rebase/crates/tracera-workos)
+   Compiling axum-extra v0.12.6
+   Compiling ref-cast-impl v1.0.27
+   Compiling sqlx v0.9.0
+   Compiling serde_derive_internals v0.30.0
+   Compiling darling_macro v0.24.1
+   Compiling inventory v0.3.24
+   Compiling serde_json_path_core v0.2.2
+   Compiling darling v0.24.1
+   Compiling serde_json_path_macros_internal v0.1.2
+   Compiling serde_derive_internals v0.29.1
+   Compiling minimal-lexical v0.2.1
+   Compiling schemars_derive v1.2.2
+   Compiling dyn-clone v1.0.20
+   Compiling native-tls v0.2.18
+   Compiling rmcp v3.5.1
+   Compiling nom v7.1.3
+   Compiling serde_json_path_macros v0.1.6
+   Compiling rmcp-macros v3.5.1
+   Compiling clickhouse-macros v0.3.0
+   Compiling half v2.7.1
+   Compiling clickhouse-types v0.1.3
+   Compiling bstr v1.13.1
+   Compiling schemars v1.2.2
+   Compiling pastey v0.2.3
+   Compiling bnum v0.13.0
+   Compiling strum_macros v0.28.0
+   Compiling serde_json_path v0.7.2
+   Compiling tokio-native-tls v0.3.1
+   Compiling pin-project-internal v1.1.13
+   Compiling hyper-tls v0.6.0
+   Compiling tracera-atlas v0.1.0 (/Users/kooshapari/CodeProjects/Phenotype/repos/.wtree/tracera-pr1173-rebase/crates/tracera-atlas)
+   Compiling clap_derive v4.6.7
+   Compiling strum v0.28.0
+   Compiling encoding_rs v0.8.35
+   Compiling pin-project v1.1.13
+   Compiling matchit v0.7.3
+   Compiling clickhouse v0.15.2
+
+warning: `tracera-workos` (bin "workos-mock" test) generated 1 warning
+   Compiling mock-agcord v0.1.0 (/Users/kooshapari/CodeProjects/Phenotype/repos/.wtree/tracera-pr1173-rebase/crates/mock-agcord)
+   Compiling clap v4.6.7
+   Compiling reqwest v0.12.28
+warning: `mock-agcord` (bin "mock-agcord" test) generated 1 warning (1 duplicate)
+   Compiling tracera-cli v0.1.0 (/Users/kooshapari/CodeProjects/Phenotype/repos/.wtree/tracera-pr1173-rebase/crates/tracera-cli)
+   Compiling web-sys v0.3.106
+   Compiling wasm-bindgen-futures v0.4.79
+   Compiling serde-wasm-bindgen v0.6.5
+warning: `tracera-atlas` (test "integration") generated 1 warning (1 duplicate)
+
+warning: `tracera-cli` (bin "tracera" test) generated 1 warning
+   Compiling tracera-events v0.1.0 (/Users/kooshapari/CodeProjects/Phenotype/repos/.wtree/tracera-pr1173-rebase/crates/tracera-events)
+warning: `tracera-workos` (lib test) generated 1 warning (1 duplicate)
+   Compiling tracertm-mcp v0.2.0 (/Users/kooshapari/CodeProjects/Phenotype/repos/.wtree/tracera-pr1173-rebase/crates/tracertm-mcp)
+warning: `tracertm-mcp` (bin "tracertm-mcp" test) generated 1 warning (1 duplicate)
+   Compiling worker-sys v0.8.7
+warning: `tracera-atlas` (lib test) generated 1 warning (1 duplicate)
+   Compiling wasm-streams v0.7.0
+warning: `tracera-events` (bin "events-ingest" test) generated 1 warning (1 duplicate)
+warning: `tracera-events` (lib test) generated 1 warning (1 duplicate)
+   Compiling worker-macros v0.8.7
+   Compiling worker v0.8.7
+   Compiling tracera-edge v0.1.0 (/Users/kooshapari/CodeProjects/Phenotype/repos/.wtree/tracera-pr1173-rebase/crates/tracera-edge)
+warning: `tracera-edge` (lib test) generated 1 warning (1 duplicate)
+   Compiling tracera-server v0.2.0 (/Users/kooshapari/CodeProjects/Phenotype/repos/.wtree/tracera-pr1173-rebase/crates/tracera-server)
+   Compiling tracera-mcp v0.1.0 (/Users/kooshapari/CodeProjects/Phenotype/repos/.wtree/tracera-pr1173-rebase/crates/tracera-mcp)
+warning: `tracera-mcp` (lib test) generated 1 warning (1 duplicate)
+
+warning: `tracera-mcp` (bin "mcp-server" test) generated 1 warning
+warning: `tracera-server` (test "db_integration") generated 1 warning (1 duplicate)
+warning: `tracera-server` (lib test) generated 1 warning (1 duplicate)
+warning: `tracera-server` (bin "tracera-server") generated 1 warning (1 duplicate)
+warning: `tracera-server` (bin "tracera-server" test) generated 1 warning (1 duplicate)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 7m 55s
+     Running unittests src/main.rs (target/d04-evidence/debug/deps/mock_agcord-0ff66b1d4c762944)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/lib.rs (target/d04-evidence/debug/deps/tracera_atlas-f5cedb44d0d8249c)
+
+running 36 tests
+test ci_bridge::tests::malformed_json_surfaces_serde_error ... ok
+test agent_of_record::tests::sign_off_rejects_self_review ... ok
+test ci_bridge::tests::missing_workflow_run_is_missing_field ... ok
+test agent_of_record::tests::empty_signer_is_rejected ... ok
+test agent_of_record::tests::annotate_records_change_log_entry ... ok
+test agent_of_record::tests::sign_off_records_audit_trail ... ok
+test agent_of_record::tests::sign_off_requires_review_state ... ok
+test agent_of_record::tests::query_filters_by_actor_and_kind ... ok
+test ci_bridge::tests::detect_and_normalise_rejects_unknown ... ok
+test ci_bridge::tests::detect_and_normalise_routes_to_github ... ok
+test ci_bridge::tests::parses_github_cancelled_and_timed_out ... ok
+test ci_bridge::tests::parses_github_failure ... ok
+test ci_bridge::tests::parses_github_in_progress ... ok
+test ci_bridge::tests::publish_ci_event_populates_tags ... ok
+test delegation::tests::assign_reassigns_to_different_agent ... ok
+test delegation::tests::assign_transitions_ready_to_in_progress ... ok
+test ci_bridge::tests::parses_github_success ... ok
+test ci_bridge::tests::unknown_status_is_unsupported_value ... ok
+test ci_bridge::tests::raw_payload_is_preserved ... ok
+test delegation::tests::assign_is_idempotent_for_same_agent ... ok
+test delegation::tests::empty_title_is_rejected ... ok
+test delegation::tests::create_then_get_round_trip ... ok
+test delegation::tests::full_lifecycle ... ok
+test delegation::tests::invalid_transition_blocked_terminal ... ok
+test delegation::tests::list_for_agent_filters_correctly ... ok
+test delegation::tests::transition_table_is_total ... ok
+test observability::tests::sdlc_event_with_tags_serializes ... ok
+test observability::tests::stage_log_records_initial_entry ... ok
+test delegation::tests::tag_list_round_trips_via_serde ... ok
+test observability::tests::stage_string_round_trip ... ok
+test observability::tests::subscribers_receive_published_events ... ok
+test observability::tests::unsubscribe_stops_delivery ... ok
+test delegation::tests::wrong_actor_is_rejected ... ok
+test tests::in_memory_engine_round_trip ... ok
+test tests::event_bus_records_stage_transition ... ok
+test observability::tests::panicking_subscriber_does_not_break_publish ... ok
+
+test result: ok. 36 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/integration.rs (target/d04-evidence/debug/deps/integration-53ff2747fd3a178e)
+
+running 10 tests
+test ci_bridge_rejects_unknown_provider_payload ... ok
+test blocked_work_item_can_be_unblocked ... ok
+test sign_off_flow_writes_audit_record ... ok
+test ci_bridge_round_trip_publishes_event ... ok
+test work_items_can_be_filtered_by_agent ... ok
+test unsubscribed_sinks_stop_receiving_events ... ok
+test event_bus_clone_is_cheap_and_shared ... ok
+test event_bus_subscribe_after_publish_does_not_replay_history ... ok
+test assign_blocks_when_assigned_to_someone_else ... ok
+test full_lifecycle_emits_expected_events ... ok
+
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/main.rs (target/d04-evidence/debug/deps/tracera-b60c384af6f5d7ed)
+
+running 26 tests
+test compose::tests::compose_argv_locks_project_name_and_env_file ... ok
+test compose::tests::compose_argv_wsl_prefixes_docker_with_distribution ... ok
+test env_config::tests::fail_closed_no_secret_leakage_in_errors ... ok
+test env_config::tests::missing_validation_does_not_create_parent ... ok
+test env_config::tests::preserves_valid_and_dangling_symlinks ... ok
+test env_config::tests::creates_absent_and_rejects_directory ... ok
+test env_config::tests::last_wins_with_mixed_separators ... ok
+test env_file::tests::comment_only_value_fails_closed ... ok
+test env_config::tests::colon_syntax_validates_password ... ok
+test compose::tests::sync_bundle_env_symlink_creates_link_when_missing ... ok
+test env_file::tests::compose_escape_sequences_expand ... ok
+test env_file::tests::escaped_quote_inside_quoted_value ... ok
+test env_file::tests::fail_closed_no_secret_leakage_in_errors ... ok
+test compose::tests::sync_bundle_env_symlink_rejects_and_preserves_stale_symlink ... ok
+test env_file::tests::interpolation_is_not_performed ... ok
+test env_file::tests::last_wins_with_mixed_separators ... ok
+test env_file::tests::hash_without_preceding_space_is_part_of_the_value ... ok
+test env_file::tests::key_with_whitespace_fails_closed ... ok
+test env_file::tests::parse_env_line_escape_values ... ok
+test runtime::tests::apple_container_uses_native_binary_path ... ok
+test compose::tests::sync_bundle_env_symlink_leaves_user_provided_file_alone ... ok
+test env_config::tests::compose_colon_and_quoted_escapes_accepted_preserves_bytes ... ok
+test env_config::tests::quoted_escape_sequences_accepted_and_round_tripped ... ok
+test env_config::tests::preserves_valid_existing_bytes ... ok
+test env_config::tests::supports_quoted_hash_crlf_export_and_last_assignment ... ok
+test env_config::tests::rejects_invalid_existing_without_clobber_or_secret_errors ... ok
+
+test result: ok. 26 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+     Running unittests src/lib.rs (target/d04-evidence/debug/deps/tracera_edge-c314b6e7ce8ba96f)
+
+running 9 tests
+test tests::cache_key_has_namespace_prefix ... ok
+test tests::cache_key_is_version_scoped ... ok
+test tests::coverage_classifies_high_confidence_verifies_as_covered ... ok
+test tests::cache_key_is_stable ... ok
+test tests::coverage_classifies_conflicts_with_as_conflict ... ok
+test tests::coverage_classifies_low_confidence_verifies_as_partial ... ok
+test tests::coverage_classifies_unrecognised_relationship_as_missing ... ok
+test tests::coverage_matrix_counts_stale_links ... ok
+test tests::metrics_response_serialises_and_deserialises ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/lib.rs (target/d04-evidence/debug/deps/tracera_events-55fbe26bf3b31ffb)
+
+running 18 tests
+test clickhouse::tests::trace_latency_quantiles_uses_quantile_aggregates ... ok
+test config::tests::rejects_empty_url ... ok
+test config::tests::builder_methods_set_fields ... ok
+test records::tests::stream_names_are_stable ... ok
+test clickhouse::tests::recent_deploys_query_has_limit ... ok
+test clickhouse::tests::summary_query_targets_all_five_tables ... ok
+test clickhouse::tests::llm_daily_query_respects_window ... ok
+test clickhouse::tests::trace_by_id_injects_trace_id ... ok
+test clickhouse::tests::snapshot_aggregates_per_stream_counts ... ok
+test tests::analytics_summary_query_targets_every_table ... ok
+test tests::from_env_fails_without_url ... ok
+test tests::schema_file_contains_all_five_tables ... ok
+test tests::summary_row_serializes_to_json ... ok
+test records::tests::event_roundtrips_as_ndjson ... ok
+test tests::event_round_trips_through_all_streams ... ok
+test tests::client_new_applies_url_and_database ... ok
+test tests::client_new_without_user_is_anonymous ... ok
+test tests::analytics_clones_share_query_builder_settings ... ok
+
+test result: ok. 18 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running unittests src/bin/events-ingest.rs (target/d04-evidence/debug/deps/events_ingest-3e89aff9b542a5f3)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/lib.rs (target/d04-evidence/debug/deps/tracera_mcp-5dfa1b3264992782)
+
+running 2 tests
+test tests::server_info_is_well_formed ... ok
+test tests::server_is_send_and_sync ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/bin/mcp-server.rs (target/d04-evidence/debug/deps/mcp_server-27f8f4df533147be)
+
+running 2 tests
+test demo_store_tests::item_reads_report_unsupported_instead_of_empty_or_missing ... ok
+test demo_store_tests::item_creation_reports_unsupported_instead_of_success ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/lib.rs (target/d04-evidence/debug/deps/tracera_server-24e2012f43790a36)
+
+running 107 tests
+test cache::tests::disabled_when_no_env ... ok
+test cache::tests::parse_redis_url_plain ... ok
+test cache::tests::disabled_when_url_but_no_token ... ok
+test product::assessment::tests::severity_mapping ... ok
+test product::assessment::tests::stale_observations_produce_stale_status ... ok
+test product::assessment::tests::no_observations_unknown ... ok
+test cache::tests::parse_redis_url_with_token ... ok
+test product::assessment::tests::all_passed_satisfied ... ok
+test product::assessment::tests::mixed_pass_fail_inconclusive ... ok
+test product::assessment::tests::t06_all_pass_satisfied ... ok
+test product::assessment::tests::assessment_deterministic ... ok
+test product::assessment::tests::t11_later_error_overrides_old_green ... ok
+test product::assessment::tests::t07_missing_proof_is_unknown ... ok
+test product::assessment::tests::t12_conflicting_results_inconclusive ... ok
+test product::baseline::tests::baseline_construction ... ok
+test product::baseline::tests::proposal_draft_construction ... ok
+test product::detectors::tests::coverage_no_intents_no_findings ... ok
+test product::detectors::tests::detector_version_recorded ... ok
+test product::detectors::tests::freshness_high_for_failed_stale ... ok
+test product::detectors::tests::no_findings_on_clean_data ... ok
+test product::assessment::tests::worst_status_propagates_in_product ... ok
+test product::baseline::tests::proposal_status_serialize ... ok
+test product::detectors::tests::suite_combined_results ... ok
+test product::detectors::tests::t07_coverage_finds_unobserved_capability ... ok
+test product::baseline::tests::delta_variant_construction ... ok
+test product::assessment::tests::t05_failed_yields_violation ... ok
+test product::baseline::tests::baseline_serialization_roundtrip ... ok
+test product::assessment::tests::assessment_result_serializable ... ok
+test product::detectors::tests::t08_freshness_detects_old_observation ... ok
+test product::detectors::tests::t09_different_baseline_no_contradiction ... ok
+test product::detectors::tests::t10_expired_result_freshness_finding ... ok
+test product::detectors::tests::finding_serializable ... ok
+test product::identity::tests::accepted_intent_construction ... ok
+test product::identity::tests::baseline_revision_ordering ... ok
+test product::identity::tests::baseline_revision_zero ... ok
+test product::detectors::tests::t12_same_baseline_contradiction ... ok
+test product::identity::tests::intent_kind_serialize ... ok
+test product::identity::tests::intent_status_serialize ... ok
+test product::identity::tests::product_id_roundtrip ... ok
+test product::ingest::tests::empty_batch_accepted_with_no_counts ... ok
+test product::ingest::tests::empty_observation_id_rejected ... ok
+test product::ingest::tests::empty_product_id_rejected ... ok
+test product::ingest::tests::future_timestamp_rejected ... ok
+test product::ingest::tests::idempotency_key_not_consumed_on_full_rejection ... ok
+test product::ingest::tests::ingest_single_valid_observation ... ok
+test product::ingest::tests::mixed_valid_and_invalid_batch ... ok
+test product::ingest::tests::get_observations_for_capability ... ok
+test product::ingest::tests::ingest_multiple_valid_observations ... ok
+test product::ingest::tests::is_duplicate_returns_true_for_stored_obs ... ok
+test product::ingest::tests::get_observations_for_product ... ok
+test product::ingest::tests::different_idempotency_key_accepted ... ok
+test product::ingest::tests::roundtrip_ingest_then_query_by_product ... ok
+test product::ingest::tests::no_idempotency_key_allows_reingest_of_different_obs ... ok
+test product::ingest::tests::same_idempotency_key_rejects_batch ... ok
+test product::ingest::tests::timestamp_within_tolerance_accepted ... ok
+test product::observation::tests::observation_construction ... ok
+test product::observation::tests::observation_kind_all_variants ... ok
+test product::observation::tests::observation_result_all_variants ... ok
+test product::ingest::tests::duplicate_observation_id_rejected ... ok
+test product::observation::tests::observation_source_without_artifact ... ok
+test product::observation::tests::observation_serialization_roundtrip ... ok
+test product::queries::tests::build_product_view_basic ... ok
+test product::queries::tests::compute_product_stats_counts ... ok
+test product::queries::tests::compute_product_stats_empty ... ok
+test product::queries::tests::invalidation_index_empty ... ok
+test product::queries::tests::build_product_view_no_intents ... ok
+test product::queries::tests::invalidation_index_no_observations_is_stale ... ok
+test product::queries::tests::invalidation_index_staleness_detection ... ok
+test product::queries::tests::product_query_roundtrip ... ok
+test product::queries::tests::product_stats_roundtrip ... ok
+test product::queries::tests::query_combined_filters ... ok
+test product::queries::tests::product_view_roundtrip ... ok
+test product::queries::tests::invalidation_index_roundtrip ... ok
+test product::queries::tests::query_defaults_are_bounded ... ok
+test product::queries::tests::query_bounded_limit_enforcement ... ok
+test product::queries::tests::query_filter_by_baseline ... ok
+test product::queries::tests::query_filter_by_intent_kind ... ok
+test product::queries::tests::query_limit_clamped_to_max ... ok
+test product::queries::tests::query_filter_by_status ... ok
+test product::traversal::tests::test_budget_defaults ... ok
+test product::traversal::tests::test_basic_tree_traversal ... ok
+test product::traversal::tests::test_build_adjacency_helper ... ok
+test product::traversal::tests::test_budget_exhaustion_max_nodes ... ok
+test product::traversal::tests::test_cycle_detection_diamond ... ok
+test product::traversal::tests::test_cycle_detection_simple ... ok
+test product::traversal::tests::test_depth_limit ... ok
+test product::traversal::tests::test_edge_filtering ... ok
+test product::traversal::tests::test_edges_followed_count ... ok
+test product::traversal::tests::test_edges_followed_with_filter ... ok
+test product::traversal::tests::test_empty_graph_start_node_missing ... ok
+test product::traversal::tests::test_multiple_cycles_detected ... ok
+test product::traversal::tests::test_node_info_fallback_to_unknown ... ok
+test product::traversal::tests::test_single_node_no_edges ... ok
+test product::traversal::tests::test_node_info_populated ... ok
+test store::tests::list_params_defaults_and_offset_are_stable ... ok
+test product::traversal::tests::test_traversal_result_serializable ... ok
+test store::tests::list_params_reject_zero_and_oversized_values ... ok
+test swee::tests::edge_kind_count ... ok
+test swee::tests::edge_kind_roundtrip ... ok
+test swee::tests::edge_taxonomy_count ... ok
+test swee::tests::edge_taxonomy_ordinals_sequential ... ok
+test swee::tests::node_kind_count ... ok
+test swee::tests::node_kind_roundtrip ... ok
+test swee::tests::serde_roundtrip_edge_kind ... ok
+test swee::tests::serde_roundtrip_node_kind ... ok
+test db::tests::sqlite_pool_applies_contention_and_integrity_pragmas ... ok
+test db::tests::in_memory_sqlite_uses_one_connection_for_a_shared_schema ... ok
+
+test result: ok. 107 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running unittests src/main.rs (target/d04-evidence/debug/deps/tracera_server-2eb1f3b0b1b19d33)
+
+running 135 tests
+test auth::tests::health_probe_routes_are_public_but_application_routes_are_not ... ok
+test auth::tests::constant_time_comparison_requires_exact_bytes ... ok
+test frontend_guard_tests::missing_index_without_flag_errors ... ok
+test frontend_guard_tests::missing_index_with_flag_is_disabled ... ok
+test frontend_guard_tests::present_index_is_ok ... ok
+test events::tests::normalize_commit_event ... ok
+test events::tests::normalize_ci_run_event ... ok
+test ingest::benchmark::benchmark_contract_tests::malformed_benchmark_envelope_is_rejected ... ok
+test ingest::benchmark::benchmark_contract_tests::pheno_harness_fixture_replays_through_tracera_mapper ... ok
+test ingest::benchmark::benchmark_contract_tests::helios_fixture_preserves_content_addressed_fields ... ok
+test ingest::benchmark::benchmark_contract_tests::valid_benchmark_envelope_maps_to_trace_issue ... ok
+test ingest::tests::extract_req_refs_empty_body ... ok
+test ingest::tests::extract_req_refs_no_matches ... ok
+test ingest::tests::github_config_from_env_missing_vars ... ok
+test ingest::tests::extract_req_refs_deduplicates ... ok
+test ingest::tests::jira_base_url_requires_https_and_host ... ok
+test ingest::tests::extract_req_refs_finds_req_and_spec ... ok
+test ingest::tests::normalised_issue_from_payload_skips_empty_title ... ok
+test ingest::tests::jira_error_body_is_redacted_and_bounded ... ok
+test db::tests::sqlite_pool_applies_contention_and_integrity_pragmas ... ok
+test db::tests::in_memory_sqlite_uses_one_connection_for_a_shared_schema ... ok
+test legacy_forward::tests::bridge_off_keeps_501 ... ok
+test legacy_forward::tests::legacy_down_gives_502 ... ok
+test legacy_forward::tests::legacy_error_status_passes_through ... ok
+test legacy_forward::tests::cookie_header_stripped ... ok
+test legacy_forward::tests::legacy_redirect_not_followed ... ok
+test legacy_forward::tests::auth_header_relayed ... ok
+test legacy_forward::tests::loop_guard_not_forwarded ... ok
+test legacy_forward::tests::owned_prefix_bypasses_local ... ok
+test legacy_forward::tests::legacy_set_cookie_and_cors_headers_stripped ... ok
+test legacy_forward::tests::owned_upgrade_rejected ... ok
+test handlers::dashboard::summary::tests::unavailable_store_is_an_error_instead_of_a_zero_summary ... ok
+test memory::distillation::tests::test_count_patterns ... ok
+test memory::distillation::tests::test_distill_patterns_filters_low_occurrence ... ok
+test memory::distillation::tests::test_distill_patterns_qualifying ... ok
+test memory::distillation::tests::test_distiller_clear ... ok
+test legacy_forward::tests::owned_prefix_segment_boundary ... ok
+test memory::distillation::tests::test_distiller_lifecycle ... ok
+test memory::distillation::tests::test_distiller_find_memory ... ok
+test memory::distillation::tests::test_extract_paths_from_snapshot ... ok
+test legacy_forward::tests::real_route_not_forwarded ... ok
+test memory::distillation::tests::test_fingerprint_path_basic ... ok
+test memory::distillation::tests::test_memory_entry_decay ... ok
+test legacy_forward::tests::rust_4xx_not_forwarded ... ok
+test memory::distillation::tests::test_memory_entry_touch_increments ... ok
+test memory::distillation::tests::test_pattern_confidence_capped ... ok
+test memory::distillation::tests::test_pattern_confidence_normal ... ok
+test memory::distillation::tests::test_pattern_confidence_zero_total ... ok
+test router::auth_routes::tests::refresh_returns_upstream_owned_501 ... ok
+test router::auth_routes::tests::login_returns_upstream_owned_501 ... ok
+test router::cors_tests::env_adds_comma_separated_origins ... ok
+test router::auth_routes::tests::logout_returns_upstream_owned_501 ... ok
+test router::cors_tests::production_regression_local_env_does_not_drop_deployed_frontends ... ok
+test router::cors_tests::invalid_env_origin_is_skipped_without_panicking ... ok
+test router::cors_tests::unset_env_allows_canonical_origins_only ... ok
+test legacy_forward::tests::post_body_and_query_forwarded ... ok
+test legacy_forward::tests::stub_get_forwarded ... ok
+test not_implemented::tests::reprobe_every_registered_stub_get ... ok
+test handlers::dashboard::summary::tests::links_have_exact_501_template_contracts ... ok
+test router::export_import_routes::tests::missing_project_and_store_failures_are_not_empty_success ... ok
+test not_implemented::tests::get_stub_returns_typed_501_and_counts_template ... ok
+test router::graph_routes::tests::cycles_and_topology_detect_persisted_cycle ... ok
+test router::export_import_routes::tests::unsupported_shapes_return_exact_template_501 ... ok
+test router::graph_routes::tests::pagination_and_negative_controls ... ok
+test router::graph_routes::tests::graph_routes_read_sqlite_data ... ok
+test router::item_routes::tests::empty_store_is_distinct_from_failure ... ok
+test router::export_import_routes::tests::invalid_imports_do_not_write ... ok
+test router::graph_routes::tests::empty_graph_self_loop_and_store_failure ... ok
+test router::item_routes::tests::invalid_queries_and_missing_records_are_honest ... ok
+test router::item_routes::tests::filters_are_exact_and_project_scoped_routes_agree ... ok
+test router::item_routes::tests::known_problem_project_can_have_no_items ... ok
+test router::item_routes::tests::list_and_detail_preserve_real_item_contract ... ok
+test router::export_import_routes::tests::failed_import_reports_actual_partial_writes ... ok
+test router::item_routes::tests::store_failures_do_not_become_empty_success ... ok
+test router::item_routes::tests::unimplemented_semantics_return_typed_route_labelled_501 ... ok
+test router::journeys_routes::tests::explicit_empty_steps_and_malformed_steps_are_distinct ... ok
+test router::item_routes::tests::pagination_boundaries_are_complete ... ok
+test router::journeys_routes::tests::every_unavailable_operation_has_exact_template_contract ... ok
+test router::search_routes::tests::all_five_unavailable_routes_return_exact_template_501 ... ok
+test router::search_routes::tests::empty_database_and_out_of_range_page_are_real_empty_results ... ok
+test router::export_import_routes::tests::export_and_both_import_routes_round_trip_sqlite ... ok
+test router::search_routes::tests::get_and_post_search_use_persisted_titles_and_pagination ... ok
+test router::journeys_routes::tests::reads_all_persisted_steps_and_scopes_every_alias ... ok
+test router::search_routes::tests::invalid_parameters_fail_before_querying ... ok
+test router::search_routes::tests::unsupported_backend_fails_closed_without_connecting ... ok
+test handlers::dashboard::summary::tests::summaries_and_project_list_agree_on_533_persisted_records ... ok
+test router::search_routes::tests::suggestions_are_persisted_titles_with_a_bound ... ok
+test router::search_routes::tests::wildcards_and_sql_input_are_literal ... ok
+test handlers::dashboard::summary::tests::dashboard_does_not_truncate_after_500_projects ... ok
+test router::specs_routes::tests::all_ten_unavailable_templates_have_exact_501_contract ... ok
+test router::specs_routes::tests::incomplete_subtype_observations_are_preserved_and_never_invented ... ok
+test router::specs_routes::tests::all_three_stats_routes_match_actual_project_items ... ok
+test router::w9_routes::codex::tests::route_1_returns_template_501_for_reads_and_mutations ... ok
+test router::w9_routes::equivalences::tests::route_1_returns_template_501_for_reads_and_mutations ... ok
+test router::w9_routes::equivalences::tests::route_2_returns_template_501_for_reads_and_mutations ... ok
+test router::w9_routes::equivalences::tests::route_3_returns_template_501_for_reads_and_mutations ... ok
+test router::w9_routes::libraries::tests::route_1_returns_template_501_for_reads_and_mutations ... ok
+test router::w9_routes::libraries::tests::route_2_returns_template_501_for_reads_and_mutations ... ok
+test router::w9_routes::libraries::tests::route_3_returns_template_501_for_reads_and_mutations ... ok
+test router::w9_routes::libraries::tests::route_4_returns_template_501_for_reads_and_mutations ... ok
+test router::specs_routes::tests::project_scenario_route_filters_real_relationships ... ok
+test router::w9_routes::libraries::tests::route_5_returns_template_501_for_reads_and_mutations ... ok
+test router::specs_routes::tests::negative_controls_cover_missing_wrong_type_filters_and_pagination ... ok
+test router::journeys_routes::tests::pagination_reads_journeys_beyond_the_first_store_page ... ok
+test store::tests::list_params_defaults_and_offset_are_stable ... ok
+test store::tests::list_params_reject_zero_and_oversized_values ... ok
+test swee::tests::edge_kind_count ... ok
+test swee::tests::edge_kind_roundtrip ... ok
+test swee::tests::edge_taxonomy_count ... ok
+test swee::tests::edge_taxonomy_ordinals_sequential ... ok
+test swee::tests::node_kind_count ... ok
+test swee::tests::node_kind_roundtrip ... ok
+test swee::tests::serde_roundtrip_edge_kind ... ok
+test swee::tests::serde_roundtrip_node_kind ... ok
+test traceability::traceability::tests::test_artifacts_for_story ... ok
+test traceability::traceability::tests::test_average_confidence ... ok
+test traceability::traceability::tests::test_average_confidence_empty_matrix ... ok
+test traceability::traceability::tests::test_build_matrix_populates_rows_and_columns ... ok
+test traceability::traceability::tests::test_find_gaps_reports_missing_types ... ok
+test traceability::traceability::tests::test_matrix_with_orphan_detects_no_orphans ... ok
+test traceability::traceability::tests::test_stories_for_artifact ... ok
+test traceability::traceability::tests::test_verify_coverage_all_covered ... ok
+test traceability::traceability::tests::test_verify_coverage_detects_gap ... ok
+test validation::tests::character_limit_is_unicode_safe ... ok
+test validation::tests::optional_empty_text_is_allowed ... ok
+test validation::tests::required_text_rejects_whitespace_only_values ... ok
+test router::w9_routes::tests::existing_project_mutations_never_claim_an_unpersisted_write ... ok
+test router::w9_routes::tests::unknown_routes_stay_404 ... ok
+test router::specs_routes::tests::all_eight_list_and_detail_routes_use_persisted_type ... ok
+test router::specs_routes::tests::writes_never_report_success_or_mutate_items ... ok
+test router::w9_routes::tests::every_remaining_route_has_a_typed_501_for_all_operation_methods ... ok
+test router::item_routes::tests::exhausted_store_budget_returns_503 ... ok
+test router::journeys_routes::tests::persistence_failures_never_report_empty_success ... ok
+test router::search_routes::tests::failures_and_timeouts_are_not_empty_successes ... ok
+test router::specs_routes::tests::store_failure_budget_and_unknown_projects_never_become_empty_success ... ok
+
+test result: ok. 135 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 3.68s
+
+     Running tests/db_integration.rs (target/d04-evidence/debug/deps/db_integration-8fd10c41c6000027)
+
+running 4 tests
+test sprint_roundtrip ... ok
+test evidence_roundtrip ... ok
+test swee_node_roundtrip ... ok
+test swee_edge_roundtrip_and_neighbors ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.07s
+
+     Running unittests src/lib.rs (target/d04-evidence/debug/deps/tracera_workos-381e4bb975a8c6df)
+
+running 48 tests
+test audit::tests::singularize_kind_strips_trailing_s ... ok
+test auth::tests::authorize_url_rejects_unicode_in_redirect_uri ... ok
+test audit::tests::audit_event_minimal_produces_node_no_edges ... ok
+test audit::tests::provision_outcome_is_serializable ... ok
+test audit::tests::audit_event_with_action_only_uses_action_as_label ... ok
+test audit::tests::audit_event_with_actor_and_target_links_both ... ok
+test auth::tests::authorize_url_contains_required_params ... ok
+test auth::tests::authorize_url_default_redirect_uri_is_used_when_unspecified ... ok
+test audit::tests::audit_event_label_includes_target_when_present ... ok
+test auth::tests::authorize_url_rejects_invalid_characters_in_redirect_uri ... ok
+test auth::tests::id_token_claims_round_trip_into_user ... ok
+test auth::tests::session_expiry_is_clock_aware ... ok
+test auth::tests::verify_id_token_rejects_garbage ... ok
+test auth::tests::pkce_challenge_is_url_safe_no_pad_sha256 ... ok
+test auth::tests::state_nonce_has_at_least_128_bits_of_entropy ... ok
+test router::tests::parse_session_cookie_returns_none_for_missing_cookie ... ok
+test router::tests::parse_session_cookie_returns_none_for_garbage_payload ... ok
+test router::tests::parse_session_cookie_extracts_payload ... ok
+test sync::tests::organization_created_tags_metadata_with_domains ... ok
+test tests::b64url_encode_is_url_safe_no_pad ... ok
+test sync::tests::group_created_produces_team_node ... ok
+test sync::tests::non_dsync_event_yields_unsupported_error ... ok
+test sync::tests::parse_action_extracts_resource_and_suffix ... ok
+test sync::tests::user_deleted_is_tombstone_only_no_edges ... ok
+test sync::tests::user_updated_overwrites_metadata_not_tombstone ... ok
+test sync::tests::user_created_produces_agent_node_and_belongs_to_edges ... ok
+test sync::tests::unknown_suffix_yields_unsupported_error ... ok
+test router::tests::router_with_state_works_with_arbitrary_s ... ok
+test router::tests::router_builds_with_all_four_routes ... ok
+test tests::config_from_explicit_values_round_trips ... ok
+test webhooks::tests::dispatch_ignores_unknown_families ... ok
+test webhooks::tests::dispatch_marks_authentication_as_unhandled ... ok
+test webhooks::tests::dispatch_routes_dsync_to_directory_sync ... ok
+test tests::workos_user_deserializes_full_payload ... ok
+test tests::workos_user_deserializes_minimal_payload ... ok
+test webhooks::tests::dispatch_routes_audit_to_audit_log ... ok
+test webhooks::tests::is_known_event_returns_true_for_supported_events ... ok
+test webhooks::tests::envelope_deserializes_workos_payload ... ok
+test webhooks::tests::signature_header_rejects_malformed_segment ... ok
+test webhooks::tests::signature_header_parses_multiple_v1_during_rotation ... ok
+test webhooks::tests::signature_header_rejects_missing_timestamp ... ok
+test webhooks::tests::signature_header_rejects_missing_v1 ... ok
+test webhooks::tests::verify_signature_rejects_stale_timestamp ... ok
+test webhooks::tests::verify_signature_accepts_valid_header ... ok
+test webhooks::tests::verify_signature_accepts_any_matching_v1_during_rotation ... ok
+test webhooks::tests::verify_signature_rejects_wrong_secret ... ok
+test webhooks::tests::verify_signature_rejects_tampered_body ... ok
+test webhooks::tests::signature_header_parses_single_v1 ... ok
+
+test result: ok. 48 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running unittests src/bin/workos-mock.rs (target/d04-evidence/debug/deps/workos_mock-67557a68b11ee035)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/main.rs (target/d04-evidence/debug/deps/tracertm_mcp-734e4a39db3cdcb4)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests tracera_atlas
+
+running 1 test
+test crates/tracera-atlas/src/lib.rs - (line 26) ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.00s
+
+   Doc-tests tracera_events
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests tracera_mcp
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests tracera_server
+
+running 1 test
+test crates/tracera-server/src/product/traversal.rs - product::traversal::GraphTraversal (line 99) ... ignored
+
+test result: ok. 0 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests tracera_workos
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

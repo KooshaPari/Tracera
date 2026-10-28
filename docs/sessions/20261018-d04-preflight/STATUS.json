@@ -1,0 +1,81 @@
+{
+  "generated_at_utc": "2026-10-20T00:06:30+00:00",
+  "base_sha": "209743257b7dd075309207305107c37fe066914d",
+  "qualified_source_sha": "9ee828c17709af27e50f26c49c6d6f2ce35fc34e",
+  "binary_sha256": "dee96a6f8fe5831ffb700fd0aed43832c8d867f8839015773720bbd0ee1e72d7",
+  "compatibility_oracle": "https://docs.docker.com/compose/how-tos/environment-variables/variable-interpolation/#env-file-syntax",
+  "intents": [
+    {
+      "name": "Non-clobbering preflight",
+      "cells": {
+        "Implementation": {
+          "verdict": "PASS",
+          "source": "crates/tracera-cli/src/env_config.rs (258 lines); commands.rs; bundle.rs; compose.rs"
+        },
+        "Usability": {
+          "verdict": "PASS",
+          "source": "docs/sessions/20261018-d04-preflight/fixture-results.json: seven fake-backend cases, all PASS"
+        },
+        "Validation": {
+          "verdict": "PASS",
+          "source": "docs/sessions/20261018-d04-preflight/workspace-tests.log: 398 passed, 0 failed, 1 ignored; workspace-build.log; fixture-results.json 7/7"
+        },
+        "Assurance": {
+          "verdict": "PASS",
+          "source": "REVIEW.md independent static scope; locked --offline workspace receipts. Windows execution excluded"
+        }
+      }
+    },
+    {
+      "name": "Compose-valid dotenv declaration syntax (interpolation excluded)",
+      "cells": {
+        "Implementation": {
+          "verdict": "PASS",
+          "source": "crates/tracera-cli/src/env_file.rs (197 lines) plus env_file/tests.rs (156 lines): custom parser replaces dotenvy; colon and equals separators; single- and double-quoted values; escape-aware quote scan; key whitespace rejected"
+        },
+        "Usability": {
+          "verdict": "PASS",
+          "source": "env_file::tests::{compose_escape_sequences_expand, escaped_quote_inside_quoted_value, hash_without_preceding_space_is_part_of_the_value, comment_only_value_fails_closed, interpolation_is_not_performed, key_with_whitespace_fails_closed, last_wins_with_mixed_separators}; env_config::tests::{compose_colon_and_quoted_escapes_accepted_preserves_bytes, colon_syntax_validates_password, quoted_escape_sequences_accepted_and_round_tripped, supports_quoted_hash_crlf_export_and_last_assignment}"
+        },
+        "Validation": {
+          "verdict": "PASS",
+          "source": "cargo test -p tracera-cli --offline --locked: 26 passed, 0 failed; cargo clippy -p tracera-cli --offline --all-targets -D warnings: clean; cargo fmt --check: clean"
+        },
+        "Assurance": {
+          "verdict": "PASS",
+          "source": "env_file::tests::fail_closed_no_secret_leakage_in_errors and env_config::tests::rejects_invalid_existing_without_clobber_or_secret_errors: parse errors never echo the offending value"
+        }
+      }
+    },
+    {
+      "name": "Actual Desk readiness",
+      "cells": {
+        "Implementation": {
+          "verdict": "UNKNOWN",
+          "source": "installed binary/source equivalence unverified"
+        },
+        "Usability": {
+          "verdict": "UNKNOWN",
+          "source": "SSH 100.96.135.160 port 22 timed out"
+        },
+        "Validation": {
+          "verdict": "NOT_RUN",
+          "source": "scope prohibits Desk root commands and starts; no Windows host reachable"
+        },
+        "Assurance": {
+          "verdict": "UNKNOWN",
+          "source": "no fresh remote metadata"
+        }
+      }
+    }
+  ],
+  "limitations": [
+    "Owned disposable nonsecret fixtures only; fake Docker is a side-effect guard, not runtime qualification.",
+    "No environment values read. SSH metadata command timed out. No actual Desk root CLI executed.",
+    "No baseline executable RED; base source establishes old mutation behavior.",
+    "Parser covers Compose colon and equals separators, comment rule (cut only at a space followed by '#'), escape-aware quoted scanning, single-quoted literals, export prefix, escape sequences \\n \\t \\r \\\\ \\\" \\$ \\a \\b \\c \\f \\v and octal \\0NNN, and last-assignment-wins. It does not perform ${VAR} interpolation; env_file::tests::interpolation_is_not_performed pins that a placeholder is preserved verbatim.",
+    "Windows create_new branch statically reviewed only; no Windows runtime qualification.",
+    "Compute: on device, isolated CLI only; no shared process kills or backend starts.",
+    "Workspace --locked --offline test and build passed using an isolated owned CARGO_TARGET_DIR; 398 workspace tests plus seven fake-backend fixtures. No production-complete claim."
+  ]
+}
