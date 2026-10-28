@@ -47,3 +47,10 @@ select = ["E", "F", "W", "I", "N", "UP", "B", "C4", "SIM"]
 # package.
 norecursedirs = ["crates", ".*", "build", "dist"]
 
+[tool.mypy]
+# The Python SDK under crates/ has its own pytest project and its own lint job
+# (ci-agents.yml `lint-py`). Checking it from the repo root resolves imports in
+# an environment that only installs this package, so its third-party test
+# dependencies (for example `respx`) are reported as missing.
+exclude = ["^crates/"]
+
