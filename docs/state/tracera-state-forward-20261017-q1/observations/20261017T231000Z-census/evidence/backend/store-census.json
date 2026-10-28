@@ -1,0 +1,188 @@
+[
+  {
+    "method": "ingest_product_observations",
+    "sqlite": true,
+    "postgres": true,
+    "default": null
+  },
+  {
+    "method": "product_observations",
+    "sqlite": true,
+    "postgres": true,
+    "default": null
+  },
+  {
+    "method": "search_items",
+    "sqlite": true,
+    "postgres": false,
+    "default": "UnsupportedOperation"
+  },
+  {
+    "method": "list_items",
+    "sqlite": true,
+    "postgres": true,
+    "default": null
+  },
+  {
+    "method": "get_item",
+    "sqlite": true,
+    "postgres": true,
+    "default": null
+  },
+  {
+    "method": "create_item",
+    "sqlite": true,
+    "postgres": true,
+    "default": null
+  },
+  {
+    "method": "list_evidence",
+    "sqlite": true,
+    "postgres": true,
+    "default": null
+  },
+  {
+    "method": "create_evidence",
+    "sqlite": true,
+    "postgres": true,
+    "default": null
+  },
+  {
+    "method": "list_sprints",
+    "sqlite": true,
+    "postgres": true,
+    "default": null
+  },
+  {
+    "method": "create_sprint",
+    "sqlite": true,
+    "postgres": true,
+    "default": null
+  },
+  {
+    "method": "list_stories",
+    "sqlite": true,
+    "postgres": true,
+    "default": null
+  },
+  {
+    "method": "create_story",
+    "sqlite": true,
+    "postgres": true,
+    "default": null
+  },
+  {
+    "method": "create_trace_link",
+    "sqlite": true,
+    "postgres": true,
+    "default": null
+  },
+  {
+    "method": "list_trace_links_for_artifact",
+    "sqlite": true,
+    "postgres": true,
+    "default": null
+  },
+  {
+    "method": "list_teams",
+    "sqlite": true,
+    "postgres": true,
+    "default": null
+  },
+  {
+    "method": "list_projects",
+    "sqlite": true,
+    "postgres": true,
+    "default": null
+  },
+  {
+    "method": "count_projects",
+    "sqlite": true,
+    "postgres": true,
+    "default": null
+  },
+  {
+    "method": "get_project",
+    "sqlite": true,
+    "postgres": true,
+    "default": null
+  },
+  {
+    "method": "count_evidence",
+    "sqlite": true,
+    "postgres": true,
+    "default": null
+  },
+  {
+    "method": "check_readiness",
+    "sqlite": true,
+    "postgres": true,
+    "default": null
+  },
+  {
+    "method": "list_problems",
+    "sqlite": true,
+    "postgres": true,
+    "default": null
+  },
+  {
+    "method": "create_problem",
+    "sqlite": true,
+    "postgres": true,
+    "default": null
+  },
+  {
+    "method": "count_problems",
+    "sqlite": true,
+    "postgres": true,
+    "default": null
+  },
+  {
+    "method": "count_problems_filtered",
+    "sqlite": true,
+    "postgres": true,
+    "default": null
+  },
+  {
+    "method": "dashboard_status_counts",
+    "sqlite": true,
+    "postgres": true,
+    "default": null
+  },
+  {
+    "method": "create_swee_node",
+    "sqlite": true,
+    "postgres": true,
+    "default": null
+  },
+  {
+    "method": "create_swee_edge",
+    "sqlite": true,
+    "postgres": true,
+    "default": null
+  },
+  {
+    "method": "list_swee_nodes",
+    "sqlite": true,
+    "postgres": true,
+    "default": null
+  },
+  {
+    "method": "list_swee_edges",
+    "sqlite": true,
+    "postgres": true,
+    "default": null
+  },
+  {
+    "method": "get_swee_node",
+    "sqlite": true,
+    "postgres": true,
+    "default": null
+  },
+  {
+    "method": "get_swee_neighbors",
+    "sqlite": true,
+    "postgres": true,
+    "default": null
+  }
+]

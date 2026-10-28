@@ -1,0 +1,30 @@
+   Compiling tracera-server v0.2.0 (/private/tmp/tracera-q1-20261017/crates/tracera-server)
+warning: linker stderr: rust-lld: Option `-no_compact_unwind' is undocumented. Should lld implement it?
+  |
+  = note: `#[warn(linker_messages)]` on by default
+
+warning: `tracera-server` (lib test) generated 1 warning
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 5.19s
+     Running unittests src/lib.rs (target/debug/deps/tracera_server-31a710581fb793e3)
+
+running 17 tests
+test product::detectors::tests::freshness_high_for_failed_stale ... ok
+test product::detectors::tests::coverage_matches_capability_not_product_name ... ok
+test product::detectors::tests::freshness_preserves_capability_identity ... ok
+test product::detectors::tests::coverage_isolates_product_and_baseline ... ok
+test product::detectors::tests::detector_version_recorded ... ok
+test product::detectors::tests::coverage_no_intents_no_findings ... ok
+test product::detectors::tests::contradictions_isolate_products_and_product_level_observations ... ok
+test product::detectors::tests::contradiction_reports_actual_capability ... ok
+test product::detectors::tests::no_findings_on_clean_data ... ok
+test product::detectors::tests::contradictions_do_not_cross_capabilities ... ok
+test product::detectors::tests::t07_coverage_finds_unobserved_capability ... ok
+test product::detectors::tests::t09_different_baseline_no_contradiction ... ok
+test product::detectors::tests::suite_combined_results ... ok
+test product::detectors::tests::t10_expired_result_freshness_finding ... ok
+test product::detectors::tests::t12_same_baseline_contradiction ... ok
+test product::detectors::tests::t08_freshness_detects_old_observation ... ok
+test product::detectors::tests::finding_serializable ... ok
+
+test result: ok. 17 passed; 0 failed; 0 ignored; 0 measured; 96 filtered out; finished in 0.00s
+

@@ -1,0 +1,262 @@
+   Compiling tracera-server v0.2.0 (/private/tmp/tracera-q1-20261017/crates/tracera-server)
+warning: linker stderr: rust-lld: Option `-no_compact_unwind' is undocumented. Should lld implement it?
+  |
+  = note: `#[warn(linker_messages)]` on by default
+
+warning: `tracera-server` (test "db_integration") generated 1 warning
+warning: `tracera-server` (test "product_persistence") generated 1 warning (1 duplicate)
+warning: `tracera-server` (lib test) generated 1 warning (1 duplicate)
+warning: `tracera-server` (bin "tracera-server" test) generated 1 warning (1 duplicate)
+warning: `tracera-server` (bin "tracera-server") generated 1 warning (1 duplicate)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 13.02s
+     Running unittests src/lib.rs (target/debug/deps/tracera_server-31a710581fb793e3)
+
+running 96 tests
+test cache::tests::disabled_when_no_env ... ok
+test product::assessment::tests::assessment_deterministic ... ok
+test product::assessment::tests::all_passed_satisfied ... ok
+test cache::tests::parse_redis_url_plain ... ok
+test cache::tests::disabled_when_url_but_no_token ... ok
+test product::assessment::tests::mixed_pass_fail_inconclusive ... ok
+test cache::tests::parse_redis_url_with_token ... ok
+test product::assessment::tests::no_observations_unknown ... ok
+test product::assessment::tests::severity_mapping ... ok
+test product::assessment::tests::stale_observations_produce_stale_status ... ok
+test product::assessment::tests::t05_failed_yields_violation ... ok
+test product::assessment::tests::assessment_result_serializable ... ok
+test product::assessment::tests::t06_all_pass_satisfied ... ok
+test product::baseline::tests::delta_variant_construction ... ok
+test product::assessment::tests::t07_missing_proof_is_unknown ... ok
+test product::assessment::tests::t11_later_error_overrides_old_green ... ok
+test product::assessment::tests::worst_status_propagates_in_product ... ok
+test product::assessment::tests::t12_conflicting_results_inconclusive ... ok
+test product::baseline::tests::baseline_construction ... ok
+test product::baseline::tests::baseline_serialization_roundtrip ... ok
+test product::baseline::tests::proposal_status_serialize ... ok
+test product::detectors::tests::coverage_isolates_product_and_baseline ... ok
+test product::baseline::tests::proposal_draft_construction ... ok
+test product::detectors::tests::contradiction_reports_actual_capability ... ok
+test product::detectors::tests::contradictions_do_not_cross_capabilities ... ok
+test product::detectors::tests::contradictions_isolate_products_and_product_level_observations ... ok
+test product::detectors::tests::coverage_matches_capability_not_product_name ... ok
+test product::detectors::tests::coverage_no_intents_no_findings ... ok
+test product::detectors::tests::detector_version_recorded ... ok
+test product::detectors::tests::finding_serializable ... ok
+test product::detectors::tests::freshness_high_for_failed_stale ... ok
+test product::detectors::tests::freshness_preserves_capability_identity ... ok
+test product::detectors::tests::no_findings_on_clean_data ... ok
+test product::detectors::tests::suite_combined_results ... ok
+test product::detectors::tests::t07_coverage_finds_unobserved_capability ... ok
+test product::detectors::tests::t08_freshness_detects_old_observation ... ok
+test product::detectors::tests::t09_different_baseline_no_contradiction ... ok
+test product::detectors::tests::t10_expired_result_freshness_finding ... ok
+test product::detectors::tests::t12_same_baseline_contradiction ... ok
+test product::observation::tests::observation_construction ... ok
+test product::identity::tests::accepted_intent_construction ... ok
+test product::identity::tests::baseline_revision_zero ... ok
+test product::identity::tests::intent_kind_serialize ... ok
+test product::identity::tests::intent_status_serialize ... ok
+test product::identity::tests::product_id_roundtrip ... ok
+test product::observation::tests::observation_kind_all_variants ... ok
+test product::queries::tests::build_product_view_no_intents ... ok
+test product::queries::tests::compute_product_stats_empty ... ok
+test product::observation::tests::observation_result_all_variants ... ok
+test product::observation::tests::observation_source_without_artifact ... ok
+test product::observation::tests::observation_serialization_roundtrip ... ok
+test product::queries::tests::build_product_view_basic ... ok
+test product::queries::tests::compute_product_stats_counts ... ok
+test product::queries::tests::invalidation_index_empty ... ok
+test product::queries::tests::invalidation_index_no_observations_is_stale ... ok
+test product::identity::tests::baseline_revision_ordering ... ok
+test product::queries::tests::invalidation_index_staleness_detection ... ok
+test product::queries::tests::invalidation_index_roundtrip ... ok
+test product::queries::tests::product_query_roundtrip ... ok
+test product::queries::tests::product_stats_roundtrip ... ok
+test product::queries::tests::query_bounded_limit_enforcement ... ok
+test product::queries::tests::product_view_roundtrip ... ok
+test product::queries::tests::query_combined_filters ... ok
+test product::queries::tests::query_defaults_are_bounded ... ok
+test product::queries::tests::query_filter_by_intent_kind ... ok
+test product::queries::tests::query_limit_clamped_to_max ... ok
+test product::traversal::tests::test_basic_tree_traversal ... ok
+test product::queries::tests::query_filter_by_baseline ... ok
+test product::traversal::tests::test_cycle_detection_diamond ... ok
+test product::queries::tests::query_filter_by_status ... ok
+test product::traversal::tests::test_budget_defaults ... ok
+test product::traversal::tests::test_budget_exhaustion_max_nodes ... ok
+test product::traversal::tests::test_build_adjacency_helper ... ok
+test product::traversal::tests::test_empty_graph_start_node_missing ... ok
+test product::traversal::tests::test_edges_followed_with_filter ... ok
+test product::traversal::tests::test_node_info_populated ... ok
+test product::traversal::tests::test_single_node_no_edges ... ok
+test product::traversal::tests::test_cycle_detection_simple ... ok
+test product::traversal::tests::test_depth_limit ... ok
+test product::traversal::tests::test_edge_filtering ... ok
+test product::traversal::tests::test_edges_followed_count ... ok
+test product::traversal::tests::test_node_info_fallback_to_unknown ... ok
+test product::traversal::tests::test_multiple_cycles_detected ... ok
+test store::tests::list_params_defaults_and_offset_are_stable ... ok
+test product::traversal::tests::test_traversal_result_serializable ... ok
+test store::tests::list_params_reject_zero_and_oversized_values ... ok
+test swee::tests::edge_kind_count ... ok
+test swee::tests::edge_kind_roundtrip ... ok
+test swee::tests::edge_taxonomy_count ... ok
+test swee::tests::edge_taxonomy_ordinals_sequential ... ok
+test swee::tests::node_kind_count ... ok
+test swee::tests::node_kind_roundtrip ... ok
+test swee::tests::serde_roundtrip_edge_kind ... ok
+test swee::tests::serde_roundtrip_node_kind ... ok
+test db::tests::sqlite_pool_applies_contention_and_integrity_pragmas ... ok
+test db::tests::in_memory_sqlite_uses_one_connection_for_a_shared_schema ... ok
+
+test result: ok. 96 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+     Running unittests src/main.rs (target/debug/deps/tracera_server-f19351ed48dd18c8)
+
+running 121 tests
+test auth::tests::constant_time_comparison_requires_exact_bytes ... ok
+test auth::tests::health_probe_routes_are_public_but_application_routes_are_not ... ok
+test events::tests::normalize_ci_run_event ... ok
+test events::tests::normalize_commit_event ... ok
+test ingest::benchmark::benchmark_contract_tests::helios_fixture_preserves_content_addressed_fields ... ok
+test ingest::benchmark::benchmark_contract_tests::malformed_benchmark_envelope_is_rejected ... ok
+test ingest::benchmark::benchmark_contract_tests::pheno_harness_fixture_replays_through_tracera_mapper ... ok
+test ingest::benchmark::benchmark_contract_tests::valid_benchmark_envelope_maps_to_trace_issue ... ok
+test ingest::tests::extract_req_refs_no_matches ... ok
+test ingest::tests::extract_req_refs_empty_body ... ok
+test ingest::tests::extract_req_refs_finds_req_and_spec ... ok
+test ingest::tests::extract_req_refs_deduplicates ... ok
+test ingest::tests::github_config_from_env_missing_vars ... ok
+test ingest::tests::normalised_issue_from_payload_skips_empty_title ... ok
+test memory::distillation::tests::test_distill_patterns_filters_low_occurrence ... ok
+test memory::distillation::tests::test_count_patterns ... ok
+test memory::distillation::tests::test_distill_patterns_qualifying ... ok
+test ingest::tests::jira_base_url_requires_https_and_host ... ok
+test memory::distillation::tests::test_distiller_clear ... ok
+test memory::distillation::tests::test_distiller_find_memory ... ok
+test memory::distillation::tests::test_fingerprint_path_basic ... ok
+test memory::distillation::tests::test_extract_paths_from_snapshot ... ok
+test memory::distillation::tests::test_distiller_lifecycle ... ok
+test memory::distillation::tests::test_memory_entry_decay ... ok
+test memory::distillation::tests::test_memory_entry_touch_increments ... ok
+test memory::distillation::tests::test_pattern_confidence_capped ... ok
+test memory::distillation::tests::test_pattern_confidence_normal ... ok
+test memory::distillation::tests::test_pattern_confidence_zero_total ... ok
+test ingest::tests::jira_error_body_is_redacted_and_bounded ... ok
+test db::tests::sqlite_pool_applies_contention_and_integrity_pragmas ... ok
+test router::auth_routes::tests::login_returns_upstream_owned_501 ... ok
+test router::auth_routes::tests::logout_returns_upstream_owned_501 ... ok
+test router::cors_tests::env_adds_comma_separated_origins ... ok
+test router::cors_tests::invalid_env_origin_is_skipped_without_panicking ... ok
+test router::auth_routes::tests::refresh_returns_upstream_owned_501 ... ok
+test router::cors_tests::production_regression_local_env_does_not_drop_deployed_frontends ... ok
+test router::cors_tests::unset_env_allows_canonical_origins_only ... ok
+test db::tests::in_memory_sqlite_uses_one_connection_for_a_shared_schema ... ok
+test not_implemented::tests::reprobe_every_registered_stub_get ... ok
+test handlers::dashboard::summary::tests::unavailable_store_is_an_error_instead_of_a_zero_summary ... ok
+test router::export_import_routes::tests::missing_project_and_store_failures_are_not_empty_success ... ok
+test handlers::dashboard::summary::tests::links_have_exact_501_template_contracts ... ok
+test router::export_import_routes::tests::unsupported_shapes_return_exact_template_501 ... ok
+test router::graph_routes::tests::cycles_and_topology_detect_persisted_cycle ... ok
+test router::graph_routes::tests::pagination_and_negative_controls ... ok
+test router::graph_routes::tests::graph_routes_read_sqlite_data ... ok
+test router::item_routes::tests::empty_store_is_distinct_from_failure ... ok
+test not_implemented::tests::get_stub_returns_typed_501_and_counts_template ... ok
+test router::export_import_routes::tests::invalid_imports_do_not_write ... ok
+test router::export_import_routes::tests::failed_import_reports_actual_partial_writes ... ok
+test router::graph_routes::tests::empty_graph_self_loop_and_store_failure ... ok
+test router::item_routes::tests::invalid_queries_and_missing_records_are_honest ... ok
+test router::item_routes::tests::list_and_detail_preserve_real_item_contract ... ok
+test router::item_routes::tests::known_problem_project_can_have_no_items ... ok
+test router::item_routes::tests::filters_are_exact_and_project_scoped_routes_agree ... ok
+test router::item_routes::tests::pagination_boundaries_are_complete ... ok
+test router::item_routes::tests::store_failures_do_not_become_empty_success ... ok
+test router::export_import_routes::tests::export_and_both_import_routes_round_trip_sqlite ... ok
+test router::item_routes::tests::unimplemented_semantics_return_typed_route_labelled_501 ... ok
+test router::journeys_routes::tests::every_unavailable_operation_has_exact_template_contract ... ok
+test router::journeys_routes::tests::explicit_empty_steps_and_malformed_steps_are_distinct ... ok
+test router::product_observation_routes::tests::immutable_replay_conflict_is_409_and_invalid_is_422 ... ok
+test router::product_observation_routes::tests::mounted_routes_retain_authentication_and_body_limit ... ok
+test router::product_observation_routes::tests::mounted_ingest_read_detect_and_foreign_scope ... ok
+test router::product_observation_routes::tests::unavailable_database_fails_closed ... ok
+test router::journeys_routes::tests::reads_all_persisted_steps_and_scopes_every_alias ... ok
+test router::search_routes::tests::all_five_unavailable_routes_return_exact_template_501 ... ok
+test router::search_routes::tests::empty_database_and_out_of_range_page_are_real_empty_results ... ok
+test router::search_routes::tests::get_and_post_search_use_persisted_titles_and_pagination ... ok
+test router::search_routes::tests::invalid_parameters_fail_before_querying ... ok
+test router::search_routes::tests::unsupported_backend_fails_closed_without_connecting ... ok
+test router::search_routes::tests::suggestions_are_persisted_titles_with_a_bound ... ok
+test router::search_routes::tests::wildcards_and_sql_input_are_literal ... ok
+test handlers::dashboard::summary::tests::summaries_and_project_list_agree_on_533_persisted_records ... ok
+test handlers::dashboard::summary::tests::dashboard_does_not_truncate_after_500_projects ... ok
+test router::specs_routes::tests::all_ten_unavailable_templates_have_exact_501_contract ... ok
+test router::specs_routes::tests::all_three_stats_routes_match_actual_project_items ... ok
+test router::specs_routes::tests::all_eight_list_and_detail_routes_use_persisted_type ... ok
+test router::w9_routes::codex::tests::route_1_returns_template_501_for_reads_and_mutations ... ok
+test router::w9_routes::equivalences::tests::route_1_returns_template_501_for_reads_and_mutations ... ok
+test router::w9_routes::equivalences::tests::route_2_returns_template_501_for_reads_and_mutations ... ok
+test router::w9_routes::equivalences::tests::route_3_returns_template_501_for_reads_and_mutations ... ok
+test router::w9_routes::libraries::tests::route_1_returns_template_501_for_reads_and_mutations ... ok
+test router::w9_routes::libraries::tests::route_2_returns_template_501_for_reads_and_mutations ... ok
+test router::w9_routes::libraries::tests::route_3_returns_template_501_for_reads_and_mutations ... ok
+test router::w9_routes::libraries::tests::route_4_returns_template_501_for_reads_and_mutations ... ok
+test router::w9_routes::libraries::tests::route_5_returns_template_501_for_reads_and_mutations ... ok
+test router::specs_routes::tests::incomplete_subtype_observations_are_preserved_and_never_invented ... ok
+test router::specs_routes::tests::negative_controls_cover_missing_wrong_type_filters_and_pagination ... ok
+test router::journeys_routes::tests::pagination_reads_journeys_beyond_the_first_store_page ... ok
+test store::tests::list_params_defaults_and_offset_are_stable ... ok
+test store::tests::list_params_reject_zero_and_oversized_values ... ok
+test swee::tests::edge_kind_count ... ok
+test swee::tests::edge_kind_roundtrip ... ok
+test swee::tests::edge_taxonomy_count ... ok
+test swee::tests::edge_taxonomy_ordinals_sequential ... ok
+test swee::tests::node_kind_count ... ok
+test swee::tests::node_kind_roundtrip ... ok
+test router::specs_routes::tests::project_scenario_route_filters_real_relationships ... ok
+test swee::tests::serde_roundtrip_node_kind ... ok
+test swee::tests::serde_roundtrip_edge_kind ... ok
+test traceability::traceability::tests::test_artifacts_for_story ... ok
+test traceability::traceability::tests::test_average_confidence ... ok
+test traceability::traceability::tests::test_average_confidence_empty_matrix ... ok
+test traceability::traceability::tests::test_build_matrix_populates_rows_and_columns ... ok
+test traceability::traceability::tests::test_find_gaps_reports_missing_types ... ok
+test traceability::traceability::tests::test_matrix_with_orphan_detects_no_orphans ... ok
+test traceability::traceability::tests::test_stories_for_artifact ... ok
+test traceability::traceability::tests::test_verify_coverage_all_covered ... ok
+test traceability::traceability::tests::test_verify_coverage_detects_gap ... ok
+test validation::tests::character_limit_is_unicode_safe ... ok
+test validation::tests::optional_empty_text_is_allowed ... ok
+test validation::tests::required_text_rejects_whitespace_only_values ... ok
+test router::specs_routes::tests::writes_never_report_success_or_mutate_items ... ok
+test router::w9_routes::tests::existing_project_mutations_never_claim_an_unpersisted_write ... ok
+test router::w9_routes::tests::unknown_routes_stay_404 ... ok
+test router::w9_routes::tests::every_remaining_route_has_a_typed_501_for_all_operation_methods ... ok
+test router::item_routes::tests::exhausted_store_budget_returns_503 ... ok
+test router::journeys_routes::tests::persistence_failures_never_report_empty_success ... ok
+test router::search_routes::tests::failures_and_timeouts_are_not_empty_successes ... ok
+test router::specs_routes::tests::store_failure_budget_and_unknown_projects_never_become_empty_success ... ok
+
+test result: ok. 121 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.62s
+
+     Running tests/db_integration.rs (target/debug/deps/db_integration-0b426de6dcbd1362)
+
+running 4 tests
+test evidence_roundtrip ... ok
+test swee_edge_roundtrip_and_neighbors ... ok
+test swee_node_roundtrip ... ok
+test sprint_roundtrip ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.04s
+
+     Running tests/product_persistence.rs (target/debug/deps/product_persistence-bf2fcb783583377c)
+
+running 6 tests
+test postgres_atomic_replay_and_restart ... ignored, requires explicitly isolated TRACERA_Q1_POSTGRES_URL
+test invalid_batch_and_conflicting_replay_are_atomic ... ok
+test baseline_and_capability_conflicts_preserve_model ... ok
+test concurrent_exact_replay_is_one_atomic_write ... ok
+test observations_survive_restart_and_exact_replay ... ok
+test canonical_intent_order_and_observation_limit ... ok
+
+test result: ok. 5 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.54s
+

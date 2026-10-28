@@ -1,0 +1,22 @@
+# Backend census and Desk reconciliation
+
+Frozen source: 8dd0e096ae35cabd17b1c057aa7c4daca60fb9b6.
+
+- 31 Store methods: SQLite overrides31; PostgreSQL overrides30 and inherits search_items UnsupportedOperation.
+- Static route census:364 declaration references/361unique templates,248explicit unavailable lowerbound. This is not a method-complete runtime mount census; mixed/dynamicfallbacksmustremainseparate.
+- 97 source-contractleaves, including62backend×methodsubleaves. Do notsumaggregateswiththeirsubleaves.
+- Fresh targeted memory13/traceability9puretests passed. This verifies algorithms, notmountedcapture/durablememory/nextconsumer.
+- CurrentmemoryVec/Instant, noStorememorycontractandnoexternaldistillercall: durablememory+nextconsumerremainmissing. Events/Codexsessionroutes501.
+- Candidate8ddruntimeallscopedproofinPR1158head048f44d2c38925f4c7c9968dfeaeda1a97f4d970.
+
+## Actual Desk
+
+ssh desk resolveskoosh@100.96.135.160:22; hostKOOSHAPARI-DESK Windows10.0.28120.0. CLI0.1SHA1FEFB2CF163DC738C1B3934F18C0A6FDCAA2D07394E43F9F92E7852D7B445B7C statusfailsmissingbundlebeforeCompose invocation. WorktreeC:\Users\koosh\Tracera contains docker-compose.local.yml (hash544B12E05D5420E3968988F9D8B995A3C8E462E900B9516ADEEE78E025A9B6AB), but binaryancestor lookupcannotfindthissiblingdirectory. CurrentworktreeHEAD0f7453de0171aa7cb934d8984565d0dc048f9e72 dirtyentries1; exactCLI/sourceandComposeprovenancenotestablished.
+
+No registeredTraceraservice doesnotmeanmanualruntimeabsent: tracera-livePID20208 exists, binary6202AB83D311935111FB674844C79EFFFD15C3D897FD0F65E5116C189745C0A5. Ready8080+8091both200at22:26; allsixhealth/ready/metricsGETsat22:54timedout. No service/config/processchangesperformed.
+
+CIVIS freshgenuineitemsJSON reportedtotal0/items0/stubfalse/completeonepageat22:33:25UTC; KCODEandPOSEalso0. NonemptyprojecttotalsfirstpageAGILEPLUS2890/SHARECLI1104/TRACERA660, butcollectorfailedtypemappingandlaterAPIrequeststimeout: NOT a completeitemmanifest. Initialcollectorunsupportedproject-itemsrouteHTMLand100pageguardfailed; preservedfailedcollectionnotcredited.
+
+SingleactiveNVIDIA GPUverifiednvidia-smi23:16:44: RTX3090Ti24564MiB,22446MiBused. CIMalsoenumerates1080TiadapterentrybutthisisnotsecondactiveGPUproof. C:40,887,943,168bytesfree(~38GiB); noheavybuilds/copiesonDesk. FedoraLinux-44Running, docker-desktopStopped.
+
+ActualComposegraph:postgres17-alpine (private5432,persistentpg-data-local), tracera-serverbuiltDockerfile.rust(private8080,dependshealthyPostgres), frontendbuiltfrontend/Dockerfile.local(hostloopback18081->80,dependshealthybackend). Noexplicitdisk/imagebudgetorresourceboundsqualified; do notinventrequiredfreeGB. --rootstatusnotexecutedbecausecurrentCLIstatuscallsensure_env_file/symlinkandcanwrite. Forwardpathrequiresapprovedruntimechoice/rootbundlepackaging, credential/allowlistdelivery, diskbudget+portcheck, thencontrolledhealth/recoveryqualification; no startsauthorizednow.

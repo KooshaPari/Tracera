@@ -1,0 +1,102 @@
+{
+  "observation_id": "tracera-obs-20261017-runtime-8dd0e096",
+  "record_version": "1.0-owner-observation",
+  "contract_sha": "05e163820f1a207f2f827a5485ce6ca04084107f",
+  "previous_observation": "tracera-obs-20261017-runtime-2f1d36dc",
+  "observed_start": "2026-10-17T21:52:57Z",
+  "observed_end": "2026-10-17T21:53:14Z",
+  "ingested_at": "2026-10-17T21:58:59.891342+00:00",
+  "local_generated_at": "2026-10-17T14:58:59.891342-07:00",
+  "subject": {
+    "repository": "KooshaPari/Tracera",
+    "source_sha": "8dd0e096ae35cabd17b1c057aa7c4daca60fb9b6",
+    "dirty": "",
+    "binary_sha256": "980bc2a20de05f470b5a5e8bb459d854a2671bbba2bbb0e953c54e0e5583d9f6",
+    "environment": "ProductName:\t\tmacOS\nProductVersion:\t\t27.0\nBuildVersion:\t\t26A5353q\n",
+    "build_command": "SDKROOT=/Library/Developer/CommandLineTools/SDKs/MacOSX26.sdk MACOSX_DEPLOYMENT_TARGET=15.0 CC=/usr/bin/clang CXX=/usr/bin/clang++ cargo build --locked -p tracera-server --bin tracera-server --target-dir /tmp/tracera-runtime-8dd-20261017/target -j 2",
+    "deployment": "NOT_DEPLOYED"
+  },
+  "execution": "PASS for named assertions",
+  "review": "UNREVIEWED",
+  "acceptance": "NOT_ACCEPTED",
+  "freshness_rule": "Requalify for relevant source/configuration/dependency/store/evaluator changes",
+  "sections": [
+    [
+      "Exact frozen subject",
+      "Tracera 8dd0e096ae35cabd17b1c057aa7c4daca60fb9b6; clean isolated clone without object alternates. Binary SHA-256 980bc2a20de05f470b5a5e8bb459d854a2671bbba2bbb0e953c54e0e5583d9f6. Build passed in 30.41 seconds using isolated local COW target, SDK26/system clang, j2. Observed 2026-10-17T21:52:57Z through 2026-10-17T21:53:14Z."
+    ],
+    [
+      "Changed-code qualification",
+      "Compared with prior 2f1 subject: process-wide product allowlist extractor now protects durable observations, findings and benchmark routes; PostgreSQL insert concurrency handling and detector wording changed. Seven targeted mounted observation/authentication tests passed; no broader green suite repeated. PostgreSQL concurrency change was source-inspected, not executed against PostgreSQL in this observation."
+    ],
+    [
+      "Configured local authentication and scope",
+      "With a random local global bearer and explicit runtime-real,helios-controlled process allowlist: readiness200, anonymous401, missingbaseline404, missingCSRF403, malformedbatch422. Generic real engineering evidence and historical actual Helios substantive output both passed ingestion, readback, immutable conflict409 with unchanged model, exact restart and idempotent replay. Non-allowlisted foreign product now returns403, superseding older 404 route behavior for this subject."
+    ],
+    [
+      "Producer evidence boundary",
+      "Reconsumed the preserved actual Helios runtime-probe benchmark SHA f2331dc179f9c6408d9f70ff769e2002685f6fbb9226e0fe76d3a1e1042bf810; no fresh Helios execution was claimed. Producer source remains f36e13e650dfc322e2e541d3e9b152638aeccd47. Product/capability assignment was manual; causal metadata remains caller asserted."
+    ],
+    [
+      "Identity counterexamples",
+      "A valid caller bearer plus allowlisted product accepted an envelope with a forged syntactically valid tenant (200). Tenant identity is unsigned provenance, not authenticated ownership. With the bearer token unset and product allowlisted on loopback, anonymous GET reached the handler (404 missing baseline), rather than401. The process allowlist is not per-principal authorization."
+    ],
+    [
+      "Four-axis delta",
+      "Raw implementation: external concurrent source change observed, not authored here. Verified engineering: new exact8dd runtime and seven targeted test results, not independent product acceptance. Complete user journeys: no accepted increment. Real user validation: not observed. Full-product numerator/denominator remain null."
+    ],
+    [
+      "Integrity, recovery and next result",
+      "All owned processes stopped; ports19277-19280 closed after checks. Two initial follow-on probes stopped at exclusive bind because the prior port was in TIME_WAIT; preserved as harness setup failures, retried once using unique ports before ingestion. Existing snapshots and PDFs remain unchanged. Next: establish explicit producer/principal ownership contract, useful owned-product source-change navigation and user acceptance."
+    ]
+  ],
+  "progress": {
+    "implementation": null,
+    "verified_engineering": null,
+    "complete_user_journeys": null,
+    "real_user_validation": null,
+    "reason": "No global denominator scored"
+  },
+  "evidence": [
+    {
+      "path": "evidence/auth-tests.log",
+      "sha256": "91025e87ca6e41e81e39063ec2eb1f15579c1d108a6cba15e16c7806f80a7ee3",
+      "bytes": 1448
+    },
+    {
+      "path": "evidence/build.log",
+      "sha256": "56ca8fa9cbfcdab5c8d5bd4cb118899b151bdb26a80eba01c3a4abad5a1add34",
+      "bytes": 504
+    },
+    {
+      "path": "evidence/engineering-input.json",
+      "sha256": "205f33967596c39d959fd53f074373b904d7f27f8a41e6c4958ab85471b66715",
+      "bytes": 1100
+    },
+    {
+      "path": "evidence/engineering-journey-receipt.json",
+      "sha256": "a6d9836600a6ef148717348f74275a28c6d01e45fc00a8e46b2c73e98c3fc3b6",
+      "bytes": 5993
+    },
+    {
+      "path": "evidence/no-token-receipt.json",
+      "sha256": "4d44a3385560d8a4de828b21857efc4c107ad8ac418225236a87a128bd17cd03",
+      "bytes": 1420
+    },
+    {
+      "path": "evidence/runtime-receipt.json",
+      "sha256": "5b190e862e49e9ff43c0703fe57008a5598c226edb85dba0ffc1f0121d4f3890",
+      "bytes": 1379
+    },
+    {
+      "path": "evidence/substantive-bridge-input.json",
+      "sha256": "c942976ddb8978ceb358294837a3155078926320934e2cb2da3aa48a91c83a7c",
+      "bytes": 11248
+    },
+    {
+      "path": "evidence/substantive-bridge-journey-receipt.json",
+      "sha256": "d30c09070eca7aef4eefe774a422a571978dc3cc6a5d0d5b32c719e3dbdda6bf",
+      "bytes": 8208
+    }
+  ]
+}

@@ -1,0 +1,254 @@
+{
+  "schema_version": "1.0.0",
+  "tenant_id": "phenotype",
+  "session_id": "ses_33ea316426839d9d4ae65b8fc16e677fbf7e8f4a933de061088bbbc73f11f2e2",
+  "run_id": "run_c8c89bb86856fbcf39d03f0f02f40f6a185e10d49394279854c30c9d5259bc1b",
+  "attempt_id": "att_91b499ec44d7f61f24b2920d5a7b0b305bd02359f9229b3f77cdf3a920713457",
+  "deterministic_identity": {
+    "algorithm": "sha256(canonical-json(inputs))",
+    "canonical_json_sha256": "c8c89bb86856fbcf39d03f0f02f40f6a185e10d49394279854c30c9d5259bc1b",
+    "inputs": {
+      "repo": "/var/folders/wl/z8733y815nzg28yy0_1_lh7w0000gn/T/helios-engineering-20261017-9qllilr9/controlled-subject",
+      "commit": "bf3bf82c57caa6376824fc5d5003d11382fb9174",
+      "harness": "helios-harness",
+      "model": "unknown",
+      "task_id": "plan:6568bab23d8a5fff9477e43ac38e67d14cc149e48df082d3a08fe17b082167b0",
+      "hardware": "unknown"
+    }
+  },
+  "subject": {
+    "repo": "/var/folders/wl/z8733y815nzg28yy0_1_lh7w0000gn/T/helios-engineering-20261017-9qllilr9/controlled-subject",
+    "ref": "main",
+    "commit": "bf3bf82c57caa6376824fc5d5003d11382fb9174",
+    "harness": "helios-harness",
+    "runtime": "python",
+    "model": "unknown",
+    "hardware": "unknown"
+  },
+  "lease": {
+    "lease_id": "lease_91b499ec44d7f61f",
+    "owner": "helios-harness",
+    "ttl_seconds": 120,
+    "heartbeat_interval_seconds": 20
+  },
+  "task_manifest": {
+    "task_id": "plan:6568bab23d8a5fff9477e43ac38e67d14cc149e48df082d3a08fe17b082167b0",
+    "input_sha256": "6568bab23d8a5fff9477e43ac38e67d14cc149e48df082d3a08fe17b082167b0",
+    "timeout_seconds": 1,
+    "assertions": [
+      {
+        "id": "plan_discovered",
+        "kind": "command_plan",
+        "expected": true
+      }
+    ],
+    "judge": {
+      "name": "helios-harness",
+      "version": "0.1.0"
+    }
+  },
+  "plan_hash": "6568bab23d8a5fff9477e43ac38e67d14cc149e48df082d3a08fe17b082167b0",
+  "plan": [
+    {
+      "task_id": "task_963238bcbe73ac3bfbf25f836b3d55c44c8922b093d378804779cb1746ea19ae",
+      "command": "/opt/homebrew/opt/python@3.12/bin/python3.12 checks.py build",
+      "bucket": "build",
+      "required": true,
+      "cwd": ".",
+      "source": "package.json",
+      "rationale": "script 'build-artifact-contract' discovered from package.json"
+    },
+    {
+      "task_id": "task_23669814bc207e54ac889c9e6f47a39314b75db318611ef6ba9bd2163a41ec6a",
+      "command": "/opt/homebrew/opt/python@3.12/bin/python3.12 checks.py lint",
+      "bucket": "static",
+      "required": true,
+      "cwd": ".",
+      "source": "package.json",
+      "rationale": "script 'lint-contract' discovered from package.json"
+    },
+    {
+      "task_id": "task_77e2f3741f1327b3b6acc0a10e557d131eea9cee55a202e43ea4a4aeba09b80a",
+      "command": "/opt/homebrew/opt/python@3.12/bin/python3.12 /tmp/tracera-runtime-resume-evidence-20261017/helios_runtime_probe.py",
+      "bucket": "test",
+      "required": true,
+      "cwd": ".",
+      "source": "package.json",
+      "rationale": "script 'test-runtime' discovered from package.json"
+    }
+  ],
+  "commands": [
+    {
+      "task_id": "task_963238bcbe73ac3bfbf25f836b3d55c44c8922b093d378804779cb1746ea19ae",
+      "command": "/opt/homebrew/opt/python@3.12/bin/python3.12 checks.py build",
+      "bucket": "build",
+      "required": true,
+      "cwd": ".",
+      "source": "package.json",
+      "rationale": "script 'build-artifact-contract' discovered from package.json"
+    },
+    {
+      "task_id": "task_23669814bc207e54ac889c9e6f47a39314b75db318611ef6ba9bd2163a41ec6a",
+      "command": "/opt/homebrew/opt/python@3.12/bin/python3.12 checks.py lint",
+      "bucket": "static",
+      "required": true,
+      "cwd": ".",
+      "source": "package.json",
+      "rationale": "script 'lint-contract' discovered from package.json"
+    },
+    {
+      "task_id": "task_77e2f3741f1327b3b6acc0a10e557d131eea9cee55a202e43ea4a4aeba09b80a",
+      "command": "/opt/homebrew/opt/python@3.12/bin/python3.12 /tmp/tracera-runtime-resume-evidence-20261017/helios_runtime_probe.py",
+      "bucket": "test",
+      "required": true,
+      "cwd": ".",
+      "source": "package.json",
+      "rationale": "script 'test-runtime' discovered from package.json"
+    }
+  ],
+  "tasks": [
+    {
+      "task_id": "task_963238bcbe73ac3bfbf25f836b3d55c44c8922b093d378804779cb1746ea19ae",
+      "command": "/opt/homebrew/opt/python@3.12/bin/python3.12 checks.py build",
+      "bucket": "build",
+      "required": true,
+      "cwd": ".",
+      "source": "package.json",
+      "rationale": "script 'build-artifact-contract' discovered from package.json"
+    },
+    {
+      "task_id": "task_23669814bc207e54ac889c9e6f47a39314b75db318611ef6ba9bd2163a41ec6a",
+      "command": "/opt/homebrew/opt/python@3.12/bin/python3.12 checks.py lint",
+      "bucket": "static",
+      "required": true,
+      "cwd": ".",
+      "source": "package.json",
+      "rationale": "script 'lint-contract' discovered from package.json"
+    },
+    {
+      "task_id": "task_77e2f3741f1327b3b6acc0a10e557d131eea9cee55a202e43ea4a4aeba09b80a",
+      "command": "/opt/homebrew/opt/python@3.12/bin/python3.12 /tmp/tracera-runtime-resume-evidence-20261017/helios_runtime_probe.py",
+      "bucket": "test",
+      "required": true,
+      "cwd": ".",
+      "source": "package.json",
+      "rationale": "script 'test-runtime' discovered from package.json"
+    }
+  ],
+  "runs": [
+    {
+      "run_id": "taskrun_3c3260ce685ef782ab84bb140acd3c87fe085fd2069beb6dc94fe86b9e09ae5b",
+      "task_id": "task_23669814bc207e54ac889c9e6f47a39314b75db318611ef6ba9bd2163a41ec6a",
+      "command": "/opt/homebrew/opt/python@3.12/bin/python3.12 checks.py lint",
+      "status": "passed",
+      "returncode": 0,
+      "duration_ms": 46
+    },
+    {
+      "run_id": "taskrun_339b2ff378ff5179c1457ea0b1f9aa9a49afd0caff041485b27c225f04dad6c1",
+      "task_id": "task_77e2f3741f1327b3b6acc0a10e557d131eea9cee55a202e43ea4a4aeba09b80a",
+      "command": "/opt/homebrew/opt/python@3.12/bin/python3.12 /tmp/tracera-runtime-resume-evidence-20261017/helios_runtime_probe.py",
+      "status": "passed",
+      "returncode": 0,
+      "duration_ms": 820
+    },
+    {
+      "run_id": "taskrun_5347418f3d8360f73684cc5ae95c25d5ee9dcf08c2e6a3f1c2755fca78a57028",
+      "task_id": "task_963238bcbe73ac3bfbf25f836b3d55c44c8922b093d378804779cb1746ea19ae",
+      "command": "/opt/homebrew/opt/python@3.12/bin/python3.12 checks.py build",
+      "status": "passed",
+      "returncode": 0,
+      "duration_ms": 136
+    }
+  ],
+  "events": [
+    {
+      "event_id": "evt_f2979fb389044460f6433be80e4a68f16bef591d95b88d445ce34fc4c5961abd",
+      "seq": 0,
+      "ts": "2026-10-17T20:31:49.531412+00:00",
+      "type": "run_started",
+      "payload_sha256": "8b0936939448e17fa311fc9ad3d711b06970864899460625d6a668d43ba7979f",
+      "causality": {
+        "tenant_id": "phenotype",
+        "session_id": "ses_33ea316426839d9d4ae65b8fc16e677fbf7e8f4a933de061088bbbc73f11f2e2",
+        "run_id": "run_c8c89bb86856fbcf39d03f0f02f40f6a185e10d49394279854c30c9d5259bc1b",
+        "attempt_id": "att_91b499ec44d7f61f24b2920d5a7b0b305bd02359f9229b3f77cdf3a920713457"
+      }
+    },
+    {
+      "event_id": "evt_a12646054bfda86e1285e0a2ab99201ad48f512b8279a280152212d91f0a5682",
+      "seq": 1,
+      "ts": "2026-10-17T20:31:49.531412+00:00",
+      "type": "checkpoint",
+      "payload_sha256": "9ca7f16b60ff09c6780c8979e2c9508a845b232e2a855d2e4e5f9953bff49531",
+      "causality": {
+        "tenant_id": "phenotype",
+        "session_id": "ses_33ea316426839d9d4ae65b8fc16e677fbf7e8f4a933de061088bbbc73f11f2e2",
+        "run_id": "run_c8c89bb86856fbcf39d03f0f02f40f6a185e10d49394279854c30c9d5259bc1b",
+        "attempt_id": "att_91b499ec44d7f61f24b2920d5a7b0b305bd02359f9229b3f77cdf3a920713457"
+      },
+      "checkpoint_id": "cp_a7d610505b2d1bea"
+    },
+    {
+      "event_id": "evt_8a6037fe0813a89322b091a1b4f82b0b86f1784fb61d7928acb59947f5cea43a",
+      "seq": 2,
+      "ts": "2026-10-17T20:31:49.531412+00:00",
+      "type": "compaction",
+      "payload_sha256": "6dfa96402f915090f23d744c7fa40661ab2b77f7140ddafa373e05024f28f2f2",
+      "causality": {
+        "tenant_id": "phenotype",
+        "session_id": "ses_33ea316426839d9d4ae65b8fc16e677fbf7e8f4a933de061088bbbc73f11f2e2",
+        "run_id": "run_c8c89bb86856fbcf39d03f0f02f40f6a185e10d49394279854c30c9d5259bc1b",
+        "attempt_id": "att_91b499ec44d7f61f24b2920d5a7b0b305bd02359f9229b3f77cdf3a920713457"
+      },
+      "checkpoint_id": "cp_a7d610505b2d1bea",
+      "details": {
+        "tokens_before": 0,
+        "tokens_after": 0,
+        "retained_event_ids": [],
+        "dropped_event_ids": []
+      }
+    },
+    {
+      "event_id": "evt_5622c93b46023f0713689389c3014b774d568160d12f3c7471a3dc3c10115c0c",
+      "seq": 3,
+      "ts": "2026-10-17T20:31:49.531412+00:00",
+      "type": "run_finished",
+      "payload_sha256": "6510380a8de6d9d3c99b91d43a0c077e5f839cee8b794c20022509c1b9ee536c",
+      "causality": {
+        "tenant_id": "phenotype",
+        "session_id": "ses_33ea316426839d9d4ae65b8fc16e677fbf7e8f4a933de061088bbbc73f11f2e2",
+        "run_id": "run_c8c89bb86856fbcf39d03f0f02f40f6a185e10d49394279854c30c9d5259bc1b",
+        "attempt_id": "att_91b499ec44d7f61f24b2920d5a7b0b305bd02359f9229b3f77cdf3a920713457"
+      }
+    }
+  ],
+  "result": {
+    "status": "passed",
+    "outcome_sha256": "7aabb8b58db8e6440ccddd7639a6bf148d68191187a10cc452e210484911a809",
+    "replay_hash": "07f04a3fd87557d3c039e3dd4680af620eac3fb6ca7d6c1647022e0b0bec7de5",
+    "failure_class": "none",
+    "artifacts": [
+      {
+        "kind": "report",
+        "uri": "urn:helios:legacy-evidence:7aabb8b58db8e6440ccddd7639a6bf148d68191187a10cc452e210484911a809",
+        "sha256": "7aabb8b58db8e6440ccddd7639a6bf148d68191187a10cc452e210484911a809"
+      }
+    ]
+  },
+  "provenance": {
+    "collector": "helios-harness",
+    "collected_at": "2026-10-17T20:31:49.531553+00:00",
+    "source_ref": "main",
+    "source_sha": "bf3bf82c57caa6376824fc5d5003d11382fb9174",
+    "source_hashes": {
+      "plan": "6568bab23d8a5fff9477e43ac38e67d14cc149e48df082d3a08fe17b082167b0"
+    }
+  },
+  "signature": {
+    "status": "unsigned",
+    "algorithm": "none",
+    "reason": "signing_authority_not_configured"
+  },
+  "result_code": "PASS"
+}

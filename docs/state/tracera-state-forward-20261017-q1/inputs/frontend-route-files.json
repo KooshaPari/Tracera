@@ -1,0 +1,317 @@
+[
+  {
+    "path": "frontend/apps/web/src/routes/__root.tsx",
+    "sha256": "68ca9b60d35899486f1567548bc694500bd4e2032539f4064d7b9159563083e7",
+    "behavior": "NOT_RUN"
+  },
+  {
+    "path": "frontend/apps/web/src/routes/admin.tsx",
+    "sha256": "4a4fe000076b8d6c45911f7fd5e2b4206705cd807a4f2f6afb5baddec928f24e",
+    "behavior": "NOT_RUN"
+  },
+  {
+    "path": "frontend/apps/web/src/routes/agents.tsx",
+    "sha256": "4698931cefa0b8e57d77e6bd4e7fa22f201a2310462bc3a95be025acb111e5a7",
+    "behavior": "NOT_RUN"
+  },
+  {
+    "path": "frontend/apps/web/src/routes/auth.callback.tsx",
+    "sha256": "6a664ac0230ba21d3094a67e3816d6f011c390af30ab7b37159c95e6fe4e3b1a",
+    "behavior": "NOT_RUN"
+  },
+  {
+    "path": "frontend/apps/web/src/routes/auth.login.tsx",
+    "sha256": "745651b783afd2e0f96712f0d9a43452defa45ff2850c0c2b5805e4893af2675",
+    "behavior": "NOT_RUN"
+  },
+  {
+    "path": "frontend/apps/web/src/routes/auth.logout.tsx",
+    "sha256": "06460f9fffee7b11836f77a7004d9cef5b1c48338b94a0a1fa4f6ce816e96c61",
+    "behavior": "NOT_RUN"
+  },
+  {
+    "path": "frontend/apps/web/src/routes/auth.register.tsx",
+    "sha256": "51872bfb79af08e184c598d2094066dd2b4101f72007479ce8cef98de8c8d432",
+    "behavior": "NOT_RUN"
+  },
+  {
+    "path": "frontend/apps/web/src/routes/dashboard.tsx",
+    "sha256": "062bd2599dd2e09c6452c9325f8a68e2972c98bd69851226e32e3a324852fa29",
+    "behavior": "NOT_RUN"
+  },
+  {
+    "path": "frontend/apps/web/src/routes/graph.tsx",
+    "sha256": "296e9e1531735d43840191ec8cf6b9f23fa440478210ab564de8ab535ed523f3",
+    "behavior": "NOT_RUN"
+  },
+  {
+    "path": "frontend/apps/web/src/routes/home.tsx",
+    "sha256": "334487363d05379f8b6bbfa6e066cd83a84472f83c62026623809af37dd3e4d7",
+    "behavior": "NOT_RUN"
+  },
+  {
+    "path": "frontend/apps/web/src/routes/index.tsx",
+    "sha256": "03fa89ec7a83ac14621da55ddddc89d3a3b1ef81dc8454c945f25308d1af5681",
+    "behavior": "NOT_RUN"
+  },
+  {
+    "path": "frontend/apps/web/src/routes/items.$itemId.tsx",
+    "sha256": "2675974c854faf57c13e238c19e51ae43a4e6591624fa14bf300185cdfc415c6",
+    "behavior": "NOT_RUN"
+  },
+  {
+    "path": "frontend/apps/web/src/routes/items.kanban.tsx",
+    "sha256": "943e3c18936724786acff16d8585a070c87ddb4ba00c42919d8f1a123b6e6401",
+    "behavior": "NOT_RUN"
+  },
+  {
+    "path": "frontend/apps/web/src/routes/items.table.tsx",
+    "sha256": "69a27f07e72a308b8fcf8ee8968ffd8b2edfafacbf5c7ac89b3a74da104e6cde",
+    "behavior": "NOT_RUN"
+  },
+  {
+    "path": "frontend/apps/web/src/routes/items.tree.tsx",
+    "sha256": "d5605f8aa78db666a3860ea9253870bbecc01f06b7a1c0aade7e9a16115d9d3d",
+    "behavior": "NOT_RUN"
+  },
+  {
+    "path": "frontend/apps/web/src/routes/items.tsx",
+    "sha256": "53a2f74ac73e56b0ab278d3b9a14d9fc08cdbb8d0e70776db55c53e82182089c",
+    "behavior": "NOT_RUN"
+  },
+  {
+    "path": "frontend/apps/web/src/routes/landing.tsx",
+    "sha256": "cd44fc0f517f1133d8504d204c8b274c791aa205dd9d2a4a899057d904ceacda",
+    "behavior": "NOT_RUN"
+  },
+  {
+    "path": "frontend/apps/web/src/routes/projects.$projectId.adrs.$adrId.tsx",
+    "sha256": "81c97fd4c9504311772ec82f099c06d9d54878fab2df1f2169e3c5c98ae94fbf",
+    "behavior": "NOT_RUN"
+  },
+  {
+    "path": "frontend/apps/web/src/routes/projects.$projectId.adrs.tsx",
+    "sha256": "e9530924b4f8a4bd48b9d1bfb9b9731d9ae458c8f839f6a4e44982fdb4d93ea9",
+    "behavior": "NOT_RUN"
+  },
+  {
+    "path": "frontend/apps/web/src/routes/projects.$projectId.agents.tsx",
+    "sha256": "c3c32dfbdcc06ce796cfd6f811e14748d9592fa8678778e509086bf05e5beafc",
+    "behavior": "NOT_RUN"
+  },
+  {
+    "path": "frontend/apps/web/src/routes/projects.$projectId.compliance.tsx",
+    "sha256": "cc97cdb06b42039e536229e7d8e0c8e88f86e9901c5a4887e4ff6df37f119cbe",
+    "behavior": "NOT_RUN"
+  },
+  {
+    "path": "frontend/apps/web/src/routes/projects.$projectId.contracts.$contractId.tsx",
+    "sha256": "77a3c82e24f93a7649f986e5d13bad246ac05cb1f51d97c697306d540da4646e",
+    "behavior": "NOT_RUN"
+  },
+  {
+    "path": "frontend/apps/web/src/routes/projects.$projectId.contracts.tsx",
+    "sha256": "d0d7c4893815bef91703b2b66798806a2ca83817781b7a56606fcd5aaa9a193f",
+    "behavior": "NOT_RUN"
+  },
+  {
+    "path": "frontend/apps/web/src/routes/projects.$projectId.equivalence.tsx",
+    "sha256": "3a13d764adda737d494cb062d578cb9421e2a618bdae911b62df8b1e0f22ddc9",
+    "behavior": "NOT_RUN"
+  },
+  {
+    "path": "frontend/apps/web/src/routes/projects.$projectId.features.$featureId.scenarios.$scenarioId.tsx",
+    "sha256": "1ab7f4a793ad78dca1644650bbd3d374059de5fbf722b5ecddbfbacb59271948",
+    "behavior": "NOT_RUN"
+  },
+  {
+    "path": "frontend/apps/web/src/routes/projects.$projectId.features.$featureId.tsx",
+    "sha256": "37196454ebae103214347cef894792086af7fa77100effa479c2d701acbd420d",
+    "behavior": "NOT_RUN"
+  },
+  {
+    "path": "frontend/apps/web/src/routes/projects.$projectId.features.tsx",
+    "sha256": "a816dd4ad6bb703d9b7eda38ba6a004fea7991a7ef4aa83d171c17875807f4bc",
+    "behavior": "NOT_RUN"
+  },
+  {
+    "path": "frontend/apps/web/src/routes/projects.$projectId.scenario-activity.tsx",
+    "sha256": "e5a42dc550ceb0ab2f1d6577b320a5b149548518094842bb472901dd3ee4f665",
+    "behavior": "NOT_RUN"
+  },
+  {
+    "path": "frontend/apps/web/src/routes/projects.$projectId.settings.tsx",
+    "sha256": "d642825cee87b942dd5fc92b45c63334e51e36eac5718e5cfe5e8ac8db51ee3d",
+    "behavior": "NOT_RUN"
+  },
+  {
+    "path": "frontend/apps/web/src/routes/projects.$projectId.specifications.tsx",
+    "sha256": "4bfa68ecfe73a51efe696072a413d68e69d7b44dc0678d186fb904a0d87b049c",
+    "behavior": "NOT_RUN"
+  },
+  {
+    "path": "frontend/apps/web/src/routes/projects.$projectId.temporal.tsx",
+    "sha256": "abd21e15215a1873203d99a40d15300491b6326d9beb1d9788c0d3f193c266ba",
+    "behavior": "NOT_RUN"
+  },
+  {
+    "path": "frontend/apps/web/src/routes/projects.$projectId.tsx",
+    "sha256": "3dd03d7eb8406906953bf153c84f650de543f1d4a4b9864d153488c5b0883412",
+    "behavior": "NOT_RUN"
+  },
+  {
+    "path": "frontend/apps/web/src/routes/projects.$projectId.views.$viewType.$itemId.tsx",
+    "sha256": "1a09815906b40b53b782b2a912bfed78622a44decaec363e10fb1bd7feba0346",
+    "behavior": "NOT_RUN"
+  },
+  {
+    "path": "frontend/apps/web/src/routes/projects.$projectId.views.$viewType.tsx",
+    "sha256": "931b67a77d05727c3d9dc047fd943600685f0fc08235c1b668e37633293b6a01",
+    "behavior": "NOT_RUN"
+  },
+  {
+    "path": "frontend/apps/web/src/routes/projects.$projectId.views.api.tsx",
+    "sha256": "622584b000a6631e8acc0a189c0da38ade4cd34a7509bb8f87ebf78471e4acfb",
+    "behavior": "NOT_RUN"
+  },
+  {
+    "path": "frontend/apps/web/src/routes/projects.$projectId.views.architecture.tsx",
+    "sha256": "406c390d5f2b5066de8f73c481648c2e32ecfa945c2899d93bdb58d973b31d2d",
+    "behavior": "NOT_RUN"
+  },
+  {
+    "path": "frontend/apps/web/src/routes/projects.$projectId.views.code.tsx",
+    "sha256": "e980c14e520f66c4afa764352ff97ad126fa4104f5c93ac970945100e17a106e",
+    "behavior": "NOT_RUN"
+  },
+  {
+    "path": "frontend/apps/web/src/routes/projects.$projectId.views.configuration.tsx",
+    "sha256": "c823b5a55dd6d0d02e263d6d8ce52f7693723139d2088460e4f602b0a7ab311b",
+    "behavior": "NOT_RUN"
+  },
+  {
+    "path": "frontend/apps/web/src/routes/projects.$projectId.views.coverage.tsx",
+    "sha256": "b067e84a026b40ac6a6af43552b4010ffaf8fb2aeec2cd62c50e21e4f976bbdb",
+    "behavior": "NOT_RUN"
+  },
+  {
+    "path": "frontend/apps/web/src/routes/projects.$projectId.views.database.tsx",
+    "sha256": "e77578585ec2378d3554128562528025fb22f0515c976debad5fca2f58f46547",
+    "behavior": "NOT_RUN"
+  },
+  {
+    "path": "frontend/apps/web/src/routes/projects.$projectId.views.dataflow.tsx",
+    "sha256": "bdfedd7a3207b1a22ab923c6528fe89b20bd05310c0dfaa5a6d3d3f4b0466b0c",
+    "behavior": "NOT_RUN"
+  },
+  {
+    "path": "frontend/apps/web/src/routes/projects.$projectId.views.dependency.tsx",
+    "sha256": "aa577841fbc74ab32df5b7a85738f77e881ee0a4c9c254b5212a5e6ec540b616",
+    "behavior": "NOT_RUN"
+  },
+  {
+    "path": "frontend/apps/web/src/routes/projects.$projectId.views.domain.tsx",
+    "sha256": "458e30169f356b3bed7b661249745909bd3cf570f9b1261cb07baf5efc20705a",
+    "behavior": "NOT_RUN"
+  },
+  {
+    "path": "frontend/apps/web/src/routes/projects.$projectId.views.feature.tsx",
+    "sha256": "a5385696651416001c5eb8fa7f1c374a11e0380447ae9059aa46192ffde30c2d",
+    "behavior": "NOT_RUN"
+  },
+  {
+    "path": "frontend/apps/web/src/routes/projects.$projectId.views.infrastructure.tsx",
+    "sha256": "72fa5c77f106058972a16d687b6dc476510c5f3c5f35ece771bca94db2585aa6",
+    "behavior": "NOT_RUN"
+  },
+  {
+    "path": "frontend/apps/web/src/routes/projects.$projectId.views.integrations.tsx",
+    "sha256": "a61b8efc57cadfda240e2b3f61ae500b7fd4f875a0a3935a728e63b9df143a7c",
+    "behavior": "NOT_RUN"
+  },
+  {
+    "path": "frontend/apps/web/src/routes/projects.$projectId.views.journey.tsx",
+    "sha256": "93e5658fc403478278669ad00fdfb4b453584ca100e5f2a900450dfb89d7afea",
+    "behavior": "NOT_RUN"
+  },
+  {
+    "path": "frontend/apps/web/src/routes/projects.$projectId.views.monitoring.tsx",
+    "sha256": "c97adb9bbdedc801d058c74afc7c04ead1dfefca6aac82612ee8259cac978146",
+    "behavior": "NOT_RUN"
+  },
+  {
+    "path": "frontend/apps/web/src/routes/projects.$projectId.views.performance.tsx",
+    "sha256": "e4aa5cbfb435ae689a3a3bf9e6c693e506d76bb35dcfb8ba46bd50c27c162665",
+    "behavior": "NOT_RUN"
+  },
+  {
+    "path": "frontend/apps/web/src/routes/projects.$projectId.views.problem.tsx",
+    "sha256": "2728f5538319c4b735ea67e4f8c02119faa41d2712bda1210bb583d280dae267",
+    "behavior": "NOT_RUN"
+  },
+  {
+    "path": "frontend/apps/web/src/routes/projects.$projectId.views.process.tsx",
+    "sha256": "0b4f6d6e69f45ebb14785b14bdc919f7ac9515685ca21c72eb3a40d1af611769",
+    "behavior": "NOT_RUN"
+  },
+  {
+    "path": "frontend/apps/web/src/routes/projects.$projectId.views.qa-dashboard.tsx",
+    "sha256": "009501e3cc4d95a852696d76ee87f5b71719bb9c8d75d13954f057c293ac04dd",
+    "behavior": "NOT_RUN"
+  },
+  {
+    "path": "frontend/apps/web/src/routes/projects.$projectId.views.security.tsx",
+    "sha256": "74831d771b8d5983b07e33fc5b4742417cc5f9e6a7c9514c84ee2975bcd7a2a4",
+    "behavior": "NOT_RUN"
+  },
+  {
+    "path": "frontend/apps/web/src/routes/projects.$projectId.views.test-cases.tsx",
+    "sha256": "38bfef6f6ff2ad1794c70933ea3e58cdf2c964332cf68b0370ba9748370a967a",
+    "behavior": "NOT_RUN"
+  },
+  {
+    "path": "frontend/apps/web/src/routes/projects.$projectId.views.test-runs.tsx",
+    "sha256": "63d918281a2471c37e76167a053fbef074a9a5464f2df3ed96fb8771ff6482d2",
+    "behavior": "NOT_RUN"
+  },
+  {
+    "path": "frontend/apps/web/src/routes/projects.$projectId.views.test-suites.tsx",
+    "sha256": "e5f8cc4993df4eab6ef8fef445f243a63073503abf6be5f77a536b1831266bdc",
+    "behavior": "NOT_RUN"
+  },
+  {
+    "path": "frontend/apps/web/src/routes/projects.$projectId.views.test.tsx",
+    "sha256": "58118688022b229e0830f6e92dc5e7c93e1dc9c6859cc5ae29148a756d816012",
+    "behavior": "NOT_RUN"
+  },
+  {
+    "path": "frontend/apps/web/src/routes/projects.$projectId.views.webhooks.tsx",
+    "sha256": "5ecb5800c343be5e4636e0359b90abfebeb60039353b3f65c776db4de82f1034",
+    "behavior": "NOT_RUN"
+  },
+  {
+    "path": "frontend/apps/web/src/routes/projects.$projectId.views.wireframe.tsx",
+    "sha256": "2549548728e92f33a519c5c1751af4d6617e573ea1a681f7d0054af2366c2f32",
+    "behavior": "NOT_RUN"
+  },
+  {
+    "path": "frontend/apps/web/src/routes/projects.tsx",
+    "sha256": "f2a3ea733cff47cb03fa38540a63f06fa9610ad429c7f112a8c1a80464793163",
+    "behavior": "NOT_RUN"
+  },
+  {
+    "path": "frontend/apps/web/src/routes/root.tsx",
+    "sha256": "48ac8b51d3c74c80013ab466f6507e9862eac1a2c2b25e021c27a318ab3e1e5c",
+    "behavior": "NOT_RUN"
+  },
+  {
+    "path": "frontend/apps/web/src/routes/search.tsx",
+    "sha256": "614db3b6a9a6aa22d5da59f33dae39ec765c4805200a4169963ca7fd3b7d6e0a",
+    "behavior": "NOT_RUN"
+  },
+  {
+    "path": "frontend/apps/web/src/routes/settings.tsx",
+    "sha256": "86097bd7ae8fdb9da05854c34894fb9e0075982bf50e775236a6734c4f9646e2",
+    "behavior": "NOT_RUN"
+  }
+]

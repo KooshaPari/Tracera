@@ -1,0 +1,84 @@
+{
+  "generated_at_utc": "2026-10-17T23:29:09.609Z",
+  "subject": "Desk deployed frontend8091 via owned loopback19281; source912303f not asserted",
+  "capture": {
+    "screenshot": false,
+    "video": false,
+    "trace": false
+  },
+  "requests": [
+    {
+      "method": "GET",
+      "pathname": "/",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "origin": "https://fonts.googleapis.com",
+      "pathname": "/css2",
+      "blocked": true
+    },
+    {
+      "method": "GET",
+      "pathname": "/assets/react-dom-C-BbqqAL.js",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "pathname": "/assets/useQuery-M1pbTolO.js",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "pathname": "/assets/react-Cmk4XDOH.js",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "pathname": "/assets/createLucideIcon-CR7CcjCZ.js",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "pathname": "/assets/x-BZu1dKc3.js",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "pathname": "/assets/index-Dy_n19RU.css",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "pathname": "/assets/useStore-Bq-NNMVX.js",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "pathname": "/assets/ui-991XNGIW.js",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "pathname": "/assets/dist-C8i5bXuu.js",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "origin": "http://127.0.0.1:19281",
+      "pathname": "/api/v1/_telemetry",
+      "blocked": true
+    },
+    {
+      "method": "GET",
+      "pathname": "/assets/index-eYzQHu5n-p3.js",
+      "status": 200
+    }
+  ],
+  "navigation": {
+    "status": 200,
+    "url": "http://127.0.0.1:19281/",
+    "title": "Tracera",
+    "bodyTextLength": 207
+  }
+}
