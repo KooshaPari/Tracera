@@ -35,8 +35,11 @@ jobs:
         with:
           # uv.lock is historical benchmark tooling; Tracera has no Python runtime manifest.
           # Keep the audit fail-closed for the authoritative Rust, web, and Go manifests.
+          # crates/tracera-go-cli/go.mod is listed explicitly: it is a second, independent Go
+          # module and `scan source` does not reach it, so it previously drifted to a Go floor
+          # with 38 stdlib advisories without any gate noticing.
           scan-args: |-
-            scan source Cargo.lock frontend/bun.lock sidecar/go/go.mod
+            scan source Cargo.lock frontend/bun.lock sidecar/go/go.mod crates/tracera-go-cli/go.mod
 
   rust-policy:
     name: Rust dependency policy
