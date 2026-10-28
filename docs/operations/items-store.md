@@ -10,15 +10,15 @@ camelCase (`projectId`, `createdAt`, `updatedAt`); optional extension fields rou
 trip in the document. The SQL columns index the document's ID, project, status,
 view and priority. Both backend implementations write these atomically.
 
-| Method / route | Behavior |
-| --- | --- |
-| GET `/api/v1/items` | Persisted Items, optionally filtered by `project_id`, `status`, `view`, `priority` |
-| GET `/api/v1/items/{id}` | Persisted Item or typed `item_not_found` 404 |
-| GET `/api/v1/projects/{project_id}/items` | Same list restricted to the path project |
-| `/api/v1/items/{item_id}/pivot` | Typed 501; equivalence navigation semantics absent |
-| `/api/v1/items/{item_id}/pivot-targets` | Typed 501; available perspectives are not persisted |
-| `/api/v1/pivot-targets` | Typed 501; no global target catalog semantics |
-| Item HTTP mutations, summary, bulk update | Typed 501 |
+| Method / route                            | Behavior                                                                           |
+| ----------------------------------------- | ---------------------------------------------------------------------------------- |
+| GET `/api/v1/items`                       | Persisted Items, optionally filtered by `project_id`, `status`, `view`, `priority` |
+| GET `/api/v1/items/{id}`                  | Persisted Item or typed `item_not_found` 404                                       |
+| GET `/api/v1/projects/{project_id}/items` | Same list restricted to the path project                                           |
+| `/api/v1/items/{item_id}/pivot`           | Typed 501; equivalence navigation semantics absent                                 |
+| `/api/v1/items/{item_id}/pivot-targets`   | Typed 501; available perspectives are not persisted                                |
+| `/api/v1/pivot-targets`                   | Typed 501; no global target catalog semantics                                      |
+| Item HTTP mutations, summary, bulk update | Typed 501                                                                          |
 
 Lists return `items`, `total`, `limit`, `offset`, `has_more`, and `store: "items"`.
 Limit defaults to 50 and accepts 1 through 100. Offset defaults to zero and must

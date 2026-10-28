@@ -1,0 +1,12 @@
+{
+  "source_path": "/tmp/tracera-readiness-source-20261016-latest",
+  "main_sha": "ae68aea7febd772282606bf1e142d507316cfea0",
+  "fork": false,
+  "parent": null,
+  "pr": 1132,
+  "pr_head": "723964216ccc6b21b5488a30e501543769808e16",
+  "q0_source_matches_main": true,
+  "fresh_build_or_tests_run": false,
+  "memory_citation": "MEMORY.md:820-822",
+  "rollout_id": "019f6924-7ca3-72b3-b28b-ea1ed6829124"
+}
