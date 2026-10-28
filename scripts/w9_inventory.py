@@ -2,21 +2,28 @@
 
 import collections
 import csv
-import functools
 import json
 import pathlib
 import re
+from collections.abc import Callable, Iterator
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 references = collections.defaultdict(set)
 pattern = re.compile(r"/api/v1/(?:\$\{[^}]+\}|[^`\s\"\x27<>?)])+")
 
 
-def _placeholder(match: "re.Match[str]", counter: list[int]) -> str:
-    """Replace the next ``{...}`` placeholder with ``{paramN}``."""
-    value = "{param" + str(counter[0]) + "}"
-    counter[0] += 1
-    return value
+def _make_param_replacer(counter: Iterator[int]) -> Callable[[re.Match[str]], str]:
+    """Return a callback that numbers each replaced match ``{param0}``, ``{param1}``.
+
+    A factory is used instead of a ``lambda`` with a default argument so the
+    callback closes over a function parameter rather than a loop variable
+    (ruff B023) and carries an inferable type (mypy ``misc``).
+    """
+
+    def replace(_match: re.Match[str]) -> str:
+        return "{param" + str(next(counter)) + "}"
+
+    return replace
 
 
 for source in (ROOT / "frontend/apps/web/src").rglob("*"):
@@ -31,21 +38,15 @@ for source in (ROOT / "frontend/apps/web/src").rglob("*"):
         )
         if "..." in route or ":" in route:
             continue
-        counter = [0]
-        route = re.sub(
-            r"\{[^}]+\}",
-            functools.partial(_placeholder, counter=counter),
-            route,
-        )
+        counter = iter(range(20))
+        route = re.sub(r"\{[^}]+\}", _make_param_replacer(counter), route)
         references[route].add(source.relative_to(ROOT).as_posix())
 
 spec_path = "frontend/apps/web/public/specs/openapi.json"
 for route in json.loads((ROOT / spec_path).read_text(encoding="utf-8"))["paths"]:
     route = re.sub(r":([A-Za-z_]+)", r"{\1}", route)
-    counter = [0]
-    route = re.sub(
-        r"\{[^}]+\}", functools.partial(_placeholder, counter=counter), route
-    )
+    counter = iter(range(20))
+    route = re.sub(r"\{[^}]+\}", _make_param_replacer(counter), route)
     references[route].add(spec_path)
 
 
