@@ -1,0 +1,38 @@
+apiVersion: backstage.io/v1alpha1
+kind: Group
+metadata:
+  name: phenotype-pilot
+  title: Tracera and AgilePlus pilot
+  description: Ownership group for the paired Tracera and AgilePlus workspace.
+spec:
+  type: team
+  children: []
+  members:
+    - kooshapari
+---
+apiVersion: backstage.io/v1alpha1
+kind: User
+metadata:
+  name: kooshapari
+spec:
+  profile:
+    displayName: Koosha Paridehpour
+  memberOf:
+    - phenotype-pilot
+---
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: tracera
+  title: Tracera
+  description: Trace, observability, and audit ledger for agentic and LLM workflows.
+  annotations:
+    github.com/project-slug: KooshaPari/Tracera
+    backstage.io/source-location: url:https://github.com/KooshaPari/Tracera/
+  tags:
+    - rust
+    - phenotype-pilot
+spec:
+  type: tool
+  lifecycle: experimental
+  owner: group:default/phenotype-pilot
