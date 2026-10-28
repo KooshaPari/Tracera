@@ -214,6 +214,22 @@ Other failures on those PRs, with cause:
 | Python Lint / `ci / lint` | —        | fail     | Needs triage                                                     |
 | `deploy`                  | fail     | fail     | Needs triage                                                     |
 
+### 2.5 One conflict worth knowing about: `scripts/w9_inventory.py`
+
+Refreshing against `main` conflicted here, because the same Ruff B023 / mypy
+`misc` problem was fixed twice, differently:
+
+- this session: `_placeholder(match, counter)` driven by `functools.partial`
+- `main`: `_make_param_replacer(counter)` returning a typed closure
+
+Both work. I took **`main`'s** version rather than keeping mine, because it is
+already merged and keeping both would leave two implementations of the same
+fix in different branches.
+
+Verified equivalent rather than assumed: both produce identical output —
+254 lines, sha256 prefix `f2a98c13593ce819`, deterministic across runs — and
+`main`'s version passes `ruff check`, `ruff format --check` and `mypy` clean.
+
 ## 3. Current state
 
 ### 3.1 Evidence tree
