@@ -20,6 +20,10 @@ jobs:
           tmp_dir="$(mktemp -d)"
           DATABASE_URL="sqlite://${tmp_dir}/tracera.db?mode=rwc" \
           TRACERA_BIND_ADDR="127.0.0.1:18080" \
+          # This job exercises the API only and never builds the frontend bundle, so the
+          # server must treat a missing frontend/dist/index.html as API-only instead of
+          # exiting fatally.
+          TRACERA_ALLOW_MISSING_FRONTEND="1" \
           TRACERA_ALLOWED_ORIGINS="http://127.0.0.1:18080" \
           RUST_LOG=tracera_server=warn \
             ./target/release/tracera-server >/tmp/tracera-nightly.log 2>&1 &
