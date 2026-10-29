@@ -4,12 +4,12 @@ OSV Scanner (local, v2.3.5) scanned every authoritative manifest in the tree.
 CI runs the same scan via `google/osv-scanner-action` v2.0.2 in
 `.github/workflows/dependency-audit.yml`.
 
-| Manifest | Before | After | State |
-|---|---|---|---|
-| `Cargo.lock` | 4 advisories | 1 | residual, upstream-blocked |
-| `frontend/bun.lock` | 19 advisories | 1 | residual, no upstream fix |
-| `sidecar/go/go.mod` | 0 | 0 | clean |
-| `crates/tracera-go-cli/go.mod` | 38 advisories | 0 | clean |
+| Manifest                       | Before        | After | State                      |
+| ------------------------------ | ------------- | ----- | -------------------------- |
+| `Cargo.lock`                   | 4 advisories  | 1     | residual, upstream-blocked |
+| `frontend/bun.lock`            | 19 advisories | 1     | residual, no upstream fix  |
+| `sidecar/go/go.mod`            | 0             | 0     | clean                      |
+| `crates/tracera-go-cli/go.mod` | 38 advisories | 0     | clean                      |
 
 Reproduce:
 
@@ -35,13 +35,13 @@ ok) and by `cargo check --workspace` on the Desk host (20m 11s, exit 0).
 windows. Each was raised to the version in the OSV record's patched range, not
 to "newest":
 
-| Package | Was | Now | Note |
-|---|---|---|---|
-| dompurify | ^3.4.14 | ^3.4.17 | 3 advisories, highest CVSS 9.2 |
-| fast-uri | ^3.1.5 | ^3.1.9 | 4 advisories; 3.1.9 is the last fixed 3.x, 4.x would be a major for ajv |
-| ip-address | ^10.3.1 | ^10.7.4 | fixed in 10.7.4 |
-| undici | (none) | ^7.30.1 | 8 advisories; stayed on 7.x deliberately |
-| zod | 4.3.6 | ^4.6.6 | fixed in 4.6.6 |
+| Package    | Was     | Now     | Note                                                                    |
+| ---------- | ------- | ------- | ----------------------------------------------------------------------- |
+| dompurify  | ^3.4.14 | ^3.4.17 | 3 advisories, highest CVSS 9.2                                          |
+| fast-uri   | ^3.1.5  | ^3.1.9  | 4 advisories; 3.1.9 is the last fixed 3.x, 4.x would be a major for ajv |
+| ip-address | ^10.3.1 | ^10.7.4 | fixed in 10.7.4                                                         |
+| undici     | (none)  | ^7.30.1 | 8 advisories; stayed on 7.x deliberately                                |
+| zod        | 4.3.6   | ^4.6.6  | fixed in 4.6.6                                                          |
 
 `frontend/bun.lock` regenerated with `bun install`. The frontend was then
 verified in the order CI uses (`build`, then `typecheck`, because
