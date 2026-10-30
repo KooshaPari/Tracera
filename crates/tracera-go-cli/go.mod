@@ -1,6 +1,6 @@
 module github.com/kooshapari/tracera/go-cli
 
-go 1.22
+go 1.27.3
 
 // tracera-go-cli is a stdlib-only minimal CLI that calls the Tracera REST API.
 // Subcommands: serve, ingest, query, graph, node.

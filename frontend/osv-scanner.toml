@@ -6,16 +6,18 @@
 # root: every entry carries a concrete reason and an expiry that forces a
 # revisit when upstream moves.
 #
-# Both advisories below are unfixed upstream (the OSV record lists NO fixed
-# version in any release line), arrive only through transitive dev/build
-# tooling, and cannot be removed by bumping anything that currently exists.
-
-[[IgnoredVulns]]
-id = "GHSA-vfj7-8cjw-p6xm"
-ignoreUntil = 2027-04-13
-reason = "braces 3.0.3 stack-exhaustion DoS (deeply nested patterns); advisory has no fixed version upstream and 3.0.3 is the newest release. Transitive via micromatch@4.0.8 (stylelint) and chokidar@3.6.0 -- build-time globbing only, no untrusted-pattern input path. Revisit when braces ships a fix or consumers move off braces."
-
-[[IgnoredVulns]]
-id = "GHSA-hp3w-g68c-fv3c"
-ignoreUntil = 2027-04-13
-reason = "sprintf-js 1.0.3 unbounded-precision DoS; advisory has no fixed version upstream and 1.0.3 is the newest release. Transitive via remarkable -> argparse@1.0.10 (swagger-ui-react docs rendering); format strings are trusted, not attacker-controlled. Revisit when sprintf-js ships a fix."
+# This file currently contains NO exceptions.
+#
+# It previously ignored two advisories:
+#
+#   GHSA-vfj7-8cjw-p6xm  braces 3.0.3 stack-exhaustion DoS
+#   GHSA-hp3w-g68c-fv3c  sprintf-js 1.0.3 unbounded-precision DoS
+#
+# Both were recorded as unfixed upstream. osv-scanner now reports both as
+# "unused ignores", i.e. neither advisory matches any package in the current
+# lockfile, so they suppress nothing and only serve to hide future findings.
+# They are removed rather than left in place: a suppression that no longer
+# suppresses anything is just a standing blind spot with a reason attached.
+#
+# If either advisory starts matching again it must be re-triaged on its merits,
+# with a fresh reason and expiry - not reinstated from this comment.
