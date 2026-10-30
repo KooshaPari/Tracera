@@ -56,7 +56,9 @@ router.update({
   defaultErrorComponent: ({ error }) => (
     <div className="bg-background text-foreground flex min-h-screen flex-col items-center justify-center">
       <h1 className="text-destructive mb-4 text-2xl font-bold">Something went wrong</h1>
-      <p className="text-muted-foreground mb-4">{error.message}</p>
+      <p className="text-muted-foreground mb-4">
+        {error instanceof Error ? error.message : String(error)}
+      </p>
       <button
         onClick={handleReload}
         className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-md px-4 py-2"
