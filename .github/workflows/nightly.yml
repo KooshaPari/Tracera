@@ -17,12 +17,14 @@ jobs:
       - name: Smoke test endpoints
         run: |
           set -euo pipefail
+          # This job exercises the API only and never builds the frontend bundle, so the
+          # server must treat a missing frontend/dist/index.html as API-only instead of
+          # exiting fatally. Keep these comments above the assignment block: bash strips
+          # the backslash-newline pairs before tokenizing, so a comment line inside the
+          # block would terminate it and drop every variable listed before the comment.
           tmp_dir="$(mktemp -d)"
           DATABASE_URL="sqlite://${tmp_dir}/tracera.db?mode=rwc" \
           TRACERA_BIND_ADDR="127.0.0.1:18080" \
-          # This job exercises the API only and never builds the frontend bundle, so the
-          # server must treat a missing frontend/dist/index.html as API-only instead of
-          # exiting fatally.
           TRACERA_ALLOW_MISSING_FRONTEND="1" \
           TRACERA_ALLOWED_ORIGINS="http://127.0.0.1:18080" \
           RUST_LOG=tracera_server=warn \
