@@ -1,5 +1,10 @@
 {
   "version": 2,
+  "git": {
+    "deploymentEnabled": {
+      "dependabot/**": false
+    }
+  },
   "buildCommand": "cd frontend && bun install --frozen-lockfile --ignore-scripts && bun run build",
   "outputDirectory": "frontend/dist",
   "ignoreCommand": "bash scripts/vercel-ignore-build.sh",

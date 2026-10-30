@@ -19,6 +19,15 @@ if ! git cat-file -e "${base}^{commit}" 2>/dev/null; then
   echo "build: base commit ${base} unavailable"; exit 1
 fi
 
+# A redeployment reuses the last successful commit, so base == HEAD and the diff
+# is empty. Building in that case lets changed environment variables take effect
+# and avoids cancelling a deliberate redeploy.
+base_sha=$(git rev-parse "$base" 2>/dev/null || printf '%s' "$base")
+head_sha=$(git rev-parse HEAD 2>/dev/null || printf '%s' HEAD)
+if [[ "$base_sha" == "$head_sha" ]]; then
+  echo "build: redeploying the same commit ($base)"; exit 1
+fi
+
 # ignoreCommand runs from the repository root (vercel.json lives there), so the
 # pathspec "." covers the whole tree.
 git diff --quiet "$base" HEAD -- . ':(exclude)docs' ':(exclude)*.md' 2>/dev/null
