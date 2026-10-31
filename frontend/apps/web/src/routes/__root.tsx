@@ -57,7 +57,8 @@ function NotFoundComponent() {
 }
 
 // Root error component to handle uncaught errors
-function RootErrorComponent({ error }: { error: Error }) {
+function RootErrorComponent({ error }: { error: unknown }) {
+  const err = error instanceof Error ? error : new Error(String(error));
   const router = useRouter();
 
   return (
@@ -70,7 +71,7 @@ function RootErrorComponent({ error }: { error: Error }) {
           <div>
             <h1 className="text-xl font-bold">System Anomaly Detected</h1>
             <p className="text-muted-foreground font-mono text-sm">
-              CODE: {error.name || "UNHANDLED_EXCEPTION"}
+              CODE: {err.name || "UNHANDLED_EXCEPTION"}
             </p>
           </div>
         </div>
@@ -78,9 +79,9 @@ function RootErrorComponent({ error }: { error: Error }) {
         <div className="bg-muted/50 overflow-x-auto rounded-xl border p-4 font-mono text-sm">
           <p className="text-destructive mb-2 font-bold">Error Detail:</p>
           <p className="text-muted-foreground">
-            {error.message === "fetch failed"
+            {err.message === "fetch failed"
               ? "Critical API Link Failure: Unable to establish connection to the backend cluster."
-              : error.message}
+              : err.message}
           </p>
         </div>
 
