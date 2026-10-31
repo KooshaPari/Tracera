@@ -21,3 +21,18 @@
 #
 # If either advisory starts matching again it must be re-triaged on its merits,
 # with a fresh reason and expiry - not reinstated from this comment.
+
+[[IgnoredVulns]]
+id = "GHSA-gcqx-w48m-w2h4"
+ignoreUntil = 2027-04-13
+reason = "deepmerge 4.3.1 prototype-pollution of returned objects (CVE-2026-93753, low severity). No patched version exists in any release line (latest is 4.3.1). Arrives only via swagger-ui-react -> swagger-client (~4.3.0) for API-docs rendering; merge input is the trusted, server-served OpenAPI spec, not user-controlled. Revisit when deepmerge ships a fix or swagger-client swaps its merge helper."
+
+[[IgnoredVulns]]
+id = "GHSA-3g3m-2fjr-6pw4"
+ignoreUntil = 2027-04-13
+reason = "glob 9/10/11/13 AbortSignal bypass allowing post-timeout filesystem traversal (CVE-2026-118773, medium). Fixed in 14.0.2; forcing a major bump across eslint, typescript-eslint, sentry, vitest, swagger and 8 more consumers is out of scope and risks breaking the build. All consumers are dev/build tooling operating on trusted repo-local paths, never attacker-controlled globs. Revisit when consumers move to glob 14 or when a patch release lands."
+
+[[IgnoredVulns]]
+id = "GHSA-g3hv-75wg-m249"
+ignoreUntil = 2027-04-13
+reason = "minimatch 3/5/9/10 globparts DoS (CVE-2026-118764, medium). Fixed in 11.0.1; forcing a major bump across eslint, typescript-eslint, @ts-morph, swagger and 4 more consumers is out of scope. All consumers are dev/build tooling processing trusted patterns. Revisit when consumers move to minimatch 11 or when a patch release lands."
