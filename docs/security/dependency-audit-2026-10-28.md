@@ -4,12 +4,12 @@ OSV Scanner (local, v2.3.5) scanned every authoritative manifest in the tree.
 CI runs the same scan via `google/osv-scanner-action` v2.0.2 in
 `.github/workflows/dependency-audit.yml`.
 
-| Manifest                       | Before        | After | State                      |
-| ------------------------------ | ------------- | ----- | -------------------------- |
-| `Cargo.lock`                   | 4 advisories  | 1     | residual, upstream-blocked |
-| `frontend/bun.lock`            | 19 advisories | 1     | residual, no upstream fix  |
-| `sidecar/go/go.mod`            | 0             | 0     | clean                      |
-| `crates/tracera-go-cli/go.mod` | 38 advisories | 0     | clean                      |
+| Manifest                       | Before        | After | State                             |
+| ------------------------------ | ------------- | ----- | --------------------------------- |
+| `Cargo.lock`                   | 4 advisories  | 1     | residual, upstream-blocked        |
+| `frontend/bun.lock`            | 19 advisories | 0     | open, via 3 time-boxed exceptions |
+| `sidecar/go/go.mod`            | 0             | 0     | clean                             |
+| `crates/tracera-go-cli/go.mod` | 38 advisories | 0     | clean                             |
 
 Reproduce:
 
@@ -20,6 +20,32 @@ osv-scanner scan --lockfile=sidecar/go/go.mod
 osv-scanner scan --lockfile=crates/tracera-go-cli/go.mod
 cargo deny check
 ```
+
+No `--config` override is used here or in CI. osv-scanner auto-discovers the
+configuration file sitting next to the lockfile it is scanning: `Cargo.lock`
+picks up the root `osv-scanner.toml`, and `frontend/bun.lock` picks up
+`frontend/osv-scanner.toml`. The root file deliberately does not propagate into
+child directories, so pointing every invocation at the root file with
+`--config osv-scanner.toml` would be the wrong file for the npm exceptions and
+would leave the `GHSA-gcqx-w48m-w2h4` ignore unapplied.
+
+Scanning `frontend/bun.lock` on its own is enough to confirm which configuration
+was loaded, and to confirm that the ignore actually matches and is reported as
+filtered:
+
+```
+$ osv-scanner scan --lockfile=frontend/bun.lock
+Loaded filter from: <repo>/frontend/osv-scanner.toml
+GHSA-gcqx-w48m-w2h4 and 1 alias have been filtered out because: deepmerge 4.3.1
+prototype-pollution ... (reason from frontend/osv-scanner.toml)
+Filtered 8 vulnerabilities from output
+
+No issues found
+```
+
+Only the frontend file appears in that output; the root configuration is not
+consulted for `frontend/bun.lock`. The ignore is therefore validated by the
+same invocation the audit reports, not by a separate override.
 
 ## What was fixed
 
@@ -60,12 +86,25 @@ audit listed only `Cargo.lock`, `frontend/bun.lock` and `sidecar/go/go.mod`.
 
 ## Suppressions
 
-**None were added.** Two were removed: `frontend/osv-scanner.toml` carried
-`GHSA-vfj7-8cjw-p6xm` (braces) and `GHSA-hp3w-g68c-fv3c` (sprintf-js), both of
-which osv-scanner reported as unused ignores against the current lockfile. A
-suppression that suppresses nothing is a standing blind spot with a reason
-attached, so both were deleted and the file documents that it now holds no
-exceptions.
+**Two stale entries were removed; three time-boxed ones were added.** The
+removals: `frontend/osv-scanner.toml` carried `GHSA-vfj7-8cjw-p6xm` (braces) and
+`GHSA-hp3w-g68c-fv3c` (sprintf-js), both of which osv-scanner reported as unused
+ignores against the current lockfile. A suppression that suppresses nothing is a
+standing blind spot with a reason attached, so both were deleted.
+
+The additions are exceptions with a stated reason and an `ignoreUntil` expiry of
+`2027-04-13`, so each one expires into a visible finding rather than silence:
+
+- `GHSA-gcqx-w48m-w2h4` (`deepmerge@4.3.1`). No patched release exists in any
+  line; see Residual 1. Accepted because the merge input is our own
+  server-served OpenAPI spec, not attacker-controlled.
+- `GHSA-3g3m-2fjr-6pw4` (`glob` 9/10/11/13). Fix is `14.0.2`; forcing that major
+  across eslint, typescript-eslint, sentry, vitest, swagger and about eight more
+  consumers is out of scope. Dev/build tooling on trusted repo-local paths only.
+- `GHSA-g3hv-75wg-m249` (`minimatch` 3/5/9/10). Fix is `11.0.1`; the same major
+  bump argument. Dev/build tooling on trusted patterns only.
+
+The last two are not reachable from shipped runtime code.
 
 The root `osv-scanner.toml` and `deny.toml` Rust exceptions were not touched.
 
@@ -88,7 +127,8 @@ The root `osv-scanner.toml` and `deny.toml` Rust exceptions were not touched.
      one component plus its fixtures.
   2. Time-boxed `[[IgnoredVulns]]` entry in `frontend/osv-scanner.toml` with a
      reason and `ignoreUntil`, matching the convention already used for the Rust
-     exceptions.
+     exceptions. **This is what shipped**: `GHSA-gcqx-w48m-w2h4` with
+     `ignoreUntil = 2027-04-13`, so option 1 remains the way to retire it.
 
 ## Residual 2 — `block-buffer@0.10.4`
 
