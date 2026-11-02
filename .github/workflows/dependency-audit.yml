@@ -10,6 +10,8 @@ on:
       - uv.lock
       - sidecar/go/go.mod
       - .github/workflows/dependency-audit.yml
+      - osv-scanner.toml
+      - frontend/osv-scanner.toml
   pull_request:
     paths:
       - Cargo.lock
@@ -19,8 +21,10 @@ on:
       - uv.lock
       - sidecar/go/go.mod
       - .github/workflows/dependency-audit.yml
+      - osv-scanner.toml
+      - frontend/osv-scanner.toml
   schedule:
-    - cron: '17 4 * * 1'
+    - cron: "17 4 * * 1"
   workflow_dispatch:
 
 permissions:

@@ -6,9 +6,17 @@
 # root: every entry carries a concrete reason and an expiry that forces a
 # revisit when upstream moves.
 #
-# This file currently contains NO exceptions.
+# The entries below are time-boxed exceptions, not blanket suppressions: each one
+# names its advisory, states a concrete reason it is accepted, and carries an
+# `ignoreUntil` expiry that forces a re-triage when it passes. An entry that no
+# longer matches a package in the lockfile is deleted rather than left in place.
 #
-# It previously ignored two advisories:
+# No `--config` override is used or needed: osv-scanner auto-discovers this file
+# whenever frontend/bun.lock is scanned, whether that is a direct
+# `scan source frontend/bun.lock` or a repo-wide `scan source -r .`.
+#
+# Historical: this file previously contained no exceptions. It had ignored two
+# advisories:
 #
 #   GHSA-vfj7-8cjw-p6xm  braces 3.0.3 stack-exhaustion DoS
 #   GHSA-hp3w-g68c-fv3c  sprintf-js 1.0.3 unbounded-precision DoS
