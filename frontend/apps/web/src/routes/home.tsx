@@ -23,16 +23,16 @@ const DashboardView = lazy(async () =>
   }),
 );
 
+const dashboardFallback = (
+  <div className="flex h-64 items-center justify-center">
+    <LoadingSpinner text="Loading dashboard..." />
+  </div>
+);
+
 function DashboardComponent() {
   const { systemStatus } = Route.useLoaderData();
   return (
-    <Suspense
-      fallback={
-        <div className="flex h-64 items-center justify-center">
-          <LoadingSpinner text="Loading dashboard..." />
-        </div>
-      }
-    >
+    <Suspense fallback={dashboardFallback}>
       <DashboardView systemStatus={systemStatus} />
     </Suspense>
   );

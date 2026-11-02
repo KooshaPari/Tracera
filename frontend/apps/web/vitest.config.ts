@@ -39,6 +39,16 @@ export default defineConfig({
     include: ["src/**/*.{test,spec}.{ts,tsx}"],
     pool: "forks",
     reporters: ["dot"],
+    server: {
+      deps: {
+        // vite-node's externalized import of zod loses the `z` namespace
+        // export when vitest runs under the Bun runtime (CI `bun run test`
+        // executes vitest through bun's node shim). Inline zod so vite
+        // transforms it instead.
+        // TODO(CI env incompatibility): revisit in the #1172 follow-up lane.
+        inline: ["zod"],
+      },
+    },
     setupFiles: ["./src/__tests__/setup.ts"],
     testTimeout: 60_000,
     ui: false,

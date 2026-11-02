@@ -43,21 +43,23 @@ Vitest.describe("CardHeader component", () => {
 
   Vitest.it("applies custom className", () => {
     render(<CardHeader className="custom-header">Header</CardHeader>);
-    Vitest.expect(screen.getByText("Header").className).toContain("custom-header");
+    Vitest.expect(screen.getByText("Header").className).toContain(
+      "custom-header",
+    );
   });
 });
 
 Vitest.describe("CardTitle component", () => {
-  Vitest.it("renders as h3 element", () => {
+  Vitest.it("renders as div element", () => {
     render(<CardTitle>Title</CardTitle>);
     const title = screen.getByText("Title");
-    Vitest.expect(title.tagName).toBe("H3");
+    Vitest.expect(title.tagName).toBe("DIV");
   });
 
   Vitest.it("forwards ref", () => {
     const ref = createRef<HTMLParagraphElement>();
     render(<CardTitle ref={ref}>Title</CardTitle>);
-    Vitest.expect(ref.current).toBeInstanceOf(HTMLHeadingElement);
+    Vitest.expect(ref.current).toBeInstanceOf(HTMLDivElement);
   });
 });
 

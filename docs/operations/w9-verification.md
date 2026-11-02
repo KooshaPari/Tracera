@@ -5,12 +5,12 @@ Branch: `stubs/w9-unresolved-worker-20261016`.
 Base: `2c871ff0e` from `origin/main` in `KooshaPari/Tracera`.
 Compute placement: all on device, with `CARGO_BUILD_JOBS=2` for Rust gates.
 
-| Exact required command | Exit | Result |
-| --- | --- | --- |
-| `cargo fmt --check` | 0 | Passed |
-| `cargo check --workspace --tests --locked` | 0 | Passed after final route-module layout |
-| `cargo clippy --all-targets --all-features -- -D warnings` | 0 | Passed |
-| `cargo test -p tracera-server --locked` | 0 | Passed |
+| Exact required command                                     | Exit | Result                                 |
+| ---------------------------------------------------------- | ---- | -------------------------------------- |
+| `cargo fmt --check`                                        | 0    | Passed                                 |
+| `cargo check --workspace --tests --locked`                 | 0    | Passed after final route-module layout |
+| `cargo clippy --all-targets --all-features -- -D warnings` | 0    | Passed                                 |
+| `cargo test -p tracera-server --locked`                    | 0    | Passed                                 |
 
 Server test output:
 

@@ -1,4 +1,4 @@
-import { expect, test } from "@vitest/globals";
+import { expect, test } from "vitest";
 
 import type {
   FrontendConfig,
@@ -136,7 +136,7 @@ test.describe("loadFrontendConfig", () => {
     const env = makeEnvWithRequired({
       VITE_ENVIRONMENT: "production",
       VITE_DEBUG: "true",
-      VITE_API_TIMEOUT: "5_000",
+      VITE_API_TIMEOUT: "5000",
       VITE_API_RETRIES: "5",
       VITE_ENABLE_ANALYTICS: "false",
       VITE_ENABLE_SENTRY: "1",

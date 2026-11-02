@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it } from "vitest/globals";
+import { afterEach, describe, expect, it } from "vitest";
 
 import type { Agent, Item, Link, Project } from "@tracertm/types";
 

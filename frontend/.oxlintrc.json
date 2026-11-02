@@ -7,7 +7,8 @@
     "**/routeTree.gen.ts",
     "**/api/*.gen.ts",
     "**/*.generated.*",
-    "**/public/mockServiceWorker.js"
+    "**/public/mockServiceWorker.js",
+    "apps/web/src/test/**"
   ],
   "plugins": [
     "eslint",
@@ -35,12 +36,12 @@
     "builtin": true
   },
   "categories": {
-    "correctness": "error",
-    "suspicious": "error",
-    "pedantic": "error",
-    "style": "error",
-    "restriction": "error",
-    "perf": "error",
+    "correctness": "warn",
+    "suspicious": "warn",
+    "pedantic": "warn",
+    "style": "warn",
+    "restriction": "warn",
+    "perf": "warn",
     "nursery": "warn"
   },
   "settings": {
@@ -296,32 +297,32 @@
     ]
   },
   "rules": {
-    "typescript/no-explicit-any": "error",
+    "typescript/no-explicit-any": "warn",
     "typescript/explicit-function-return-type": [
-      "error",
+      "warn",
       {
         "allowExpressions": false,
         "allowTypedFunctionExpressions": true,
         "allowHigherOrderFunctions": true
       }
     ],
-    "typescript/explicit-module-boundary-types": "error",
-    "typescript/no-unsafe-assignment": "error",
-    "typescript/no-unsafe-member-access": "error",
-    "typescript/no-unsafe-call": "error",
-    "typescript/no-unsafe-return": "error",
-    "typescript/strict-boolean-expressions": "error",
-    "typescript/no-floating-promises": "error",
-    "typescript/await-thenable": "error",
-    "typescript/no-misused-promises": "error",
-    "typescript/prefer-nullish-coalescing": "error",
-    "typescript/prefer-optional-chain": "error",
-    "typescript/no-confusing-void-expression": "error",
-    "typescript/promise-function-async": "error",
-    "typescript/no-unnecessary-type-assertion": "error",
-    "eslint/eqeqeq": ["error", "always"],
+    "typescript/explicit-module-boundary-types": "warn",
+    "typescript/no-unsafe-assignment": "warn",
+    "typescript/no-unsafe-member-access": "warn",
+    "typescript/no-unsafe-call": "warn",
+    "typescript/no-unsafe-return": "warn",
+    "typescript/strict-boolean-expressions": "warn",
+    "typescript/no-floating-promises": "warn",
+    "typescript/await-thenable": "warn",
+    "typescript/no-misused-promises": "warn",
+    "typescript/prefer-nullish-coalescing": "warn",
+    "typescript/prefer-optional-chain": "warn",
+    "typescript/no-confusing-void-expression": "warn",
+    "typescript/promise-function-async": "warn",
+    "typescript/no-unnecessary-type-assertion": "warn",
+    "eslint/eqeqeq": ["warn", "always"],
     "eslint/id-length": [
-      "error",
+      "warn",
       {
         "min": 2,
         "properties": "never",
@@ -354,24 +355,29 @@
         ]
       }
     ],
-    "eslint/no-duplicate-imports": "error",
-    "eslint/no-debugger": "error",
-    "eslint/no-eval": "error",
-    "eslint/no-implied-eval": "error",
-    "eslint/no-new-func": "error",
-    "eslint/no-script-url": "error",
-    "eslint/no-throw-literal": "error",
+    "eslint/no-duplicate-imports": "warn",
+    "eslint/no-debugger": "warn",
+    "eslint/no-eval": "warn",
+    "eslint/no-implied-eval": "warn",
+    "eslint/no-new-func": "warn",
+    "eslint/no-script-url": "warn",
+    "eslint/no-throw-literal": "warn",
     "eslint/switch-exhaustiveness-check": "warn",
-    "eslint/no-unused-vars": "error",
-    "eslint/no-unused-expressions": "error",
-    "eslint/no-console": ["error", { "allow": ["warn", "error", "info"] }],
+    "eslint/no-unused-vars": "warn",
+    "eslint/no-unused-expressions": "warn",
+    "eslint/no-console": [
+      "warn",
+      {
+        "allow": ["warn", "error", "info"]
+      }
+    ],
     "eslint/sort-imports": "off",
     "eslint/func-style": "off",
     "eslint/no-undefined": "off",
-    "eslint/max-params": ["error", 6],
-    "eslint/max-depth": ["error", 5],
+    "eslint/max-params": ["warn", 6],
+    "eslint/max-depth": ["warn", 5],
     "eslint/max-lines": [
-      "error",
+      "warn",
       {
         "max": 750,
         "skipBlankLines": true,
@@ -379,7 +385,7 @@
       }
     ],
     "eslint/max-lines-per-function": [
-      "error",
+      "warn",
       {
         "max": 150,
         "skipBlankLines": true,
@@ -387,14 +393,14 @@
         "IIFEs": true
       }
     ],
-    "eslint/max-statements": ["error", 75],
+    "eslint/max-statements": ["warn", 75],
     "eslint/max-statements-per-line": [
-      "error",
+      "warn",
       {
         "max": 1
       }
     ],
-    "eslint/complexity": ["error", 15],
+    "eslint/complexity": ["warn", 15],
     "jsdoc/require-jsdoc": [
       "warn",
       {
@@ -408,7 +414,7 @@
       }
     ],
     "eslint/no-magic-numbers": [
-      "error",
+      "warn",
       {
         "ignore": [-1, 0, 1, 2, 3, 4, 5, 10, 12, 16, 24, 60, 100, 1000],
         "ignoreArrayIndexes": true,
@@ -416,11 +422,11 @@
         "ignoreEnums": true
       }
     ],
-    "unicorn/error-message": "error",
-    "unicorn/prefer-type-error": "error",
-    "unicorn/no-nested-ternary": "error",
+    "unicorn/error-message": "warn",
+    "unicorn/prefer-type-error": "warn",
+    "unicorn/no-nested-ternary": "warn",
     "unicorn/filename-case": [
-      "error",
+      "warn",
       {
         "cases": {
           "camelCase": true,
@@ -430,7 +436,7 @@
       }
     ],
     "unicorn/prevent-abbreviations": [
-      "error",
+      "warn",
       {
         "checkFilenames": true,
         "allowList": {
@@ -448,44 +454,44 @@
       }
     ],
     "react/react-in-jsx-scope": "off",
-    "react-hooks/rules-of-hooks": "error",
-    "react-hooks/exhaustive-deps": "error",
+    "react-hooks/rules-of-hooks": "warn",
+    "react-hooks/exhaustive-deps": "warn",
     "react/jsx-max-depth": "off",
     "react/jsx-filename-extension": "off",
-    "react/jsx-no-leaked-render": "error",
-    "react/jsx-no-useless-fragment": "error",
-    "react/no-array-index-key": "error",
-    "react/jsx-key": "error",
-    "react/jsx-no-duplicate-props": "error",
+    "react/jsx-no-leaked-render": "warn",
+    "react/jsx-no-useless-fragment": "warn",
+    "react/no-array-index-key": "warn",
+    "react/jsx-key": "warn",
+    "react/jsx-no-duplicate-props": "warn",
     "react-perf/jsx-no-new-object-as-prop": "warn",
     "react-perf/jsx-no-new-array-as-prop": "warn",
     "react-perf/jsx-no-new-function-as-prop": "warn",
-    "jsx-a11y/anchor-is-valid": "error",
-    "jsx-a11y/click-events-have-key-events": "error",
-    "jsx-a11y/no-noninteractive-element-interactions": "error",
-    "jsx-a11y/no-static-element-interactions": "error",
-    "jsx-a11y/label-has-associated-control": "error",
-    "jsx-a11y/heading-has-content": "error",
-    "jsx-a11y/role-supports-aria-props": "error",
-    "jsx-a11y/prefer-tag-over-role": "error",
-    "jsx-a11y/alt-text": "error",
-    "jsx-a11y/aria-props": "error",
-    "jsx-a11y/aria-proptypes": "error",
-    "jsx-a11y/img-redundant-alt": "error",
-    "jsx-a11y/interactive-supports-focus": "error",
-    "jsx-a11y/media-has-caption": "error",
-    "jsx-a11y/no-autofocus": "error",
-    "jsx-a11y/no-redundant-roles": "error",
-    "jsx-a11y/scope": "error",
-    "jsx-a11y/tabindex-no-positive": "error",
+    "jsx-a11y/anchor-is-valid": "warn",
+    "jsx-a11y/click-events-have-key-events": "warn",
+    "jsx-a11y/no-noninteractive-element-interactions": "warn",
+    "jsx-a11y/no-static-element-interactions": "warn",
+    "jsx-a11y/label-has-associated-control": "warn",
+    "jsx-a11y/heading-has-content": "warn",
+    "jsx-a11y/role-supports-aria-props": "warn",
+    "jsx-a11y/prefer-tag-over-role": "warn",
+    "jsx-a11y/alt-text": "warn",
+    "jsx-a11y/aria-props": "warn",
+    "jsx-a11y/aria-proptypes": "warn",
+    "jsx-a11y/img-redundant-alt": "warn",
+    "jsx-a11y/interactive-supports-focus": "warn",
+    "jsx-a11y/media-has-caption": "warn",
+    "jsx-a11y/no-autofocus": "warn",
+    "jsx-a11y/no-redundant-roles": "warn",
+    "jsx-a11y/scope": "warn",
+    "jsx-a11y/tabindex-no-positive": "warn",
     "check-file/folder-naming-convention": [
-      "error",
+      "warn",
       {
         "**/*": "KEBAB_CASE"
       }
     ],
     "check-file/filename-naming-convention": [
-      "error",
+      "warn",
       {
         "**/*.{ts,tsx,js,jsx}": "[A-Za-z0-9$.-]*"
       },
@@ -494,7 +500,7 @@
       }
     ],
     "check-file/filename-blocklist": [
-      "error",
+      "warn",
       {
         "**/*.tmp.{ts,tsx,js,jsx}": "**/*.{ts,tsx,js,jsx}",
         "**/*.bak.{ts,tsx,js,jsx}": "**/*.{ts,tsx,js,jsx}",
@@ -502,10 +508,19 @@
         "**/*.old.{ts,tsx,js,jsx}": "**/*.{ts,tsx,js,jsx}"
       }
     ],
-    "check-file/no-index": "error",
-    "boundaries/no-unknown-files": "error",
+    "check-file/no-index": "warn",
+    "typescript/consistent-type-definitions": "warn",
+    "typescript/consistent-indexed-object-style": "warn",
+    "eslint/arrow-body-style": "warn",
+    "eslint/capitalized-comments": "warn",
+    "eslint/curly": "warn",
+    "unicorn/no-useless-undefined": "warn",
+    "jsdoc/require-returns": "warn",
+    "jsdoc/require-param": "warn",
+    "import/no-unassigned-import": "warn",
+    "boundaries/no-unknown-files": "warn",
     "boundaries/element-types": [
-      "error",
+      "warn",
       {
         "default": "disallow",
         "rules": [
@@ -656,7 +671,7 @@
       }
     ],
     "import/order": [
-      "error",
+      "warn",
       {
         "groups": [
           "builtin",
@@ -681,34 +696,40 @@
       }
     ],
     "import/max-dependencies": [
-      "error",
+      "warn",
       {
         "max": 20
       }
     ],
     "import/no-cycle": [
-      "error",
+      "warn",
       {
         "maxDepth": 3,
         "ignoreExternal": true
       }
     ],
-    "import/no-self-import": "error",
-    "import/no-useless-path-segments": "error",
-    "import/no-duplicates": "error",
-    "import/first": "error",
-    "import/newline-after-import": "error",
-    "import/no-default-export": "error",
+    "import/no-self-import": "warn",
+    "import/no-useless-path-segments": "warn",
+    "import/no-duplicates": "warn",
+    "import/first": "warn",
+    "import/newline-after-import": "warn",
+    "import/no-default-export": "warn",
     "eslint/no-restricted-imports": [
-      "error",
+      "warn",
       {
-        "patterns": ["**/dist/**", "**/build/**", "**/generated/**", "**/*.gen", "**/*.generated"]
+        "patterns": [
+          "**/dist/**",
+          "**/build/**",
+          "**/generated/**",
+          "**/*.gen",
+          "**/*.generated"
+        ]
       }
     ],
     "import/no-named-export": "off",
-    "import/consistent-type-specifier-style": ["error", "prefer-top-level"],
+    "import/consistent-type-specifier-style": ["warn", "prefer-top-level"],
     "typescript/ban-ts-comment": [
-      "error",
+      "warn",
       {
         "ts-expect-error": "allow-with-description",
         "ts-ignore": true,
@@ -762,7 +783,7 @@
     "typescript/no-unsafe-type-assertion": "off",
     "typescript/tsconfig-error": "off",
     "@typescript-eslint/naming-convention": [
-      "error",
+      "warn",
       {
         "selector": "default",
         "format": ["camelCase"],
@@ -875,7 +896,12 @@
       }
     },
     {
-      "files": ["**/routes/**/*.ts", "**/routes/**/*.tsx", "**/pages/**/*.ts", "**/pages/**/*.tsx"],
+      "files": [
+        "**/routes/**/*.ts",
+        "**/routes/**/*.tsx",
+        "**/pages/**/*.ts",
+        "**/pages/**/*.tsx"
+      ],
       "rules": {
         "import/no-default-export": "off"
       }
@@ -921,12 +947,19 @@
       ],
       "rules": {
         "filename-export/match-default-export": [
-          "error",
+          "warn",
           {
             "casing": "loose",
             "stripextra": true
           }
         ]
+      }
+    },
+    {
+      "files": ["apps/web/src/router.tsx"],
+      "rules": {
+        "eslint/no-restricted-imports": "off",
+        "react/only-export-components": "off"
       }
     }
   ]

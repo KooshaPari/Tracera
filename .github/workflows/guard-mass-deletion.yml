@@ -1,0 +1,33 @@
+name: guard-mass-deletion
+on:
+  pull_request:
+  push:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  guard:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Fail if a change deletes too many files
+        env:
+          LIMIT: "500"
+          ALLOW_LABEL: "allow-mass-delete"
+          PR_LABELS: ${{ join(github.event.pull_request.labels.*.name, ',') }}
+        run: |
+          set -euo pipefail
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            base="origin/${{ github.base_ref }}"; range="$base...HEAD"
+          else
+            range="${{ github.event.before }}..${{ github.sha }}"
+          fi
+          n=$(git diff --diff-filter=D --name-only "$range" | wc -l)
+          echo "deleted files in range: $n (limit $LIMIT)"
+          if [ "$n" -gt "$LIMIT" ]; then
+            case ",$PR_LABELS," in *",$ALLOW_LABEL,"*) echo "allowed by label"; exit 0;; esac
+            echo "::error::change deletes $n files (> $LIMIT). Add label $ALLOW_LABEL only after owner review."
+            exit 1
+          fi
