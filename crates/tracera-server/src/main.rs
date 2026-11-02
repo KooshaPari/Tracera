@@ -11,6 +11,7 @@ mod memory;
 mod middleware;
 mod not_implemented;
 mod observability;
+mod observation_store;
 mod pg_store;
 use tracera_server::product;
 #[cfg(feature = "phenodag-queue")]
