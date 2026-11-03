@@ -45,10 +45,17 @@ jobs:
           # Install the published release binary and check it against the
           # release's own checksum file before extracting it.
           SCORECARD_VERSION="5.6.0"
-          SCORECARD_BASE="https://github.com/ossf/scorecard/releases/download/v${SCORECARD_VERSION}"
           cd /tmp
-          curl -fsSLO "${SCORECARD_BASE}/scorecard_${SCORECARD_VERSION}_linux_amd64.tar.gz"
-          curl -fsSLO "${SCORECARD_BASE}/scorecard_checksums.txt"
+          # Keep the scheme literal and pin the protocol in curl: Sonar
+          # githubactions:S6506 cannot see https:// through a variable, and
+          # --proto / --proto-redir deny a redirect to plain http, which is
+          # what the rule is actually about.
+          curl -fsSL --proto '=https' --proto-redir '=https' \
+            -o "scorecard_${SCORECARD_VERSION}_linux_amd64.tar.gz" \
+            "https://github.com/ossf/scorecard/releases/download/v${SCORECARD_VERSION}/scorecard_${SCORECARD_VERSION}_linux_amd64.tar.gz"
+          curl -fsSL --proto '=https' --proto-redir '=https' \
+            -o scorecard_checksums.txt \
+            "https://github.com/ossf/scorecard/releases/download/v${SCORECARD_VERSION}/scorecard_checksums.txt"
           grep "scorecard_${SCORECARD_VERSION}_linux_amd64.tar.gz" scorecard_checksums.txt \
             | sha256sum --check -
           tar -xzf "scorecard_${SCORECARD_VERSION}_linux_amd64.tar.gz" scorecard
