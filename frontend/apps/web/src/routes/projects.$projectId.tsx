@@ -53,7 +53,8 @@ const ProjectDetailComponent = () => {
   );
 };
 
-const ErrorComponent = ({ error }: { error?: Error }) => {
+const ErrorComponent = ({ error }: { error?: unknown }) => {
+  const err = error instanceof Error ? error : undefined;
   const { projectId } = useParams({ strict: false });
   const handleGoBack = useCallback(() => {
     globalThis.history.back();
@@ -64,7 +65,7 @@ const ErrorComponent = ({ error }: { error?: Error }) => {
       <div className="bg-background text-foreground flex min-h-screen flex-col items-center justify-center">
         <Unavailable error={error} />
         <p className="text-muted-foreground mb-6">The project could not be loaded.</p>
-        {error && <p className="text-muted-foreground mb-4 text-sm">Error: {error.message}</p>}
+        {err && <p className="text-muted-foreground mb-4 text-sm">Error: {err.message}</p>}
         {projectId && <p className="text-muted-foreground mb-4 text-xs">Project ID: {projectId}</p>}
         <button
           onClick={handleGoBack}
