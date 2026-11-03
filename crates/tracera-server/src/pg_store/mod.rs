@@ -1,3 +1,4 @@
+mod agileplus;
 mod items;
 /// PgStore — Postgres backend implementing `Store`.
 ///
@@ -350,5 +351,33 @@ impl Store for PgStore {
         direction: String,
     ) -> BoxFuture<'_, StoreResult<Vec<Value>>> {
         Box::pin(swee::get_swee_neighbors(&self.pool, id, direction))
+    }
+
+    fn get_agileplus_ingest_key(
+        &self,
+        idempotency_key: String,
+    ) -> BoxFuture<'_, StoreResult<Option<crate::store::AgilePlusIngestKey>>> {
+        Box::pin(agileplus::get_agileplus_ingest_key(
+            &self.pool,
+            idempotency_key,
+        ))
+    }
+
+    fn record_agileplus_ingest(
+        &self,
+        record: crate::store::AgilePlusIngestRecord,
+        now: DateTime<Utc>,
+    ) -> BoxFuture<'_, StoreResult<()>> {
+        Box::pin(agileplus::record_agileplus_ingest(&self.pool, record, now))
+    }
+
+    fn get_agileplus_revision(
+        &self,
+        agileplus_id: String,
+    ) -> BoxFuture<'_, StoreResult<Option<i64>>> {
+        Box::pin(agileplus::get_agileplus_revision(
+            &self.pool,
+            agileplus_id,
+        ))
     }
 }

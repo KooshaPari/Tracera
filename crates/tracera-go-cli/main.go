@@ -3,7 +3,7 @@
 // Usage:
 //
 //	tracera serve [--addr :8080]          # start a thin local proxy on the Tracera API
-//	tracera ingest <source> [--file FILE] # POST to /ingest/{github|jira|agileplus}
+//	tracera ingest <source> [--file FILE] # POST to /ingest/{github|jira|agcord}; agileplus is a legacy alias
 //	tracera query <kind> [--q Q] [--top N]# POST to /api/v1/{infer|suggest|classify|search}
 //	tracera graph <op> [--id ID] [--depth N] [--direction fwd|rev|both]
 //	tracera node <id>                    # GET /api/v1/items/{id}
@@ -235,9 +235,12 @@ func cmdServe(args []string) error {
 // Subcommand: ingest
 // -----------------------------------------------------------------------------
 //
-// `tracera ingest github|jira|agileplus [--file FILE]` POSTs a JSON payload to
-// the corresponding /ingest/<source> endpoint. If --file is omitted, stdin is
-// read in full and used as the body.
+// `tracera ingest github|jira|agcord|agileplus [--file FILE]` POSTs a JSON payload
+// to the corresponding /ingest/<source> endpoint. If --file is omitted, stdin is
+// read in full and used as the body. `agileplus` is a legacy alias: AgCord
+// payloads are redirected to /ingest/agcord, and SPEC-009 governance ingestion
+// lives at /api/v1/ingest/agileplus with token + idempotency headers, which this
+// CLI does not send.
 
 func cmdIngest(args []string) error {
 	fs := flag.NewFlagSet("ingest", flag.ExitOnError)
@@ -247,13 +250,13 @@ func cmdIngest(args []string) error {
 	}
 	rest := fs.Args()
 	if len(rest) < 1 {
-		return errors.New("usage: tracera ingest <github|jira|agileplus> [--file FILE]")
+		return errors.New("usage: tracera ingest <github|jira|agcord|agileplus> [--file FILE]")
 	}
 	source := rest[0]
 	switch source {
-	case "github", "jira", "agileplus":
+	case "github", "jira", "agcord", "agileplus":
 	default:
-		return fmt.Errorf("unknown ingest source %q (want github|jira|agileplus)", source)
+		return fmt.Errorf("unknown ingest source %q (want github|jira|agcord|agileplus)", source)
 	}
 
 	payload, err := readPayload(*file)
@@ -445,7 +448,7 @@ Usage:
 
 Commands:
   serve      Run a thin local reverse-proxy in front of the Tracera API
-  ingest     POST to /ingest/{github|jira|agileplus}
+  ingest     POST to /ingest/{github|jira|agcord|agileplus}
   query      POST to /api/v1/{infer|suggest|classify|search|confidence}
   graph      POST to /api/v1/graph/* (ancestors, descendants, impact, ...)
   node       GET /api/v1/items/{id}
