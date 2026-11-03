@@ -21,7 +21,9 @@ static ENV_LOCK: Mutex<()> = Mutex::new(());
 const TEST_TOKEN: &str = "test-agileplus-token";
 
 fn with_token() -> std::sync::MutexGuard<'static, ()> {
-    let guard = ENV_LOCK.lock().unwrap_or_else(|poisoned| poisoned.into_inner());
+    let guard = ENV_LOCK
+        .lock()
+        .unwrap_or_else(|poisoned| poisoned.into_inner());
     std::env::set_var(AGILEPLUS_TOKEN_ENV, TEST_TOKEN);
     guard
 }
@@ -32,7 +34,10 @@ async fn fixture() -> (Router, Arc<SqliteStore>) {
         .connect("sqlite::memory:")
         .await
         .unwrap();
-    sqlx::migrate!("./migrations-sqlite").run(&pool).await.unwrap();
+    sqlx::migrate!("./migrations-sqlite")
+        .run(&pool)
+        .await
+        .unwrap();
     let store = Arc::new(SqliteStore::new(pool));
     let state = AppState {
         store: store.clone(),
@@ -91,7 +96,6 @@ fn auth_headers(key: &str) -> Vec<(&'static str, String)> {
     ]
 }
 
-
 async fn send(app: Router, body: Value) -> Reply {
     let key = uuid::Uuid::new_v4().to_string();
     post(app, "/api/v1/ingest/agileplus", &auth_headers(&key), body).await
@@ -145,12 +149,24 @@ async fn agcord_and_agileplus_paths_are_distinct() {
     let _guard = with_token();
 
     // AgCord items on the explicit path still ingest exactly as before.
-    let agcord = post(app.clone(), "/ingest/agcord", &[], json!({"items": [{"id": "a-1", "name": "Agent One", "status": "active"}]})).await;
+    let agcord = post(
+        app.clone(),
+        "/ingest/agcord",
+        &[],
+        json!({"items": [{"id": "a-1", "name": "Agent One", "status": "active"}]}),
+    )
+    .await;
     assert_eq!(agcord.status, StatusCode::OK, "{:?}", agcord.body);
     assert_eq!(agcord.body["requirements_created"], 1);
 
     // The legacy path is a redirect, not an ingestion success.
-    let legacy = post(app.clone(), "/ingest/agileplus", &[], json!({"items": [{"id": "a-2", "name": "Agent Two"}]})).await;
+    let legacy = post(
+        app.clone(),
+        "/ingest/agileplus",
+        &[],
+        json!({"items": [{"id": "a-2", "name": "Agent Two"}]}),
+    )
+    .await;
     assert_eq!(legacy.status, StatusCode::PERMANENT_REDIRECT);
     assert_eq!(legacy.location.as_deref(), Some("/ingest/agcord"));
     assert_eq!(legacy.body["error"], "agcord_ingest_moved");
@@ -163,7 +179,13 @@ async fn agcord_and_agileplus_paths_are_distinct() {
     assert_eq!(store.list_stories().await.unwrap().len(), 1);
 
     // The SPEC-009 path accepts only the governance envelope.
-    let accepted = post(app, "/api/v1/ingest/agileplus", &auth_headers(&uuid::Uuid::new_v4().to_string()), full_envelope(1)).await;
+    let accepted = post(
+        app,
+        "/api/v1/ingest/agileplus",
+        &auth_headers(&uuid::Uuid::new_v4().to_string()),
+        full_envelope(1),
+    )
+    .await;
     assert_eq!(accepted.status, StatusCode::OK, "{:?}", accepted.body);
     assert_eq!(accepted.body["status"], "accepted");
 }
@@ -173,7 +195,13 @@ async fn unauthenticated_requests_fail_closed() {
     let (app, store) = fixture().await;
     let _guard = with_token();
 
-    let missing = post(app.clone(), "/api/v1/ingest/agileplus", &[], full_envelope(1)).await;
+    let missing = post(
+        app.clone(),
+        "/api/v1/ingest/agileplus",
+        &[],
+        full_envelope(1),
+    )
+    .await;
     assert_eq!(missing.status, StatusCode::UNAUTHORIZED);
     assert_eq!(missing.body["error"], "agileplus_unauthorized");
 
@@ -194,7 +222,10 @@ async fn unauthenticated_requests_fail_closed() {
     std::env::remove_var(AGILEPLUS_TOKEN_ENV);
     let unconfigured = post(app, "/api/v1/ingest/agileplus", &[], full_envelope(1)).await;
     assert_eq!(unconfigured.status, StatusCode::SERVICE_UNAVAILABLE);
-    assert_eq!(unconfigured.body["error"], "agileplus_ingest_not_configured");
+    assert_eq!(
+        unconfigured.body["error"],
+        "agileplus_ingest_not_configured"
+    );
     std::env::set_var(AGILEPLUS_TOKEN_ENV, TEST_TOKEN);
 }
 
@@ -203,7 +234,13 @@ async fn missing_or_non_v4_idempotency_key_is_rejected() {
     let (app, store) = fixture().await;
     let _guard = with_token();
 
-    let missing = post(app.clone(), "/api/v1/ingest/agileplus", &[(AGILEPLUS_TOKEN_HEADER, TEST_TOKEN.to_string())], full_envelope(1)).await;
+    let missing = post(
+        app.clone(),
+        "/api/v1/ingest/agileplus",
+        &[(AGILEPLUS_TOKEN_HEADER, TEST_TOKEN.to_string())],
+        full_envelope(1),
+    )
+    .await;
     assert_eq!(missing.status, StatusCode::BAD_REQUEST);
     assert_eq!(missing.body["error"], "agileplus_missing_idempotency_key");
 
@@ -212,7 +249,10 @@ async fn missing_or_non_v4_idempotency_key_is_rejected() {
         "/api/v1/ingest/agileplus",
         &[
             (AGILEPLUS_TOKEN_HEADER, TEST_TOKEN.to_string()),
-            (IDEMPOTENCY_HEADER, "6ba7b810-9dad-11d1-80b4-00c04fd430c8".to_string()),
+            (
+                IDEMPOTENCY_HEADER,
+                "6ba7b810-9dad-11d1-80b4-00c04fd430c8".to_string(),
+            ),
         ],
         full_envelope(1),
     )
@@ -226,14 +266,25 @@ async fn wrong_producer_and_bad_entities_are_rejected() {
     let (app, store) = fixture().await;
     let _guard = with_token();
 
-    let wrong_source = send(app.clone(), envelope("agcord", vec![entity("spec", "AP-SPEC-1", "approved", 1)], vec![])).await;
+    let wrong_source = send(
+        app.clone(),
+        envelope(
+            "agcord",
+            vec![entity("spec", "AP-SPEC-1", "approved", 1)],
+            vec![],
+        ),
+    )
+    .await;
     assert_eq!(wrong_source.status, StatusCode::UNPROCESSABLE_ENTITY);
     assert_eq!(wrong_source.body["error"], "agileplus_wrong_producer");
 
-    let wrong_version = send(app.clone(), json!({
-        "source": "agileplus", "version": "2099-01-01",
-        "entities": [entity("spec", "AP-SPEC-1", "approved", 1)],
-    }))
+    let wrong_version = send(
+        app.clone(),
+        json!({
+            "source": "agileplus", "version": "2099-01-01",
+            "entities": [entity("spec", "AP-SPEC-1", "approved", 1)],
+        }),
+    )
     .await;
     assert_eq!(wrong_version.status, StatusCode::UNPROCESSABLE_ENTITY);
     assert_eq!(wrong_version.body["error"], "agileplus_unsupported_version");
@@ -242,13 +293,28 @@ async fn wrong_producer_and_bad_entities_are_rejected() {
     assert_eq!(empty.status, StatusCode::UNPROCESSABLE_ENTITY);
     assert_eq!(empty.body["error"], "agileplus_empty_entities");
 
-    let unknown_type = send(app.clone(), envelope("agileplus", vec![entity("epic", "AP-EPIC-1", "open", 1)], vec![])).await;
+    let unknown_type = send(
+        app.clone(),
+        envelope(
+            "agileplus",
+            vec![entity("epic", "AP-EPIC-1", "open", 1)],
+            vec![],
+        ),
+    )
+    .await;
     assert_eq!(unknown_type.status, StatusCode::UNPROCESSABLE_ENTITY);
     assert_eq!(unknown_type.body["error"], "agileplus_invalid_entity_type");
 
     let mut no_revision = entity("spec", "AP-SPEC-2", "approved", 1);
-    no_revision["metadata"].as_object_mut().unwrap().remove("version");
-    let missing_revision = send(app.clone(), envelope("agileplus", vec![no_revision], vec![])).await;
+    no_revision["metadata"]
+        .as_object_mut()
+        .unwrap()
+        .remove("version");
+    let missing_revision = send(
+        app.clone(),
+        envelope("agileplus", vec![no_revision], vec![]),
+    )
+    .await;
     assert_eq!(missing_revision.status, StatusCode::UNPROCESSABLE_ENTITY);
     assert_eq!(missing_revision.body["error"], "agileplus_missing_revision");
 
@@ -290,22 +356,50 @@ async fn replayed_and_conflicting_idempotency_keys_are_rejected() {
     let _guard = with_token();
     let key = uuid::Uuid::new_v4().to_string();
 
-    let first = post(app.clone(), "/api/v1/ingest/agileplus", &auth_headers(&key), full_envelope(1)).await;
+    let first = post(
+        app.clone(),
+        "/api/v1/ingest/agileplus",
+        &auth_headers(&key),
+        full_envelope(1),
+    )
+    .await;
     assert_eq!(first.status, StatusCode::OK, "{:?}", first.body);
 
-    let identical = post(app.clone(), "/api/v1/ingest/agileplus", &auth_headers(&key), full_envelope(1)).await;
+    let identical = post(
+        app.clone(),
+        "/api/v1/ingest/agileplus",
+        &auth_headers(&key),
+        full_envelope(1),
+    )
+    .await;
     assert_eq!(identical.status, StatusCode::CONFLICT);
-    assert_eq!(identical.body["error"], "agileplus_idempotency_key_consumed");
+    assert_eq!(
+        identical.body["error"],
+        "agileplus_idempotency_key_consumed"
+    );
     assert_eq!(identical.body["identical_replay"], true);
     assert_eq!(identical.body["conflicting_replay"], false);
 
-    let conflicting = post(app.clone(), "/api/v1/ingest/agileplus", &auth_headers(&key), full_envelope(2)).await;
+    let conflicting = post(
+        app.clone(),
+        "/api/v1/ingest/agileplus",
+        &auth_headers(&key),
+        full_envelope(2),
+    )
+    .await;
     assert_eq!(conflicting.status, StatusCode::CONFLICT);
     assert_eq!(conflicting.body["identical_replay"], false);
     assert_eq!(conflicting.body["conflicting_replay"], true);
 
     // Neither replay created a second node set.
-    assert_eq!(store.list_swee_nodes(Some("specification".into())).await.unwrap().len(), 1);
+    assert_eq!(
+        store
+            .list_swee_nodes(Some("specification".into()))
+            .await
+            .unwrap()
+            .len(),
+        1
+    );
 }
 
 #[tokio::test]
@@ -320,14 +414,24 @@ async fn stale_and_duplicate_revisions_are_rejected() {
         )
     };
 
-    assert_eq!(send(app.clone(), governance(3)).await.status, StatusCode::OK);
+    assert_eq!(
+        send(app.clone(), governance(3)).await.status,
+        StatusCode::OK
+    );
     let stale = send(app.clone(), governance(2)).await;
     assert_eq!(stale.status, StatusCode::CONFLICT);
     assert_eq!(stale.body["error"], "agileplus_stale_revision");
     let duplicate = send(app.clone(), governance(3)).await;
     assert_eq!(duplicate.status, StatusCode::CONFLICT);
     assert_eq!(duplicate.body["error"], "agileplus_stale_revision");
-    assert_eq!(store.list_swee_nodes(Some("specification".into())).await.unwrap().len(), 1);
+    assert_eq!(
+        store
+            .list_swee_nodes(Some("specification".into()))
+            .await
+            .unwrap()
+            .len(),
+        1
+    );
 }
 
 #[tokio::test]
@@ -335,14 +439,26 @@ async fn accepted_ingestion_maps_and_persists_without_verifying_capabilities() {
     let (app, store) = fixture().await;
     let _guard = with_token();
 
-    let reply = post(app, "/api/v1/ingest/agileplus", &auth_headers(&uuid::Uuid::new_v4().to_string()), full_envelope(1)).await;
+    let reply = post(
+        app,
+        "/api/v1/ingest/agileplus",
+        &auth_headers(&uuid::Uuid::new_v4().to_string()),
+        full_envelope(1),
+    )
+    .await;
     assert_eq!(reply.status, StatusCode::OK, "{:?}", reply.body);
     assert_eq!(reply.body["entities_accepted"], 4);
     assert_eq!(reply.body["trace_links_created"], 1);
-    assert_eq!(reply.body["trace_links_unresolved"][0]["reason"], "endpoint_not_in_this_request");
+    assert_eq!(
+        reply.body["trace_links_unresolved"][0]["reason"],
+        "endpoint_not_in_this_request"
+    );
     assert_eq!(reply.body["product_capabilities_verified"], 0);
     assert_eq!(reply.body["ownership"]["governance"], "agileplus");
-    assert_eq!(reply.body["ownership"]["product_state_and_evidence"], "tracera");
+    assert_eq!(
+        reply.body["ownership"]["product_state_and_evidence"],
+        "tracera"
+    );
 
     for (node_type, expected) in [
         ("specification", 1),

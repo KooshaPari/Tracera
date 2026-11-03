@@ -1,9 +1,7 @@
 use chrono::{DateTime, Utc};
 use sqlx::{Row, SqlitePool};
 
-use crate::store::{
-    AgilePlusIngestKey, AgilePlusIngestRecord, BoxFuture, StoreError, StoreResult,
-};
+use crate::store::{AgilePlusIngestKey, AgilePlusIngestRecord, BoxFuture, StoreError, StoreResult};
 
 use super::ts_to_str;
 

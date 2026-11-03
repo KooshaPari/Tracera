@@ -226,10 +226,9 @@ pub(crate) async fn ingest_agileplus(
     let mut trace_links_created = 0usize;
     let mut unresolved: Vec<Value> = Vec::new();
     for link in &envelope.trace_links {
-        let (Some(source_node), Some(target_node)) = (
-            node_ids.get(&link.source_id),
-            node_ids.get(&link.target_id),
-        ) else {
+        let (Some(source_node), Some(target_node)) =
+            (node_ids.get(&link.source_id), node_ids.get(&link.target_id))
+        else {
             unresolved.push(json!({
                 "source_id": link.source_id,
                 "target_id": link.target_id,

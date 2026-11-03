@@ -375,9 +375,6 @@ impl Store for PgStore {
         &self,
         agileplus_id: String,
     ) -> BoxFuture<'_, StoreResult<Option<i64>>> {
-        Box::pin(agileplus::get_agileplus_revision(
-            &self.pool,
-            agileplus_id,
-        ))
+        Box::pin(agileplus::get_agileplus_revision(&self.pool, agileplus_id))
     }
 }

@@ -244,7 +244,12 @@ fn validate_entity(entity: &Entity) -> Result<&'static str, Rejection> {
     // A governance approval needs attributable provenance.
     let approval_without_provenance = entity.entity_type == "governance_decision"
         && entity.metadata.status.as_deref() == Some("approved")
-        && (entity.metadata.author.as_deref().unwrap_or_default().is_empty()
+        && (entity
+            .metadata
+            .author
+            .as_deref()
+            .unwrap_or_default()
+            .is_empty()
             || entity
                 .metadata
                 .decided_at
