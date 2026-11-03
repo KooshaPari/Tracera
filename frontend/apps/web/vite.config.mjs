@@ -174,10 +174,7 @@ export default defineConfig({
       "@radix-ui/react-tooltip",
       "lucide-react",
       "framer-motion",
-      "eventemitter3", // Required for recharts compatibility
-      "recharts", // Chart library needs pre-bundling for decimal.js-light compatibility
-      "recharts-scale", // Chart library scale utilities
-      "decimal.js-light", // Decimal library for recharts
+      "recharts", // Pre-bundle the chart library and its own dependencies
       // Pre-bundle elkjs to handle CJS/ESM interop
       "elkjs/lib/elk.bundled.js",
     ],

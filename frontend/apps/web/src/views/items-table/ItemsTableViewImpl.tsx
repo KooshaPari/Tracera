@@ -6,6 +6,7 @@ import type { Project, TypedItem, ViewType } from "@tracertm/types";
 
 import { useCreateItem, useDeleteItem, useItems } from "@/hooks/useItems";
 import { useProjects } from "@/hooks/useProjects";
+import { Button } from "@tracertm/ui";
 
 import type { CreateItemPayload } from "./create-item-modal";
 
@@ -23,6 +24,14 @@ interface ItemsTableViewProps {
 }
 
 const EMPTY_ITEMS: TypedItem[] = [];
+const PAGE_SIZE = 50;
+const MAX_OFFSET = 100_000;
+
+function isAccessDenied(error: unknown): boolean {
+  return (
+    error instanceof Error && "status" in error && (error.status === 401 || error.status === 403)
+  );
+}
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
@@ -72,11 +81,30 @@ function ItemsTableView({ projectId, view, type }: ItemsTableViewProps = {}): JS
     return undefined;
   }, [type, typeFilter]);
 
-  const { data: itemsData, isLoading } = useItems({
+  const pageScope = JSON.stringify([effectiveProjectId ?? null, view ?? null]);
+  const [page, setPage] = React.useState({ scope: pageScope, offset: 0 });
+  const offset = page.scope === pageScope ? page.offset : 0;
+  React.useEffect(() => {
+    setPage((previous) =>
+      previous.scope === pageScope ? previous : { scope: pageScope, offset: 0 },
+    );
+  }, [pageScope]);
+  const {
+    data: itemsData,
+    isLoading,
+    isError,
+    isFetching,
+    error,
+    refetch,
+  } = useItems({
     projectId: effectiveProjectId,
     view,
+    limit: PAGE_SIZE,
+    offset,
   });
-  const items = itemsData?.items ?? EMPTY_ITEMS;
+  const accessDenied = isError && isAccessDenied(error);
+  const unsupported = (itemsData?.unsupportedFields?.length ?? 0) > 0;
+  const items = accessDenied || unsupported ? EMPTY_ITEMS : (itemsData?.items ?? EMPTY_ITEMS);
 
   const { data: projects } = useProjects();
   const projectsArray: Project[] = Array.isArray(projects) ? projects : [];
@@ -138,14 +166,18 @@ function ItemsTableView({ projectId, view, type }: ItemsTableViewProps = {}): JS
     [deleteItem],
   );
 
-  const handleRefresh = React.useCallback((): void => {
-    setShowLoadingState(true);
+  const handleRefresh = React.useCallback(async (): Promise<void> => {
     setLiveMessage("Loading items...");
-    globalThis.setTimeout(() => {
+    setShowLoadingState(true);
+    try {
+      const result = await refetch();
+      setLiveMessage(result.isError ? "Refresh failed." : "Items loaded.");
+    } catch {
+      setLiveMessage("Refresh failed.");
+    } finally {
       setShowLoadingState(false);
-      setLiveMessage("Items loaded.");
-    }, itemsTableConstants.LOADING_OVERLAY_DELAY_MS);
-  }, []);
+    }
+  }, [refetch]);
 
   const handleProjectFilterChange = React.useCallback(
     (value: string): void => {
@@ -247,6 +279,7 @@ function ItemsTableView({ projectId, view, type }: ItemsTableViewProps = {}): JS
         projectFilter={projectFilter}
         typeFilter={effectiveTypeFilter}
         searchQuery={searchQuery}
+        isRefreshing={isFetching || showLoadingState}
         onSearchQueryChange={handleSearchQueryChange}
         onProjectFilterChange={handleProjectFilterChange}
         onTypeFilterChange={handleTypeFilterChange}
@@ -254,20 +287,84 @@ function ItemsTableView({ projectId, view, type }: ItemsTableViewProps = {}): JS
         onCreate={handleCreateModalOpen}
       />
 
-      <ItemsTableContent
-        filteredItems={filteredAndSortedItems}
-        isLoading={isLoading}
-        labels={labels}
-        liveMessageValue={liveMessageValue}
-        showLoadingState={showLoadingState}
-        sortColumn={sortColumn}
-        sortOrder={sortOrder}
-        onSortColumnChange={handleSortColumnChange}
-        onSortOrderChange={handleSortOrderChange}
-        onNavigate={handleItemNavigate}
-        onDelete={handleDelete}
-        onCreate={handleCreateModalOpen}
-      />
+      {isError && (
+        <div role="alert" className="mx-auto max-w-[1600px] px-6 text-destructive">
+          {accessDenied
+            ? "Access to items was denied. Sign in or check your permissions."
+            : unsupported
+              ? "Could not refresh, and cached items contain unsupported fields."
+              : itemsData === undefined
+                ? "Could not load items. Try refreshing."
+                : "Could not refresh items. The displayed data may be stale."}
+        </div>
+      )}
+      {unsupported && !isError && (
+        <div role="alert" className="mx-auto max-w-[1600px] px-6 text-destructive">
+          Items cannot be displayed because this view does not support some item fields:{" "}
+          {itemsData?.unsupportedFields.join(", ")}.
+        </div>
+      )}
+      {!unsupported &&
+        !accessDenied &&
+        itemsData !== undefined &&
+        itemsData.total > itemsData.items.length && (
+          <p className="mx-auto max-w-[1600px] px-6 text-sm text-muted-foreground">
+            Search and filters apply only to loaded items on this page. Items may change between
+            page requests.
+          </p>
+        )}
+
+      {!unsupported && !accessDenied && (!isError || itemsData !== undefined) && (
+        <ItemsTableContent
+          filteredItems={filteredAndSortedItems}
+          isLoading={isLoading}
+          labels={labels}
+          liveMessageValue={liveMessageValue}
+          showLoadingState={showLoadingState}
+          sortColumn={sortColumn}
+          sortOrder={sortOrder}
+          onSortColumnChange={handleSortColumnChange}
+          onSortOrderChange={handleSortOrderChange}
+          onNavigate={handleItemNavigate}
+          onDelete={handleDelete}
+          onCreate={handleCreateModalOpen}
+        />
+      )}
+
+      {itemsData !== undefined && !isError && (itemsData.total > PAGE_SIZE || offset > 0) && (
+        <nav
+          aria-label="Items pages"
+          className="mx-auto flex max-w-[1600px] items-center gap-3 px-6 pb-6"
+        >
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            disabled={offset === 0 || isFetching}
+            onClick={() => setPage({ scope: pageScope, offset: Math.max(0, offset - PAGE_SIZE) })}
+          >
+            Previous page
+          </Button>
+          <span>
+            Page {Math.floor(offset / PAGE_SIZE) + 1}
+            {!unsupported && ` · ${itemsData.total} total items`}
+          </span>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            disabled={
+              offset + PAGE_SIZE >= itemsData.total || offset + PAGE_SIZE > MAX_OFFSET || isFetching
+            }
+            onClick={() => setPage({ scope: pageScope, offset: offset + PAGE_SIZE })}
+          >
+            Next page
+          </Button>
+          {offset + PAGE_SIZE > MAX_OFFSET && itemsData.total > offset + PAGE_SIZE && (
+            <span>Further pages exceed the server's paging limit.</span>
+          )}
+        </nav>
+      )}
 
       {showCreateModal && (
         <CreateItemModal

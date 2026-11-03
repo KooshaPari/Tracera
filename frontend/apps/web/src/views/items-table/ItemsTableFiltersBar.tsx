@@ -38,6 +38,7 @@ interface ItemsTableFiltersBarProps {
   projectFilter: string | undefined;
   typeFilter: string | undefined;
   searchQuery: string;
+  isRefreshing: boolean;
   onSearchQueryChange: (next: string) => void;
   onProjectFilterChange: (value: string) => void;
   onTypeFilterChange: (value: string) => void;
@@ -55,6 +56,7 @@ function ItemsTableFiltersBar({
   projectFilter,
   typeFilter,
   searchQuery,
+  isRefreshing,
   onSearchQueryChange,
   onProjectFilterChange,
   onTypeFilterChange,
@@ -80,8 +82,14 @@ function ItemsTableFiltersBar({
           <p className="text-muted-foreground text-sm font-medium">{labels.description}</p>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" onClick={onRefresh} className="gap-2 rounded-xl">
-            Refresh
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={onRefresh}
+            disabled={isRefreshing}
+            className="gap-2 rounded-xl"
+          >
+            {isRefreshing ? "Refreshing…" : "Refresh"}
           </Button>
           <Button
             size="sm"

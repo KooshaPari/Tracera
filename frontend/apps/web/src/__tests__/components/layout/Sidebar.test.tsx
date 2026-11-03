@@ -52,7 +52,7 @@ vi.mock("../../../hooks/useProjects", () => ({
   }),
 }));
 
-import { Sidebar } from "../../../components/layout/Sidebar";
+import { Sidebar, highlightText } from "../../../components/layout/Sidebar";
 
 let user: ReturnType<typeof userEvent.setup>;
 
@@ -66,6 +66,20 @@ describe("Sidebar Navigation", () => {
   });
 
   describe("Rendering", () => {
+    it("shows project navigation when browser automation is enabled", () => {
+      const original = Object.getOwnPropertyDescriptor(navigator, "webdriver");
+      Object.defineProperty(navigator, "webdriver", { configurable: true, value: true });
+      try {
+        mockParams = { projectId: "test-project" };
+        render(<Sidebar />);
+        expect(screen.getByText("Active Registry")).toBeInTheDocument();
+        expect(screen.getByText("Specifications")).toBeInTheDocument();
+        expect(screen.getByText("All Views")).toBeInTheDocument();
+      } finally {
+        if (original) Object.defineProperty(navigator, "webdriver", original);
+        else delete (navigator as unknown as { webdriver?: boolean }).webdriver;
+      }
+    });
     it("renders sidebar with logo and branding", () => {
       render(<Sidebar />);
 
@@ -260,6 +274,14 @@ describe("Sidebar Navigation", () => {
   });
 
   describe("Search Functionality", () => {
+    it.each(["[", "(", ".", "*", "?", "\\"])(
+      "treats regex metacharacter %s as a literal search term",
+      (query) => {
+        const { container } = render(<>{highlightText(`A ${query} marker`, query)}</>);
+        expect(container.querySelector("mark")).toHaveTextContent(query);
+        expect(container.textContent).toBe(`A ${query} marker`);
+      },
+    );
     beforeEach(() => {
       mockParams = { projectId: "test-project" };
     });

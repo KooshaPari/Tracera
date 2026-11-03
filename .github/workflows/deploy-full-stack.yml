@@ -56,7 +56,7 @@ jobs:
       - name: Setup bun
         uses: oven-sh/setup-bun@v2
         with:
-          bun-version: latest
+          bun-version: '1.3.14'
       - name: Frontend build, then typecheck
         working-directory: frontend
         run: |

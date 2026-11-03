@@ -5,6 +5,7 @@ import type { CreateItemData, CreateItemWithSpecData } from "@/hooks/use-items/i
 import type { Item, TypedItem, ViewType, ItemStatus } from "@tracertm/types";
 
 import itemsUtils from "@/hooks/use-items/items-utils";
+import { ITEM_STATUS_VALUES, PRIORITY_VALUES, VIEW_TYPE_VALUES } from "@/hooks/useItems/constants";
 import { QUERY_CONFIGS, queryKeys } from "@/lib/queryConfig";
 import { useAuthStore } from "@/stores/authStore";
 import { API_ORIGIN } from "@/config/api-origin";
@@ -17,11 +18,23 @@ interface ItemFilters {
   status?: ItemStatus | undefined;
   parentId?: string | undefined;
   limit?: number | undefined;
+  offset?: number | undefined;
 }
 
 interface ItemsResponse {
   items: TypedItem[];
   total: number;
+  unsupportedFields: string[];
+}
+
+class ItemsRequestError extends Error {
+  readonly status: number;
+
+  constructor(status: number) {
+    super(`Failed to fetch items: HTTP ${status}`);
+    this.name = "ItemsRequestError";
+    this.status = status;
+  }
 }
 
 function authHeaders(token: string | undefined): Record<string, string> {
@@ -46,19 +59,20 @@ function buildQueryParams(filters: ItemFilters): URLSearchParams {
   if (filters.status !== undefined) {
     params.set("status", filters.status);
   }
-  if (itemsUtils.readNonEmptyString(filters.parentId) !== undefined) {
-    params.set("parent_id", filters.parentId ?? itemsUtils.EMPTY_STRING);
-  }
   if (filters.limit !== undefined) {
     params.set("limit", String(filters.limit));
   }
-
-  params.set("include_specs", "true");
+  if (filters.offset !== undefined) {
+    params.set("offset", String(filters.offset));
+  }
 
   return params;
 }
 
 async function fetchItems(filters: ItemFilters = {}, token?: string): Promise<ItemsResponse> {
+  if (itemsUtils.readNonEmptyString(filters.parentId) !== undefined) {
+    throw new Error("Parent filtering is not supported by the items API");
+  }
   const params = buildQueryParams(filters);
 
   const res = await fetch(`${API_URL}/api/v1/items?${params}`, {
@@ -70,15 +84,48 @@ async function fetchItems(filters: ItemFilters = {}, token?: string): Promise<It
   });
   if (res.ok) {
     const data = (await res.json()) as unknown;
+    if (
+      !itemsUtils.isRecord(data) ||
+      Array.isArray(data) ||
+      !Array.isArray(data["items"]) ||
+      !data["items"].every((item: unknown) => itemsUtils.isRecord(item) && !Array.isArray(item)) ||
+      typeof data["total"] !== "number" ||
+      !Number.isSafeInteger(data["total"]) ||
+      data["total"] < 0 ||
+      data["items"].length !==
+        Math.min(filters.limit ?? 50, Math.max(0, data["total"] - (filters.offset ?? 0)))
+    ) {
+      throw new Error("Invalid items list response");
+    }
     const itemsArray = itemsUtils.extractItemsArray(data);
+    const unsupported = new Set<string>();
+    for (const entry of itemsArray) {
+      if (!VIEW_TYPE_VALUES.some((value) => value === entry["view"])) unsupported.add("view");
+      if (!ITEM_STATUS_VALUES.some((value) => value === entry["status"])) unsupported.add("status");
+      if (!PRIORITY_VALUES.some((value) => value === entry["priority"]))
+        unsupported.add("priority");
+      if (
+        typeof entry["version"] !== "number" ||
+        !Number.isSafeInteger(entry["version"]) ||
+        entry["version"] < 0
+      )
+        unsupported.add("version");
+    }
     const transformedItems = itemsArray.map((entry) => itemsUtils.normalizeItem(entry));
+    if (new Set(transformedItems.map((item) => item.id)).size !== transformedItems.length) {
+      throw new Error("Items response contains duplicate IDs");
+    }
+    const projectId = itemsUtils.readNonEmptyString(filters.projectId);
+    if (projectId !== undefined && transformedItems.some((item) => item.projectId !== projectId)) {
+      throw new Error("Items response contains records from another project");
+    }
     return {
       items: transformedItems,
-      total: itemsUtils.extractTotalCount(data, itemsArray),
+      total: data["total"],
+      unsupportedFields: [...unsupported],
     };
   }
-  const errorText = await res.text();
-  throw new Error(`Failed to fetch items: ${res.status} ${errorText}`);
+  throw new ItemsRequestError(res.status);
 }
 
 async function fetchItem(id: string, token: string | undefined): Promise<Item> {
@@ -220,6 +267,7 @@ function buildItemsQueryKey(
   key.push(filters?.status);
   key.push(filters?.parentId);
   key.push(filters?.limit);
+  key.push(filters?.offset);
   if (token === undefined) {
     key.push(itemsUtils.EMPTY_STRING);
   } else {

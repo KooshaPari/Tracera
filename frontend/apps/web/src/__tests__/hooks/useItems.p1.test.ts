@@ -130,16 +130,12 @@ describe("useItems Hooks - P1 Coverage", () => {
       expect(global.fetch as any).toHaveBeenCalled();
     });
 
-    it("should filter by parent ID", async () => {
-      (global.fetch as any).mockResolvedValueOnce(createMockResponse(mockItemResponse));
-
+    it("rejects unsupported parent filtering", async () => {
       const { result } = renderHook(() => useItems({ parentId: "parent-1" }));
-
       await waitFor(() => {
-        expect(result.current.isLoading).toBeFalsy();
+        expect(result.current.isError).toBeTruthy();
       });
-
-      expect(global.fetch as any).toHaveBeenCalled();
+      expect(global.fetch as any).not.toHaveBeenCalled();
     });
 
     it("should support limit parameter", async () => {
@@ -160,7 +156,6 @@ describe("useItems Hooks - P1 Coverage", () => {
       const { result } = renderHook(() =>
         useItems({
           limit: 20,
-          parentId: "parent-1",
           projectId: "proj-1",
           status: "open",
           view: "kanban",
@@ -189,7 +184,7 @@ describe("useItems Hooks - P1 Coverage", () => {
     });
 
     it("should handle empty response", async () => {
-      (global.fetch as any).mockResolvedValueOnce(createMockResponse({ items: [] }));
+      (global.fetch as any).mockResolvedValueOnce(createMockResponse({ items: [], total: 0 }));
 
       const { result } = renderHook(() => useItems());
 
@@ -200,7 +195,7 @@ describe("useItems Hooks - P1 Coverage", () => {
       expect(result.current.data).toBeDefined();
     });
 
-    it("should include specs in request", async () => {
+    it("does not send unsupported spec-expansion parameters", async () => {
       (global.fetch as any).mockResolvedValueOnce(createMockResponse(mockItemResponse));
 
       renderHook(() => useItems());
@@ -209,7 +204,7 @@ describe("useItems Hooks - P1 Coverage", () => {
         const fetchCall = (global.fetch as any).mock.calls[0];
         const url = String(fetchCall?.[0]);
 
-        expect(url).toContain("include_specs=true");
+        expect(url).not.toContain("include_specs");
       });
     });
 
@@ -718,15 +713,17 @@ describe("useItems Hooks - P1 Coverage", () => {
       });
     });
 
-    it("should handle very large item lists", async () => {
-      const largeItemList = Array.from({ length: 1000 }, (_, i) => ({
+    it("should handle a full server page", async () => {
+      const largeItemList = Array.from({ length: 100 }, (_, i) => ({
         ...mockItem,
         id: `item-${i}`,
       }));
 
-      (global.fetch as any).mockResolvedValueOnce(createMockResponse({ items: largeItemList }));
+      (global.fetch as any).mockResolvedValueOnce(
+        createMockResponse({ items: largeItemList, total: 100 }),
+      );
 
-      const { result } = renderHook(() => useItems());
+      const { result } = renderHook(() => useItems({ limit: 100 }));
 
       await waitFor(() => {
         expect(result.current.isLoading).toBeFalsy();

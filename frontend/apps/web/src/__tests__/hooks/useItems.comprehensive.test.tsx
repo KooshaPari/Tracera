@@ -95,7 +95,7 @@ describe("useItems hooks", () => {
       });
 
       expect(fetch).toHaveBeenCalledWith(
-        expect.stringContaining("/api/v1/items?include_specs=true"),
+        expect.stringContaining("/api/v1/items?"),
         expect.any(Object),
       );
     });
@@ -103,8 +103,8 @@ describe("useItems hooks", () => {
     it("should fetch items with multiple filters", async () => {
       (fetch as any).mockResolvedValueOnce({
         json: async () => ({
-          items: mockItems,
-          total: mockItems.length,
+          items: mockItems.filter((item) => item.projectId === "proj-1"),
+          total: 2,
         }),
         ok: true,
       } as Response);

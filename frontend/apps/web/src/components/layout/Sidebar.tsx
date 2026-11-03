@@ -18,13 +18,14 @@ import { SidebarView } from "./sidebar-view";
 const NO_INDEX = -1;
 const HIGHLIGHT_KEY_SLICE = 8;
 
-const highlightText = (text: string, query: string): (string | JSX.Element)[] => {
+export const highlightText = (text: string, query: string): (string | JSX.Element)[] => {
   const trimmedQuery = query.trim();
   if (!trimmedQuery) {
     return [text];
   }
   const queryLower = trimmedQuery.toLowerCase();
-  const parts = text.split(new RegExp(`(${trimmedQuery})`, "gi"));
+  const literalQuery = trimmedQuery.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const parts = text.split(new RegExp(`(${literalQuery})`, "gi"));
   return parts.map((part, index) => {
     if (part.toLowerCase() === queryLower) {
       return (
@@ -47,7 +48,6 @@ const SidebarComponent = function SidebarComponent(): JSX.Element {
   const { data: allProjects } = useProjects();
   const { projectId } = useParams({ strict: false });
   const { pathname } = useLocation();
-  const isTestEnv = Boolean(globalThis.navigator?.webdriver);
 
   const {
     activeTab,
@@ -76,7 +76,6 @@ const SidebarComponent = function SidebarComponent(): JSX.Element {
   const { filteredNavGroups, sortedRecentProjects } = useSidebarViewData({
     allProjects,
     currentProjectId: currentProject?.id,
-    isTestEnv,
     projectId,
     recentProjects,
     recentSort,

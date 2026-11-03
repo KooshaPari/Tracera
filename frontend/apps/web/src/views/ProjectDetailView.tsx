@@ -14,7 +14,6 @@ import {
   Code,
   Database,
   Edit,
-  ExternalLink,
   FileText,
   Globe,
   History,
@@ -42,7 +41,6 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import { toast } from "sonner";
 
 import { ProjectSummary } from "@/components/ProjectSummary";
 import { Unavailable } from "@/components/Availability";
@@ -321,10 +319,6 @@ const useProjectDetailActions = (
   navigate: ReturnType<typeof useNavigate>,
   project: Project | null,
 ) => {
-  const handleExport = useCallback(() => {
-    toast.info("Exporting data...");
-  }, []);
-
   const handleCreateFeature = useCallback(() => {
     if (!project) {
       return;
@@ -353,7 +347,7 @@ const useProjectDetailActions = (
     });
   }, [navigate, project]);
 
-  return { handleCreateFeature, handleExport, handleOpenSettings, handleViewAll };
+  return { handleCreateFeature, handleOpenSettings, handleViewAll };
 };
 
 const ProjectDetailSkeleton = () => (
@@ -409,18 +403,8 @@ const ProjectHeaderDetails = ({
   </div>
 );
 
-const ProjectHeaderActions = ({
-  onCreateFeature,
-  onExport,
-}: {
-  onCreateFeature: () => void;
-  onExport: () => void;
-}) => (
+const ProjectHeaderActions = ({ onCreateFeature }: { onCreateFeature: () => void }) => (
   <div className="flex shrink-0 gap-2">
-    <Button variant="outline" size="sm" className="gap-2 rounded-full px-4" onClick={onExport}>
-      <ExternalLink className="h-4 w-4" />
-      Export
-    </Button>
     <Button
       size="sm"
       className="gap-2 rounded-full px-4"
@@ -435,18 +419,16 @@ const ProjectHeaderActions = ({
 
 const ProjectHeader = ({
   onCreateFeature,
-  onExport,
   project,
   projectId,
 }: {
   onCreateFeature: () => void;
-  onExport: () => void;
   project: Project;
   projectId: string | undefined;
 }) => (
   <div className="flex flex-col justify-between gap-6 lg:flex-row lg:items-end">
     <ProjectHeaderDetails project={project} projectId={projectId} />
-    <ProjectHeaderActions onCreateFeature={onCreateFeature} onExport={onExport} />
+    <ProjectHeaderActions onCreateFeature={onCreateFeature} />
   </div>
 );
 
@@ -786,7 +768,6 @@ const ProjectDetailContent = ({
   onOpenSettings,
   onToggleAgentWorkflows,
   onViewAll,
-  onExport,
   project,
   projectId,
   recentItems,
@@ -798,7 +779,6 @@ const ProjectDetailContent = ({
   onOpenSettings: () => void;
   onToggleAgentWorkflows: () => void;
   onViewAll: () => void;
-  onExport: () => void;
   project: Project;
   projectId: string | undefined;
   recentItems: Item[];
@@ -806,12 +786,7 @@ const ProjectDetailContent = ({
   stats: Stats;
 }) => (
   <div className="animate-in fade-in mx-auto max-w-[1600px] space-y-8 p-6 duration-500">
-    <ProjectHeader
-      onCreateFeature={onCreateFeature}
-      onExport={onExport}
-      project={project}
-      projectId={projectId}
-    />
+    <ProjectHeader onCreateFeature={onCreateFeature} project={project} projectId={projectId} />
     <SummaryCards cards={cards} />
     <VisualIntelligenceSection stats={stats} />
     <AgentWorkflowsSection
@@ -837,8 +812,10 @@ export const ProjectDetailView = () => {
   const stats = useProjectStats(items, itemsTotal, summaryStats);
   const recentItems = useRecentItems(items);
   const summaryCards = useSummaryCards(stats, itemsTotal, linksTotal);
-  const { handleCreateFeature, handleExport, handleOpenSettings, handleViewAll } =
-    useProjectDetailActions(navigate, project);
+  const { handleCreateFeature, handleOpenSettings, handleViewAll } = useProjectDetailActions(
+    navigate,
+    project,
+  );
   const handleToggleAgentWorkflows = useCallback(() => {
     setShowAgentWorkflows((previous) => !previous);
   }, []);
@@ -868,7 +845,6 @@ export const ProjectDetailView = () => {
       onOpenSettings={handleOpenSettings}
       onToggleAgentWorkflows={handleToggleAgentWorkflows}
       onViewAll={handleViewAll}
-      onExport={handleExport}
       project={project}
       projectId={projectId}
       recentItems={recentItems}

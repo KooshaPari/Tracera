@@ -347,14 +347,12 @@ export const useRecentProjects = ({
 
 export const useSidebarNavGroups = ({
   allProjects,
-  isTestEnv,
   projectId,
   currentProjectId,
   searchQuery,
 }: {
   allProjects: RecentProject[] | undefined;
   currentProjectId?: string | number | undefined;
-  isTestEnv: boolean;
   projectId?: string | undefined;
   searchQuery: string;
 }) => {
@@ -365,10 +363,9 @@ export const useSidebarNavGroups = ({
     }
     return buildSidebarGroups({
       activeId: getActiveProjectId(projectId, currentProjectId),
-      isTestEnv,
       projectsBadge,
     });
-  }, [allProjects, currentProjectId, isTestEnv, projectId]);
+  }, [allProjects, currentProjectId, projectId]);
 
   const filteredNavGroups = useMemo<SidebarGroup[]>(
     () => filterSidebarGroups(navGroups, searchQuery),
@@ -425,7 +422,6 @@ export const useProjectActionHandler = (recentProjects: string[]) =>
 export const useSidebarViewData = ({
   allProjects,
   currentProjectId,
-  isTestEnv,
   projectId,
   recentProjects,
   recentSort,
@@ -433,7 +429,6 @@ export const useSidebarViewData = ({
 }: {
   allProjects: RecentProject[] | undefined;
   currentProjectId?: string | number | undefined;
-  isTestEnv: boolean;
   projectId?: string | undefined;
   recentProjects: string[];
   recentSort: SortOption;
@@ -442,7 +437,6 @@ export const useSidebarViewData = ({
   const filteredNavGroups = useSidebarNavGroups({
     allProjects,
     currentProjectId,
-    isTestEnv,
     projectId,
     searchQuery,
   });

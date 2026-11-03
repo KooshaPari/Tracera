@@ -50,13 +50,11 @@ export type SidebarGroup = SidebarGroupBase | SidebarGroupWithCategories;
 
 interface BuildSidebarGroupsInput {
   activeId?: string | undefined;
-  isTestEnv: boolean;
   projectsBadge?: number | undefined;
 }
 
 export const buildSidebarGroups = ({
   activeId,
-  isTestEnv,
   projectsBadge,
 }: BuildSidebarGroupsInput): SidebarGroup[] => {
   const groups: SidebarGroup[] = [
@@ -77,10 +75,6 @@ export const buildSidebarGroups = ({
       label: "Command",
     },
   ];
-
-  if (isTestEnv) {
-    return groups;
-  }
 
   if (typeof activeId === "string" && activeId.length > 0) {
     groups.push({
