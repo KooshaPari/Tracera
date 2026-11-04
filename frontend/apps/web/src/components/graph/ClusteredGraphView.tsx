@@ -303,7 +303,9 @@ export function ClusteredGraphView({
   }, [selectedNodeId, links, items]);
 
   // Handlers
-  const handleFit = () => {};
+  const handleFit = () => {
+    void fitView();
+  };
   const handleReset = () => {
     setLayout("flow-chart");
     setSelectedNodeId(null);
@@ -314,7 +316,7 @@ export function ClusteredGraphView({
     setSelectedNodeId(nodeId);
     const node = nodes.find((n) => n.id === nodeId);
     if (node) {
-      undefined;
+      void fitView({ nodes: [node], duration: 200 });
     }
   };
 

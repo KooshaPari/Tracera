@@ -91,7 +91,7 @@ function FlowGraphViewInner({
   const [showUITree, setShowUITree] = useState(false);
   const [expandedNodes, setExpandedNodes] = useState<Set<string>>(new Set());
 
-  const { zoomIn, zoomOut } = useReactFlow();
+  const { fitView, zoomIn, zoomOut } = useReactFlow();
 
   // Build enhanced node data
   const enhancedNodes = useMemo((): EnhancedNodeData[] => {
@@ -478,7 +478,9 @@ function FlowGraphViewInner({
     }
   };
 
-  const handleFit = () => {};
+  const handleFit = () => {
+    void fitView();
+  };
   const handleReset = () => {
     setPerspective("all");
     setLayout("force");
@@ -492,7 +494,7 @@ function FlowGraphViewInner({
     // Find the node and center on it
     const node = nodes.find((n) => n.id === nodeId);
     if (node) {
-      undefined;
+      void fitView({ nodes: [node], duration: 200 });
     }
   };
 
