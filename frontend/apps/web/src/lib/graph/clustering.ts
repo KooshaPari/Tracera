@@ -101,11 +101,11 @@ const MAX_CACHE_SIZE = 10;
 function generateCacheKey(items: Item[], links: Link[], options: ClusteringOptions): string {
   const itemIds = items
     .map((i) => i["id"])
-    .sort()
+    .sort((a, b) => a.localeCompare(b))
     .join(",");
   const linkIds = links
     .map((l) => `${l.sourceId}-${l.targetId}`)
-    .sort()
+    .sort((a, b) => a.localeCompare(b))
     .join(",");
   const opts = `${options.resolution || 1}-${options.minCommunitySize || 0}`;
   return `${itemIds}-${linkIds}-${opts}`;
@@ -135,7 +135,7 @@ function buildGraph(items: Item[], links: Link[]): Graph {
     }
 
     // Create normalized edge key (alphabetically sorted for undirected)
-    const [nodeA, nodeB] = [link.sourceId, link.targetId].sort();
+    const [nodeA, nodeB] = [link.sourceId, link.targetId].sort((a, b) => a.localeCompare(b));
     const edgeKey = `${nodeA}-${nodeB}`;
 
     // Skip if edge already added
@@ -193,7 +193,7 @@ function assignColors(communityIds: Set<string>): Map<string, string> {
   const colorPalette =
     communityIds.size <= COMMUNITY_COLORS.length ? COMMUNITY_COLORS : EXTENDED_COMMUNITY_COLORS;
 
-  const sortedIds = Array.from(communityIds).sort();
+  const sortedIds = Array.from(communityIds).sort((a, b) => a.localeCompare(b));
 
   sortedIds.forEach((id, index) => {
     // Cycle through colors if more communities than colors
