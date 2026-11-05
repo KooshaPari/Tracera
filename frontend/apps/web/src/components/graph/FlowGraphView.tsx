@@ -48,6 +48,7 @@ import { Skeleton } from "@tracertm/ui/components/Skeleton";
 
 import type { RichNodeData } from "./RichNodePill";
 import type { EnhancedNodeData, GraphPerspective } from "./types";
+import { useGraphFocus } from "./hooks/useGraphFocus";
 
 import { NodeDetailPanel } from "./NodeDetailPanel";
 import { QAEnhancedNode } from "./nodes/QAEnhancedNode";
@@ -91,7 +92,7 @@ function FlowGraphViewInner({
   const [showUITree, setShowUITree] = useState(false);
   const [expandedNodes, setExpandedNodes] = useState<Set<string>>(new Set());
 
-  const { fitView, zoomIn, zoomOut } = useReactFlow();
+  const { zoomIn, zoomOut } = useReactFlow();
 
   // Build enhanced node data
   const enhancedNodes = useMemo((): EnhancedNodeData[] => {
@@ -478,24 +479,13 @@ function FlowGraphViewInner({
     }
   };
 
-  const handleFit = () => {
-    void fitView();
-  };
+  const { fitAll, focusNode } = useGraphFocus(nodes, setSelectedNodeId);
   const handleReset = () => {
     setPerspective("all");
     setLayout("force");
     setSelectedNodeId(null);
     setShowUITree(false);
     setExpandedNodes(new Set());
-  };
-
-  const handleFocusNode = (nodeId: string) => {
-    setSelectedNodeId(nodeId);
-    // Find the node and center on it
-    const node = nodes.find((n) => n.id === nodeId);
-    if (node) {
-      void fitView({ nodes: [node], duration: 200 });
-    }
   };
 
   // Loading state
@@ -647,7 +637,7 @@ function FlowGraphViewInner({
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={handleFit}
+                onClick={fitAll}
                 className="h-7 w-7 p-0"
                 aria-label="Fit view to content"
                 title="Fit all nodes in view"
@@ -677,7 +667,7 @@ function FlowGraphViewInner({
             <UIComponentTree
               items={items}
               links={links}
-              onSelectItem={handleFocusNode}
+              onSelectItem={focusNode}
               selectedItemId={selectedNodeId}
             />
           </div>
@@ -734,7 +724,7 @@ function FlowGraphViewInner({
               setSelectedNodeId(null);
             }}
             onNavigateToItem={onNavigateToItem ?? (() => {})}
-            onFocusNode={handleFocusNode}
+            onFocusNode={focusNode}
           />
         )}
       </div>

@@ -6,6 +6,7 @@
  */
 
 import type { Edge, Node, NodeTypes } from "@xyflow/react";
+import { useGraphFocus } from "./hooks/useGraphFocus";
 
 import {
   Background,
@@ -266,7 +267,9 @@ export function ClusteredGraphView({
   // Auto-fit on initial load
   useEffect(() => {
     if (autoFit && nodes.length > 0) {
-      const timer = setTimeout(() => {}, 100);
+      const timer = setTimeout(() => {
+        void fitView();
+      }, 100);
       return () => {
         clearTimeout(timer);
       };
@@ -303,21 +306,11 @@ export function ClusteredGraphView({
   }, [selectedNodeId, links, items]);
 
   // Handlers
-  const handleFit = () => {
-    void fitView();
-  };
+  const { fitAll, focusNode } = useGraphFocus(nodes, setSelectedNodeId);
   const handleReset = () => {
     setLayout("flow-chart");
     setSelectedNodeId(null);
     collapseAll();
-  };
-
-  const handleFocusNode = (nodeId: string) => {
-    setSelectedNodeId(nodeId);
-    const node = nodes.find((n) => n.id === nodeId);
-    if (node) {
-      void fitView({ nodes: [node], duration: 200 });
-    }
   };
 
   return (
@@ -408,7 +401,7 @@ export function ClusteredGraphView({
                 >
                   <ZoomOut className="h-4 w-4" />
                 </Button>
-                <Button variant="ghost" size="sm" onClick={handleFit} className="h-7 w-7 p-0">
+                <Button variant="ghost" size="sm" onClick={fitAll} className="h-7 w-7 p-0">
                   <Maximize2 className="h-4 w-4" />
                 </Button>
                 <Button variant="ghost" size="sm" onClick={handleReset} className="h-7 w-7 p-0">
@@ -473,7 +466,7 @@ export function ClusteredGraphView({
               setSelectedNodeId(null);
             }}
             onNavigateToItem={onNavigateToItem ?? (() => {})}
-            onFocusNode={handleFocusNode}
+            onFocusNode={focusNode}
           />
         )}
       </div>
