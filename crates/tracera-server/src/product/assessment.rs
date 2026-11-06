@@ -15,7 +15,7 @@
 
 use chrono::{DateTime, Utc};
 
-use super::identity::{AcceptedIntent, BaselineRevision, IntentKind};
+use super::identity::{AcceptedIntent, BaselineRevision, IntentKind, IntentStatus};
 use super::observation::{Observation, ObservationResult};
 
 // ---------------------------------------------------------------------------
@@ -121,6 +121,19 @@ pub struct AssessmentResult {
     pub assessed_at: DateTime<Utc>,
     /// Total observations considered.
     pub observation_count: usize,
+}
+
+/// Worst (highest severity) status across `findings`, or `None` when empty.
+///
+/// Used so that a product with no findings is `Unknown`, never `Satisfied`.
+fn worst_status(findings: &[AssessmentFinding]) -> Option<AssessmentStatus> {
+    findings.iter().map(|f| f.status).reduce(|worst, status| {
+        if status.worse_than(worst) {
+            status
+        } else {
+            worst
+        }
+    })
 }
 
 // ---------------------------------------------------------------------------
@@ -248,6 +261,32 @@ impl AssessmentEngine {
             };
         }
 
+        // A fresh `Unknown` or `Stale` result is not passing evidence (issue
+        // #1098). This branch sits below the failure and conflict checks so
+        // `Failed` and `Inconclusive` keep their existing precedence.
+        let has_unknown = obs.iter().any(|o| o.result == ObservationResult::Unknown);
+        let has_stale_result = obs.iter().any(|o| o.result == ObservationResult::Stale);
+        if has_unknown || has_stale_result {
+            let status = if has_passed || (has_unknown && has_stale_result) {
+                AssessmentStatus::Inconclusive
+            } else if has_unknown {
+                AssessmentStatus::Unknown
+            } else {
+                AssessmentStatus::Stale
+            };
+            return AssessmentFinding {
+                product_id: String::new(),
+                capability_id: Some(capability_id.to_string()),
+                status,
+                explanation: format!(
+                    "Capability '{capability_id}' has incomplete evidence \
+                     (no failing result, but at least one Unknown/Stale result)."
+                ),
+                observation_ids: obs_ids,
+                severity: FindingSeverity::from_status(status),
+            };
+        }
+
         // All relevant observations passed
         AssessmentFinding {
             product_id: String::new(),
@@ -262,25 +301,36 @@ impl AssessmentEngine {
         }
     }
 
-    /// Assess an entire product by evaluating each capability intent.
+    /// Observational summary of the capabilities a product reports evidence for.
+    ///
+    /// Scope contract (issue #1098):
+    ///
+    /// * only observations whose `product_id` equals `product_id` are
+    ///   considered — unrelated products can never change the verdict, the
+    ///   baseline or the observation count;
+    /// * only observations on the latest observed baseline for that product are
+    ///   considered — superseded baselines cannot linger in the summary;
+    /// * evidence is grouped by `capability_id`, so two capabilities of one
+    ///   product cannot contaminate each other;
+    /// * **legacy compatibility contract**: an observation with
+    ///   `capability_id == None` is grouped into one explicit product-level
+    ///   bucket reported as `capability_id == Some(product_id)`. It is never
+    ///   attributed to a named capability it does not claim.
+    ///
+    /// This is a summary of observed evidence, **not** a completeness verdict
+    /// against the accepted intent set. Use [`Self::assess_scoped_intents`] for
+    /// requirement completeness.
     pub fn assess_product(
         &self,
         product_id: &str,
         observations: &[Observation],
     ) -> AssessmentResult {
-        // Group observations by product_id (which maps to capability in our model)
-        let mut capability_map: std::collections::HashMap<String, Vec<&Observation>> =
-            std::collections::HashMap::new();
-        for obs in observations {
-            if obs.product_id.as_str() == product_id {
-                capability_map
-                    .entry(obs.product_id.as_str().to_string())
-                    .or_default()
-                    .push(obs);
-            }
-        }
+        let relevant: Vec<&Observation> = observations
+            .iter()
+            .filter(|o| o.product_id.as_str() == product_id)
+            .collect();
 
-        if capability_map.is_empty() {
+        let Some(baseline) = relevant.iter().map(|o| o.baseline).max() else {
             return AssessmentResult {
                 product_id: product_id.to_string(),
                 baseline: BaselineRevision(0),
@@ -289,41 +339,152 @@ impl AssessmentEngine {
                 assessed_at: Utc::now(),
                 observation_count: 0,
             };
+        };
+
+        let mut by_capability: std::collections::BTreeMap<String, Vec<Observation>> =
+            std::collections::BTreeMap::new();
+        for observation in relevant.into_iter().filter(|o| o.baseline == baseline) {
+            let key = observation
+                .capability_id
+                .clone()
+                .unwrap_or_else(|| product_id.to_string());
+            by_capability
+                .entry(key)
+                .or_default()
+                .push(observation.clone());
         }
 
-        let mut findings = Vec::new();
-        let mut worst_status = AssessmentStatus::Satisfied;
-
-        for cap_id in capability_map.keys() {
-            let mut finding = self.assess_capability(cap_id, observations);
+        let observation_count: usize = by_capability.values().map(Vec::len).sum();
+        let mut findings = Vec::with_capacity(by_capability.len());
+        for (capability_id, capability_observations) in &by_capability {
+            let mut finding = self.assess_capability(capability_id, capability_observations);
             finding.product_id = product_id.to_string();
-            if finding.status.worse_than(worst_status) {
-                worst_status = finding.status;
-            }
             findings.push(finding);
         }
-
-        // Determine baseline from most recent observation
-        let baseline = observations
-            .iter()
-            .map(|o| o.baseline)
-            .max()
-            .unwrap_or(BaselineRevision(0));
 
         AssessmentResult {
             product_id: product_id.to_string(),
             baseline,
-            status: worst_status,
+            status: worst_status(&findings).unwrap_or(AssessmentStatus::Unknown),
             findings,
             assessed_at: Utc::now(),
-            observation_count: observations.len(),
+            observation_count,
         }
     }
 
-    /// Full assessment using accepted intents as the requirement set.
+    /// Assess accepted capabilities for an explicit product and baseline.
+    ///
+    /// This is the requirement-completeness entry point. Unlike the legacy
+    /// [`Self::assess_with_intents`], it never infers product identity from an
+    /// intent ID: `AcceptedIntent` carries no product field (see issue #1098),
+    /// so the scope is supplied explicitly and capability IDs are treated as
+    /// product-scoped.
+    ///
+    /// Semantics:
+    ///
+    /// * only `Accepted` capability intents whose `baseline` equals `baseline`
+    ///   are requirements;
+    /// * evidence must match product, baseline **and** capability — evidence
+    ///   from another product or baseline can neither satisfy nor violate;
+    /// * an accepted capability with no in-scope evidence is `Unknown`, never
+    ///   `Satisfied`;
+    /// * a duplicate accepted capability ID is `Inconclusive` (fail closed)
+    ///   instead of reusing and double-counting evidence;
+    /// * accepted non-capability intents (requirements, obligations, targets)
+    ///   have no typed verifier yet, so they report `Unknown` rather than let a
+    ///   green capability set mark the product `Satisfied`;
+    /// * **legacy compatibility contract**: observations with
+    ///   `capability_id == None` are excluded from every capability evidence
+    ///   set (fail closed) and are never counted.
+    pub fn assess_scoped_intents(
+        &self,
+        product_id: &str,
+        baseline: BaselineRevision,
+        intents: &[AcceptedIntent],
+        observations: &[Observation],
+    ) -> AssessmentResult {
+        let mut findings = Vec::new();
+        let mut observation_count = 0usize;
+        let mut seen_capabilities = std::collections::BTreeSet::new();
+
+        for intent in intents.iter().filter(|i| {
+            i.kind == IntentKind::Capability
+                && i.status == IntentStatus::Accepted
+                && i.baseline == baseline
+        }) {
+            if !seen_capabilities.insert(intent.id.as_str()) {
+                findings.push(AssessmentFinding {
+                    product_id: product_id.to_string(),
+                    capability_id: Some(intent.id.clone()),
+                    status: AssessmentStatus::Inconclusive,
+                    explanation: format!(
+                        "Duplicate accepted capability '{}' in baseline {}.",
+                        intent.id, baseline.0
+                    ),
+                    observation_ids: Vec::new(),
+                    severity: FindingSeverity::from_status(AssessmentStatus::Inconclusive),
+                });
+                continue;
+            }
+
+            let evidence: Vec<Observation> = observations
+                .iter()
+                .filter(|o| {
+                    o.product_id.as_str() == product_id
+                        && o.baseline == baseline
+                        && o.capability_id.as_deref() == Some(intent.id.as_str())
+                })
+                .cloned()
+                .collect();
+            observation_count += evidence.len();
+
+            let mut finding = self.assess_capability(&intent.id, &evidence);
+            finding.product_id = product_id.to_string();
+            findings.push(finding);
+        }
+
+        // Accepted non-capability intents still impose product obligations.
+        // Until they have typed verifiers, never let passing capabilities
+        // silently turn the complete product assessment green.
+        for intent in intents.iter().filter(|i| {
+            i.status == IntentStatus::Accepted
+                && i.baseline == baseline
+                && i.kind != IntentKind::Capability
+        }) {
+            findings.push(AssessmentFinding {
+                product_id: product_id.to_string(),
+                capability_id: None,
+                status: AssessmentStatus::Unknown,
+                explanation: format!(
+                    "Accepted {:?} '{}' has no typed verifier in scoped assessment.",
+                    intent.kind, intent.id
+                ),
+                observation_ids: Vec::new(),
+                severity: FindingSeverity::from_status(AssessmentStatus::Unknown),
+            });
+        }
+
+        AssessmentResult {
+            product_id: product_id.to_string(),
+            baseline,
+            status: worst_status(&findings).unwrap_or(AssessmentStatus::Unknown),
+            findings,
+            assessed_at: Utc::now(),
+            observation_count,
+        }
+    }
+
+    /// Legacy assessment using accepted intents as the requirement set.
+    ///
+    /// **Deprecated in favour of [`Self::assess_scoped_intents`].** This method
+    /// keeps the historical convention that `Observation.product_id` carries the
+    /// capability ID, and it infers the result's product identity from the first
+    /// capability intent — both of which are wrong for the current observation
+    /// model. It is retained unchanged in shape for compatibility, except that
+    /// evidence is now baseline-scoped (issue #1098): a baseline-1 pass can no
+    /// longer satisfy a baseline-2 intent.
     ///
     /// Capabilities with no observations are flagged as Unknown.
-    /// Capabilities with observations are assessed normally.
     pub fn assess_with_intents(
         &self,
         intents: &[AcceptedIntent],
@@ -356,7 +517,7 @@ impl AssessmentEngine {
         for intent in &capabilities {
             let cap_obs: Vec<&Observation> = observations
                 .iter()
-                .filter(|o| o.product_id.as_str() == intent.id)
+                .filter(|o| o.product_id.as_str() == intent.id && o.baseline == intent.baseline)
                 .collect();
 
             let finding = if cap_obs.is_empty() {
