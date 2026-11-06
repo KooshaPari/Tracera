@@ -20,13 +20,7 @@ vi.mock("@/hooks/useProjects", () => ({
 }));
 
 vi.mock("@/views/projects-list/ProjectCard", () => ({
-  ProjectCard: ({
-    project,
-    onEdit,
-  }: {
-    project: Project;
-    onEdit: (value: Project) => void;
-  }) => (
+  ProjectCard: ({ project, onEdit }: { project: Project; onEdit: (value: Project) => void }) => (
     <article data-testid="project-card">
       <span data-testid="project-name">{project.name}</span>
       <button type="button" onClick={() => onEdit(project)}>
@@ -46,13 +40,8 @@ vi.mock("@/views/projects-list/CreateProjectDialog", () => ({
 }));
 
 vi.mock("@/views/projects-list/EditProjectDialog", () => ({
-  EditProjectDialog: ({
-    open,
-    project,
-  }: OpenDialogProps & { project?: Project }) =>
-    open ? (
-      <div role="dialog" aria-label={`Edit ${project?.name ?? "registry"}`} />
-    ) : null,
+  EditProjectDialog: ({ open, project }: OpenDialogProps & { project?: Project }) =>
+    open ? <div role="dialog" aria-label={`Edit ${project?.name ?? "registry"}`} /> : null,
 }));
 
 vi.mock("@/views/projects-list/ExportDialog", () => ({
@@ -66,20 +55,16 @@ vi.mock("@/views/projects-list/ImportDialog", () => ({
 }));
 
 const makeProject = (id: string, name: string, createdAt: string): Project =>
-  ({ createdAt, id, name }) as Project;
+  ({ createdAt, id, name, problem_count: 0 }) as Project;
 
 const projects = [
   makeProject("older", "Zulu Registry", "2024-01-01T00:00:00.000Z"),
   makeProject("newer", "Alpha Registry", "2024-03-01T00:00:00.000Z"),
 ];
 
-const renderView = (): ReturnType<typeof render> =>
-  render(<ProjectsListView />);
+const renderView = (): ReturnType<typeof render> => render(<ProjectsListView />);
 
-// TODO(#1137 mock drift): quarantined pre-existing failure on main - impl moved from
-// safeApiCall to requireAvailable(get(...)) in #1137 and these mocks still target the old
-// contract. Repair tracked as follow-up to PR #1172.
-describe.skip("ProjectsListView", () => {
+describe("ProjectsListView", () => {
   beforeEach(() => {
     mocks.search = {};
     mocks.useProjects.mockReset();
@@ -89,14 +74,10 @@ describe.skip("ProjectsListView", () => {
   it("renders the current registry actions and project cards", () => {
     renderView();
 
-    expect(
-      screen.getByRole("heading", { name: "Project Registry" }),
-    ).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Project Registry" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Export" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Import" })).toBeInTheDocument();
-    expect(
-      screen.getByRole("button", { name: "New Registry" }),
-    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "New Registry" })).toBeInTheDocument();
     expect(screen.getAllByTestId("project-card")).toHaveLength(2);
   });
 
@@ -115,19 +96,14 @@ describe.skip("ProjectsListView", () => {
     renderView();
 
     expect(screen.getByText("Registry Vacant")).toBeInTheDocument();
-    expect(
-      screen.queryByRole("button", { name: "Clear Filters" }),
-    ).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Clear Filters" })).not.toBeInTheDocument();
   });
 
   it("filters by registry name and restores the list when cleared", async () => {
     const user = userEvent.setup();
     renderView();
 
-    await user.type(
-      screen.getByPlaceholderText("Filter registries..."),
-      "missing",
-    );
+    await user.type(screen.getByPlaceholderText("Filter registries..."), "missing");
 
     expect(screen.getByText("Registry Vacant")).toBeInTheDocument();
     await user.click(screen.getByRole("button", { name: "Clear Filters" }));
@@ -141,14 +117,10 @@ describe.skip("ProjectsListView", () => {
     const names = (): string[] =>
       screen
         .getAllByTestId("project-card")
-        .map(
-          (card) => within(card).getByTestId("project-name").textContent ?? "",
-        );
+        .map((card) => within(card).getByTestId("project-name").textContent ?? "");
 
     expect(names()).toEqual(["Alpha Registry", "Zulu Registry"]);
-    await user.click(
-      screen.getByRole("button", { name: "Reverse sort order" }),
-    );
+    await user.click(screen.getByRole("button", { name: "Reverse sort order" }));
     expect(names()).toEqual(["Zulu Registry", "Alpha Registry"]);
   });
 
@@ -159,19 +131,13 @@ describe.skip("ProjectsListView", () => {
     await user.click(screen.getByRole("combobox"));
     await user.click(await screen.findByRole("option", { name: "Identifier" }));
 
-    expect(
-      screen.getAllByTestId("project-card").map((card) => card.textContent),
-    ).toEqual([
+    expect(screen.getAllByTestId("project-card").map((card) => card.textContent)).toEqual([
       "Zulu RegistryEdit Zulu Registry",
       "Alpha RegistryEdit Alpha Registry",
     ]);
 
-    await user.click(
-      screen.getByRole("button", { name: "Reverse sort order" }),
-    );
-    expect(
-      screen.getAllByTestId("project-card").map((card) => card.textContent),
-    ).toEqual([
+    await user.click(screen.getByRole("button", { name: "Reverse sort order" }));
+    expect(screen.getAllByTestId("project-card").map((card) => card.textContent)).toEqual([
       "Alpha RegistryEdit Alpha Registry",
       "Zulu RegistryEdit Zulu Registry",
     ]);
@@ -187,9 +153,7 @@ describe.skip("ProjectsListView", () => {
 
     await user.click(screen.getByRole("button", { name: buttonName }));
 
-    expect(
-      screen.getByRole("dialog", { name: dialogName }),
-    ).toBeInTheDocument();
+    expect(screen.getByRole("dialog", { name: dialogName })).toBeInTheDocument();
   });
 
   it("opens the create workflow from the route search action", () => {
@@ -197,20 +161,14 @@ describe.skip("ProjectsListView", () => {
 
     renderView();
 
-    expect(
-      screen.getByRole("dialog", { name: "Create registry" }),
-    ).toBeInTheDocument();
+    expect(screen.getByRole("dialog", { name: "Create registry" })).toBeInTheDocument();
   });
 
   it("opens the selected registry editor", () => {
     renderView();
 
-    fireEvent.click(
-      screen.getByRole("button", { name: "Edit Alpha Registry" }),
-    );
+    fireEvent.click(screen.getByRole("button", { name: "Edit Alpha Registry" }));
 
-    expect(
-      screen.getByRole("dialog", { name: "Edit Alpha Registry" }),
-    ).toBeInTheDocument();
+    expect(screen.getByRole("dialog", { name: "Edit Alpha Registry" })).toBeInTheDocument();
   });
 });
