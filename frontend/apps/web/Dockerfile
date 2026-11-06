@@ -2,7 +2,7 @@
 # BUILDER STAGE: Build React/Vite application with minimal dependencies
 # Build context: repo root (Tracera/)
 # ============================================================================
-FROM oven/bun:1.4.3-alpine AS builder
+FROM oven/bun:1.4.4-alpine AS builder
 
 LABEL stage=builder
 

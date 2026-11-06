@@ -1,0 +1,211 @@
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: layout must expose a skip link
+    at file:///private/tmp/tracera-auth-docs-shallow-20261017/frontend/scripts/test-ui-a11y-contract.mjs:18:8
+    at ModuleJob.run (node:internal/modules/esm/module_job:569:25)
+    at async node:internal/modules/esm/loader:650:26
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5) {
+  generatedMessage: false,
+  code: 'ERR_ASSERTION',
+  actual: 'import { Outlet, useLocation, useMatches } from "@tanstack/react-router";\n' +
+    'import { useCallback, useEffect, useRef } from "react";\n' +
+    '\n' +
+    'import { ChatBubble } from "@/components/chat/ChatBubble";\n' +
+    'import { W9Unavailable } from "@/components/W9Unavailable";\n' +
+    'import { cn } from "@/lib/utils";\n' +
+    '\n' +
+    'import { Header } from "./Header";\n' +
+    'import { Sidebar } from "./Sidebar";\n' +
+    '\n' +
+    'export const Layout = function Layout() {\n' +
+    '  const location = useLocation();\n' +
+    '  const matches = useMatches();\n' +
+    '  const path = location.pathname;\n' +
+    '  const isItemDetail =\n' +
+    '    /\\/items\\/[^/]+$/.test(path) || /\\/projects\\/[^/]+\\/views\\/[^/]+\\/[^/]+$/.test(path);\n' +
+    '  const isE2E = typeof navigator !== "undefined" && navigator.webdriver;\n' +
+    '\n' +
+    '  // Check if any active route is an auth route\n' +
+    '  const isAuthRoute = matches.some((match) => match.routeId.startsWith("/auth"));\n' +
+    '\n' +
+    '  const shelllessRouteIds = new Set<string>();\n' +
+    '\n' +
+    '  const isShelllessRoute = matches.some((match) => shelllessRouteIds.has(String(match.routeId)));\n' +
+    '  const isLandingRoute = path === "/" || path.startsWith("/landing");\n' +
+    '\n' +
+    '  const isErrorState = matches.some((match) =>\n' +
+    '    ["error", "notFound", "redirected"].includes(match.status),\n' +
+    '  );\n' +
+    '  const hasHandledFirstTabRef = useRef(false);\n' +
+    '\n' +
+    '  const handleSkipToMain = useCallback((e: React.SyntheticEvent) => {\n' +
+    '    e.preventDefault();\n' +
+    '    hasHandledFirstTabRef.current = true;\n' +
+    '    const mainContent = document.querySelector("main");\n' +
+    '    if (mainContent) {\n' +
+    '      mainContent.setAttribute("tabindex", "-1");\n' +
+    '      mainContent.focus();\n' +
+    '      mainContent.addEventListener(\n' +
+    '        "blur",\n' +
+    '        () => {\n' +
+    '          mainContent.removeAttribute("tabindex");\n' +
+    '        },\n' +
+    '        { once: true },\n' +
+    '      );\n' +
+    '    }\n' +
+    '  }, []);\n' +
+    '\n' +
+    '  const handleSkipKeyDown = useCallback(\n' +
+    '    (event: React.KeyboardEvent) => {\n' +
+    '      if (event.key === "Enter" || event.key === " ") {\n' +
+    '        handleSkipToMain(event);\n' +
+    '      }\n' +
+    '    },\n' +
+    '    [handleSkipToMain],\n' +
+    '  );\n' +
+    '\n' +
+    '  useEffect(() => {\n' +
+    '    const shouldRenderShell = !(\n' +
+    '      (path === "/" && !isE2E) ||\n' +
+    '      path.startsWith("/auth/") ||\n' +
+    '      isAuthRoute ||\n' +
+    '      isShelllessRoute ||\n' +
+    '      isErrorState\n' +
+    '    );\n' +
+    '    if (!shouldRenderShell) {\n' +
+    '      return;\n' +
+    '    }\n' +
+    '    const handleFirstTab = (event: KeyboardEvent) => {\n' +
+    '      if (event.key !== "Tab" || event.shiftKey) {\n' +
+    '        return;\n' +
+    '      }\n' +
+    '      if (hasHandledFirstTabRef.current) {\n' +
+    '        return;\n' +
+    '      }\n' +
+    `      if (document.querySelector('[role="dialog"][aria-modal="true"]')) {\n` +
+    '        return;\n' +
+    '      }\n' +
+    '      const skipLink = document.querySelector("#skip-to-main");\n' +
+    '      if (skipLink) {\n' +
+    '        event.preventDefault();\n' +
+    '        hasHandledFirstTabRef.current = true;\n' +
+    '        (skipLink as HTMLElement).focus();\n' +
+    '      }\n' +
+    '    };\n' +
+    '    const handleFirstFocus = (event: FocusEvent) => {\n' +
+    '      if (hasHandledFirstTabRef.current) {\n' +
+    '        return;\n' +
+    '      }\n' +
+    `      if (document.querySelector('[role="dialog"][aria-modal="true"]')) {\n` +
+    '        return;\n' +
+    '      }\n' +
+    '      const skipLink = document.querySelector("#skip-to-main");\n' +
+    '      if (!skipLink || event.target === skipLink) {\n' +
+    '        return;\n' +
+    '      }\n' +
+    '      hasHandledFirstTabRef.current = true;\n' +
+    '      (skipLink as HTMLElement).focus();\n' +
+    '    };\n' +
+    '    document.addEventListener("keydown", handleFirstTab, true);\n' +
+    '    document.addEventListener("focusin", handleFirstFocus, true);\n' +
+    '    return () => {\n' +
+    '      document.removeEventListener("keydown", handleFirstTab, true);\n' +
+    '      document.removeEventListener("focusin", handleFirstFocus, true);\n' +
+    '    };\n' +
+    '  }, [isAuthRoute, isE2E, isErrorState, isShelllessRoute, path]);\n' +
+    '\n' +
+    '  // Landing page, auth, redirects, and error states should not render the shell\n' +
+    '  if (path.startsWith("/auth/") || isAuthRoute || isShelllessRoute || isErrorState) {\n' +
+    '    return <Outlet />;\n' +
+    '  }\n' +
+    '\n' +
+    "  // 404 check - If only the root route matches, it's a global 404\n" +
+    '  // (Root route is always matches[0])\n' +
+    '  const isGlobal404 = matches.length === 1 && matches[0]?.routeId === "__root__";\n' +
+    '\n' +
+    '  if (isGlobal404) {\n' +
+    '    return (\n' +
+    '      <div className="bg-background flex h-screen overflow-hidden">\n' +
+    '        <main className="relative z-10 flex-1 overflow-auto">\n' +
+    '          <Outlet />\n' +
+    '        </main>\n' +
+    '      </div>\n' +
+    '    );\n' +
+    '  }\n' +
+    '\n' +
+    '  if (isLandingRoute) {\n' +
+    '    return (\n' +
+    '      <main\n' +
+    '        id="main-content"\n' +
+    '        role="main"\n' +
+    '        tabIndex={-1}\n' +
+    '        className="custom-scrollbar min-h-0 flex-1 overflow-auto"\n' +
+    '      >\n' +
+    '        <Outlet />\n' +
+    '      </main>\n' +
+    '    );\n' +
+    '  }\n' +
+    '\n' +
+    '  return (\n' +
+    '    <div className="selection:bg-primary/20 selection:text-primary flex h-screen overflow-hidden bg-transparent">\n' +
+    '      <div className="pointer-events-none fixed inset-0 z-0 bg-[radial-gradient(circle_at_10%_15%,rgba(249,115,22,0.28),transparent_45%),radial-gradient(circle_at_85%_8%,rgba(14,116,144,0.3),transparent_42%),radial-gradient(circle_at_20%_75%,rgba(16,185,129,0.24),transparent_40%)]" />\n' +
+    '      <div className="pointer-events-none fixed inset-0 z-0 bg-[linear-gradient(135deg,rgba(15,23,42,0.08),transparent_55%,rgba(8,47,73,0.12))]" />\n' +
+    '      {!isItemDetail && (\n' +
+    '        <div className="pointer-events-none fixed inset-0 z-0 bg-[radial-gradient(circle_at_30%_40%,rgba(148,163,184,0.08),transparent_55%)]" />\n' +
+    '      )}\n' +
+    '      {/* Skip to main content - visually hidden but focusable */}\n' +
+    '      <a\n' +
+    '        id="skip-to-main"\n' +
+    '        href="#main-content"\n' +
+    '        onClick={handleSkipToMain}\n' +
+    '        onKeyDown={handleSkipKeyDown}\n' +
+    '        tabIndex={0}\n' +
+    '        className="focus-visible:bg-primary focus-visible:text-primary-foreground sr-only focus-visible:not-sr-only focus-visible:fixed focus-visible:top-4 focus-visible:left-4 focus-visible:z-[10000] focus-visible:rounded-lg focus-visible:px-4 focus-visible:py-2"\n' +
+    '      >\n' +
+    '        Skip to main content\n' +
+    '      </a>\n' +
+    '\n' +
+    '      <Sidebar />\n' +
+    '      <div className="relative flex min-w-0 flex-1 flex-col overflow-hidden bg-transparent">\n' +
+    '        <div className="bg-grid-white/[0.02] pointer-events-none absolute inset-0 bg-[size:32px_32px]" />\n' +
+    '\n' +
+    '        <Header />\n' +
+    '        <main\n' +
+    '          id="main-content"\n' +
+    '          role="main"\n' +
+    '          tabIndex={-1}\n' +
+    '          className="custom-scrollbar relative z-10 min-h-0 min-w-0 flex-1 overflow-auto"\n' +
+    '        >\n' +
+    '          <div className="pointer-events-none absolute inset-x-0 top-0 h-44 bg-[radial-gradient(circle_at_20%_0%,rgba(59,130,246,0.18),transparent_65%),radial-gradient(circle_at_80%_0%,rgba(249,115,22,0.16),transparent_55%)]" />\n' +
+    '          <div\n' +
+    '            key={path}\n' +
+    '            className={cn(\n' +
+    '              isItemDetail ? "p-0" : "py-6 pr-4 sm:pr-6 lg:pr-8",\n' +
+    '              "min-w-0 w-full max-w-full animate-in-fade-up",\n' +
+    '            )}\n' +
+    '          >\n' +
+    '            <W9Unavailable path={path}>\n' +
+    '              <Outlet />\n' +
+    '            </W9Unavailable>\n' +
+    '          </div>\n' +
+    '        </main>\n' +
+    '      </div>\n' +
+    '      {/* Chat Sidebar - hidden on small screens to avoid horizontal overflow */}\n' +
+    '      <div className="hidden xl:flex">\n' +
+    '        <W9Unavailable path="/chat">\n' +
+    '          <ChatBubble />\n' +
+    '        </W9Unavailable>\n' +
+    '      </div>\n' +
+    '    </div>\n' +
+    '  );\n' +
+    '};\n' +
+    '\n' +
+    'export default Layout;\n',
+  expected: /id='skip-to-main'/,
+  operator: 'match',
+  diff: 'simple'
+}
+
+Node.js v26.8.1

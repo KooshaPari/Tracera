@@ -1,4 +1,5 @@
 mod items;
+mod product_observations;
 /// PgStore — Postgres backend implementing `Store`.
 ///
 /// Uses runtime `sqlx::query()` (not macros) so `env -u DATABASE_URL cargo build`
@@ -39,6 +40,21 @@ impl PgStore {
 }
 
 impl Store for PgStore {
+    fn ingest_product_observations(
+        &self,
+        batch: crate::product::persistence::ProductObservationBatch,
+    ) -> BoxFuture<'_, StoreResult<crate::product::persistence::ProductIngestReceipt>> {
+        Box::pin(async move { product_observations::ingest(&self.pool, batch).await })
+    }
+    fn product_observations(
+        &self,
+        product_id: String,
+        baseline: u64,
+    ) -> BoxFuture<'_, StoreResult<Option<crate::product::persistence::ProductObservationModel>>>
+    {
+        Box::pin(async move { product_observations::read(&self.pool, product_id, baseline).await })
+    }
+
     fn list_items(
         &self,
         filter: crate::item::ItemFilter,

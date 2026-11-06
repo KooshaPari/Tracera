@@ -53,7 +53,7 @@ async fn read<T>(work: impl Future<Output = StoreResult<T>>) -> Result<T, Failur
             StoreError::UnsupportedOperation(_) => {
                 error(StatusCode::NOT_IMPLEMENTED, "not_implemented")
             }
-            StoreError::Database(_) => {
+            StoreError::Database(_) | StoreError::Conflict(_) => {
                 error(StatusCode::INTERNAL_SERVER_ERROR, "journeys_store_error")
             }
         })
@@ -210,6 +210,7 @@ pub(super) fn routes() -> Router<AppState> {
     }
     router
 }
+
 pub(crate) const ROUTES: &[&str] = &[
     "/api/v1/projects/{project_id}/journeys/detect",
     "/journeys",

@@ -1,0 +1,80 @@
+   Compiling aws-lc-sys v0.45.0
+   Compiling ring v0.17.14
+   Compiling libsqlite3-sys v0.37.0
+   Compiling sqlx-sqlite v0.9.0
+   Compiling sqlx-macros-core v0.9.0
+   Compiling sqlx-macros v0.9.0
+   Compiling sqlx v0.9.0
+   Compiling aws-lc-rs v1.18.1
+   Compiling rustls v0.23.45
+   Compiling rustls-webpki v0.103.15
+   Compiling tokio-rustls v0.26.4
+   Compiling rustls-platform-verifier v0.6.2
+   Compiling hyper-rustls v0.27.9
+   Compiling neo4rs v0.8.0
+   Compiling reqwest v0.13.1
+   Compiling metrics-exporter-prometheus v0.18.3
+   Compiling tracera-workos v0.1.0 (/private/tmp/tracera-q1-20261017/crates/tracera-workos)
+   Compiling tracera-server v0.2.0 (/private/tmp/tracera-q1-20261017/crates/tracera-server)
+warning: linker stderr: rust-lld: Option `-no_compact_unwind' is undocumented. Should lld implement it?
+  |
+  = note: `#[warn(linker_messages)]` on by default
+
+warning: `tracera-server` (lib test) generated 1 warning
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 38.51s
+     Running unittests src/lib.rs (target/debug/deps/tracera_server-31a710581fb793e3)
+
+running 15 tests
+test product::detectors::tests::detector_version_recorded ... ok
+test product::detectors::tests::freshness_high_for_failed_stale ... ok
+test product::detectors::tests::coverage_no_intents_no_findings ... ok
+test product::detectors::tests::no_findings_on_clean_data ... ok
+test product::detectors::tests::suite_combined_results ... ok
+test product::detectors::tests::t08_freshness_detects_old_observation ... ok
+test product::detectors::tests::t09_different_baseline_no_contradiction ... ok
+test product::detectors::tests::t07_coverage_finds_unobserved_capability ... ok
+test product::detectors::tests::t10_expired_result_freshness_finding ... ok
+test product::detectors::tests::t12_same_baseline_contradiction ... ok
+test product::detectors::tests::contradictions_do_not_cross_capabilities ... FAILED
+test product::detectors::tests::contradiction_reports_actual_capability ... FAILED
+test product::detectors::tests::finding_serializable ... ok
+test product::detectors::tests::freshness_preserves_capability_identity ... FAILED
+test product::detectors::tests::coverage_matches_capability_not_product_name ... FAILED
+
+failures:
+
+---- product::detectors::tests::contradictions_do_not_cross_capabilities stdout ----
+
+thread 'product::detectors::tests::contradictions_do_not_cross_capabilities' (8615893) panicked at crates/tracera-server/src/product/detectors_tests.rs:226:5:
+assertion failed: ContradictionDetector::new().detect(&[passed, failed]).is_empty()
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+---- product::detectors::tests::contradiction_reports_actual_capability stdout ----
+
+thread 'product::detectors::tests::contradiction_reports_actual_capability' (8615892) panicked at crates/tracera-server/src/product/detectors_tests.rs:238:5:
+assertion `left == right` failed
+  left: Some("product-a")
+ right: Some("cap-a")
+
+---- product::detectors::tests::freshness_preserves_capability_identity stdout ----
+
+thread 'product::detectors::tests::freshness_preserves_capability_identity' (8615899) panicked at crates/tracera-server/src/product/detectors_tests.rs:215:5:
+assertion `left == right` failed
+  left: Some("product-a")
+ right: Some("cap-a")
+
+---- product::detectors::tests::coverage_matches_capability_not_product_name stdout ----
+
+thread 'product::detectors::tests::coverage_matches_capability_not_product_name' (8615894) panicked at crates/tracera-server/src/product/detectors_tests.rs:245:5:
+assertion failed: CoverageDetector::new().detect(&[make_intent("cap-a")], &[obs]).is_empty()
+
+
+failures:
+    product::detectors::tests::contradiction_reports_actual_capability
+    product::detectors::tests::contradictions_do_not_cross_capabilities
+    product::detectors::tests::coverage_matches_capability_not_product_name
+    product::detectors::tests::freshness_preserves_capability_identity
+
+test result: FAILED. 11 passed; 4 failed; 0 ignored; 0 measured; 96 filtered out; finished in 0.00s
+
+error: test failed, to rerun pass `-p tracera-server --lib`

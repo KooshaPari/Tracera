@@ -1,3 +1,8 @@
+# Hashed evidence corpora are immutable observation artifacts: their bytes are
+# attested by a sibling SHA256SUMS manifest, so reformatting or rewriting them
+# breaks the attestation. They are captured as-is, not maintained as source.
+extend-exclude = ["docs/state"]
+
 [lint]
 select = ["E", "F", "W", "I", "N", "UP", "B", "C4", "SIM"]
 ignore = ["E501"]

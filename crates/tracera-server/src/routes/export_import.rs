@@ -30,7 +30,9 @@ fn unsupported(path: &str) -> Failure {
 fn store_error(e: StoreError, path: &str) -> Failure {
     match e {
         StoreError::UnsupportedOperation(_) => unsupported(path),
-        StoreError::Database(_) => error(StatusCode::INTERNAL_SERVER_ERROR, "snapshot_store_error"),
+        StoreError::Database(_) | StoreError::Conflict(_) => {
+            error(StatusCode::INTERNAL_SERVER_ERROR, "snapshot_store_error")
+        }
     }
 }
 #[derive(Serialize, Deserialize)]

@@ -1,0 +1,2191 @@
+{
+  "source_sha": "8dd0e096ae35cabd17b1c057aa7c4daca60fb9b6",
+  "method": "static literal inventory of main router and registered route modules, cfg(test) excluded; explicit specs dynamic expansion; not a method-complete runtime mount oracle",
+  "rows": [
+    {
+      "route_template": "/healthz",
+      "classification": "HANDLER_OR_MIXED",
+      "path": "crates/tracera-server/src/router.rs",
+      "line": 143
+    },
+    {
+      "route_template": "/health",
+      "classification": "HANDLER_OR_MIXED",
+      "path": "crates/tracera-server/src/router.rs",
+      "line": 144
+    },
+    {
+      "route_template": "/readyz",
+      "classification": "HANDLER_OR_MIXED",
+      "path": "crates/tracera-server/src/router.rs",
+      "line": 145
+    },
+    {
+      "route_template": "/ready",
+      "classification": "HANDLER_OR_MIXED",
+      "path": "crates/tracera-server/src/router.rs",
+      "line": 146
+    },
+    {
+      "route_template": "/metrics",
+      "classification": "HANDLER_OR_MIXED",
+      "path": "crates/tracera-server/src/router.rs",
+      "line": 147
+    },
+    {
+      "route_template": "/api/v1/coverage-matrix",
+      "classification": "HANDLER_OR_MIXED",
+      "path": "crates/tracera-server/src/router.rs",
+      "line": 148
+    },
+    {
+      "route_template": "/api/v1/health",
+      "classification": "HANDLER_OR_MIXED",
+      "path": "crates/tracera-server/src/router.rs",
+      "line": 149
+    },
+    {
+      "route_template": "/api/v1/csrf-token",
+      "classification": "HANDLER_OR_MIXED",
+      "path": "crates/tracera-server/src/router.rs",
+      "line": 150
+    },
+    {
+      "route_template": "/api/v1/impact",
+      "classification": "HANDLER_OR_MIXED",
+      "path": "crates/tracera-server/src/router.rs",
+      "line": 151
+    },
+    {
+      "route_template": "/api/v1/confidence",
+      "classification": "HANDLER_OR_MIXED",
+      "path": "crates/tracera-server/src/router.rs",
+      "line": 152
+    },
+    {
+      "route_template": "/api/v1/blast-radius",
+      "classification": "HANDLER_OR_MIXED",
+      "path": "crates/tracera-server/src/router.rs",
+      "line": 153
+    },
+    {
+      "route_template": "/api/v1/governance/spec-check",
+      "classification": "HANDLER_OR_MIXED",
+      "path": "crates/tracera-server/src/router.rs",
+      "line": 154
+    },
+    {
+      "route_template": "/api/v1/trace/forward/{artifact_id}",
+      "classification": "HANDLER_OR_MIXED",
+      "path": "crates/tracera-server/src/router.rs",
+      "line": 156
+    },
+    {
+      "route_template": "/api/v1/trace/reverse/{artifact_id}",
+      "classification": "HANDLER_OR_MIXED",
+      "path": "crates/tracera-server/src/router.rs",
+      "line": 160
+    },
+    {
+      "route_template": "/api/v1/trace/{artifact_id}/links",
+      "classification": "HANDLER_OR_MIXED",
+      "path": "crates/tracera-server/src/router.rs",
+      "line": 164
+    },
+    {
+      "route_template": "/evidence",
+      "classification": "HANDLER_OR_MIXED",
+      "path": "crates/tracera-server/src/router.rs",
+      "line": 167
+    },
+    {
+      "route_template": "/evidence/health",
+      "classification": "HANDLER_OR_MIXED",
+      "path": "crates/tracera-server/src/router.rs",
+      "line": 168
+    },
+    {
+      "route_template": "/ingest/github",
+      "classification": "HANDLER_OR_MIXED",
+      "path": "crates/tracera-server/src/router.rs",
+      "line": 169
+    },
+    {
+      "route_template": "/ingest/jira",
+      "classification": "HANDLER_OR_MIXED",
+      "path": "crates/tracera-server/src/router.rs",
+      "line": 170
+    },
+    {
+      "route_template": "/ingest/agileplus",
+      "classification": "HANDLER_OR_MIXED",
+      "path": "crates/tracera-server/src/router.rs",
+      "line": 171
+    },
+    {
+      "route_template": "/sdlc-pm/health",
+      "classification": "HANDLER_OR_MIXED",
+      "path": "crates/tracera-server/src/router.rs",
+      "line": 172
+    },
+    {
+      "route_template": "/sdlc-pm/sprints",
+      "classification": "HANDLER_OR_MIXED",
+      "path": "crates/tracera-server/src/router.rs",
+      "line": 173
+    },
+    {
+      "route_template": "/sdlc-pm/stories",
+      "classification": "HANDLER_OR_MIXED",
+      "path": "crates/tracera-server/src/router.rs",
+      "line": 174
+    },
+    {
+      "route_template": "/api/v1/stories",
+      "classification": "HANDLER_OR_MIXED",
+      "path": "crates/tracera-server/src/router.rs",
+      "line": 175
+    },
+    {
+      "route_template": "/api/v1/trace",
+      "classification": "HANDLER_OR_MIXED",
+      "path": "crates/tracera-server/src/router.rs",
+      "line": 176
+    },
+    {
+      "route_template": "/api/v1/projects",
+      "classification": "HANDLER_OR_MIXED",
+      "path": "crates/tracera-server/src/router.rs",
+      "line": 178
+    },
+    {
+      "route_template": "/api/v1/dashboard/summary",
+      "classification": "HANDLER_OR_MIXED",
+      "path": "crates/tracera-server/src/router.rs",
+      "line": 181
+    },
+    {
+      "route_template": "/api/v1/projects/{project_id}",
+      "classification": "HANDLER_OR_MIXED",
+      "path": "crates/tracera-server/src/router.rs",
+      "line": 183
+    },
+    {
+      "route_template": "/problems",
+      "classification": "HANDLER_OR_MIXED",
+      "path": "crates/tracera-server/src/router.rs",
+      "line": 188
+    },
+    {
+      "route_template": "/problems/health",
+      "classification": "HANDLER_OR_MIXED",
+      "path": "crates/tracera-server/src/router.rs",
+      "line": 189
+    },
+    {
+      "route_template": "/org-intel/health",
+      "classification": "HANDLER_OR_MIXED",
+      "path": "crates/tracera-server/src/router.rs",
+      "line": 190
+    },
+    {
+      "route_template": "/org-intel/teams",
+      "classification": "HANDLER_OR_MIXED",
+      "path": "crates/tracera-server/src/router.rs",
+      "line": 191
+    },
+    {
+      "route_template": "/org-intel/metrics",
+      "classification": "HANDLER_OR_MIXED",
+      "path": "crates/tracera-server/src/router.rs",
+      "line": 192
+    },
+    {
+      "route_template": "/api/v1/items",
+      "classification": "HANDLER_OR_MIXED",
+      "path": "crates/tracera-server/src/router.rs",
+      "line": 195
+    },
+    {
+      "route_template": "/api/v1/items/summary",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/router.rs",
+      "line": 198
+    },
+    {
+      "route_template": "/api/v1/items/bulk-update",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/router.rs",
+      "line": 199
+    },
+    {
+      "route_template": "/api/v1/items/{id}",
+      "classification": "HANDLER_OR_MIXED",
+      "path": "crates/tracera-server/src/router.rs",
+      "line": 201
+    },
+    {
+      "route_template": "/api/v1/items/{item_id}/pivot-targets",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/router.rs",
+      "line": 205
+    },
+    {
+      "route_template": "/api/v1/items/{item_id}/pivot",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/router.rs",
+      "line": 208
+    },
+    {
+      "route_template": "/api/v1/pivot-targets",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/router.rs",
+      "line": 209
+    },
+    {
+      "route_template": "/api/v1/projects/{project_id}/items",
+      "classification": "HANDLER_OR_MIXED",
+      "path": "crates/tracera-server/src/router.rs",
+      "line": 211
+    },
+    {
+      "route_template": "/api/v1/links/grouped",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/router.rs",
+      "line": 216
+    },
+    {
+      "route_template": "/api/v1/graph/ancestors/{id}",
+      "classification": "HANDLER_OR_MIXED",
+      "path": "crates/tracera-server/src/router.rs",
+      "line": 218
+    },
+    {
+      "route_template": "/api/v1/graph/descendants/{id}",
+      "classification": "HANDLER_OR_MIXED",
+      "path": "crates/tracera-server/src/router.rs",
+      "line": 220
+    },
+    {
+      "route_template": "/api/v1/graph/impact/{id}",
+      "classification": "HANDLER_OR_MIXED",
+      "path": "crates/tracera-server/src/router.rs",
+      "line": 223
+    },
+    {
+      "route_template": "/api/v1/graph/dependencies/{id}",
+      "classification": "HANDLER_OR_MIXED",
+      "path": "crates/tracera-server/src/router.rs",
+      "line": 225
+    },
+    {
+      "route_template": "/api/v1/graph/traverse/{id}",
+      "classification": "HANDLER_OR_MIXED",
+      "path": "crates/tracera-server/src/router.rs",
+      "line": 229
+    },
+    {
+      "route_template": "/api/v1/graph/path",
+      "classification": "HANDLER_OR_MIXED",
+      "path": "crates/tracera-server/src/router.rs",
+      "line": 232
+    },
+    {
+      "route_template": "/api/v1/graph/paths",
+      "classification": "HANDLER_OR_MIXED",
+      "path": "crates/tracera-server/src/router.rs",
+      "line": 233
+    },
+    {
+      "route_template": "/api/v1/graph/full",
+      "classification": "HANDLER_OR_MIXED",
+      "path": "crates/tracera-server/src/router.rs",
+      "line": 234
+    },
+    {
+      "route_template": "/api/v1/graph/cycles",
+      "classification": "HANDLER_OR_MIXED",
+      "path": "crates/tracera-server/src/router.rs",
+      "line": 235
+    },
+    {
+      "route_template": "/api/v1/graph/topo-sort",
+      "classification": "HANDLER_OR_MIXED",
+      "path": "crates/tracera-server/src/router.rs",
+      "line": 236
+    },
+    {
+      "route_template": "/api/v1/graph/orphans",
+      "classification": "HANDLER_OR_MIXED",
+      "path": "crates/tracera-server/src/router.rs",
+      "line": 237
+    },
+    {
+      "route_template": "/api/v1/graph/analysis/centrality",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/router.rs",
+      "line": 238
+    },
+    {
+      "route_template": "/api/v1/graph/analysis/coverage",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/router.rs",
+      "line": 239
+    },
+    {
+      "route_template": "/api/v1/graph/analysis/cycles",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/router.rs",
+      "line": 240
+    },
+    {
+      "route_template": "/api/v1/graph/analysis/dependencies",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/router.rs",
+      "line": 241
+    },
+    {
+      "route_template": "/api/v1/graph/analysis/dependents",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/router.rs",
+      "line": 242
+    },
+    {
+      "route_template": "/api/v1/graph/analysis/impact",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/router.rs",
+      "line": 243
+    },
+    {
+      "route_template": "/api/v1/graph/analysis/metrics",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/router.rs",
+      "line": 244
+    },
+    {
+      "route_template": "/api/v1/graph/analysis/shortest-path",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/router.rs",
+      "line": 245
+    },
+    {
+      "route_template": "/api/v1/graph/cache/invalidate",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/router.rs",
+      "line": 246
+    },
+    {
+      "route_template": "/api/v1/projects/{project_id}/versions/compare",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/router.rs",
+      "line": 251
+    },
+    {
+      "route_template": "/api/v1/auth/verify",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/router.rs",
+      "line": 256
+    },
+    {
+      "route_template": "/api/v1/auth/me",
+      "classification": "HANDLER_OR_MIXED",
+      "path": "crates/tracera-server/src/router.rs",
+      "line": 257
+    },
+    {
+      "route_template": "/auth/workos",
+      "classification": "HANDLER_OR_MIXED",
+      "path": "crates/tracera-server/src/router.rs",
+      "line": 259
+    },
+    {
+      "route_template": "/api/v1/equivalences",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/router.rs",
+      "line": 261
+    },
+    {
+      "route_template": "/api/v1/equivalences/confirm",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/router.rs",
+      "line": 262
+    },
+    {
+      "route_template": "/api/v1/equivalences/reject",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/router.rs",
+      "line": 263
+    },
+    {
+      "route_template": "/api/v1/equivalences/batch",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/router.rs",
+      "line": 264
+    },
+    {
+      "route_template": "/api/v1/projects/{project_id}/equivalences/{id}",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/router.rs",
+      "line": 266
+    },
+    {
+      "route_template": "/api/v1/projects/{project_id}/equivalences/canonical",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/router.rs",
+      "line": 270
+    },
+    {
+      "route_template": "/api/v1/projects/{project_id}/equivalences/projections",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/router.rs",
+      "line": 274
+    },
+    {
+      "route_template": "/api/v1/projects/{project_id}/equivalences/batch",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/router.rs",
+      "line": 278
+    },
+    {
+      "route_template": "/api/v1/projects/{project_id}/equivalences/stats",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/router.rs",
+      "line": 282
+    },
+    {
+      "route_template": "/api/v1/libraries",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/router.rs",
+      "line": 287
+    },
+    {
+      "route_template": "/api/v1/libraries/{id}/tokens",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/router.rs",
+      "line": 288
+    },
+    {
+      "route_template": "/api/v1/components",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/router.rs",
+      "line": 289
+    },
+    {
+      "route_template": "/api/v1/tokens",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/router.rs",
+      "line": 290
+    },
+    {
+      "route_template": "/api/v1/projects/{project_id}/codex/sessions",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/router.rs",
+      "line": 293
+    },
+    {
+      "route_template": "/api/v1/projects/{project_id}/codex/sessions/{session_id}",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/router.rs",
+      "line": 297
+    },
+    {
+      "route_template": "/api/v1/projects/{project_id}/docs/generate",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/router.rs",
+      "line": 301
+    },
+    {
+      "route_template": "/api/v1/projects/{project_id}/ai/summarize",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/router.rs",
+      "line": 305
+    },
+    {
+      "route_template": "/api/v1/projects/{project_id}/ai/classify",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/router.rs",
+      "line": 309
+    },
+    {
+      "route_template": "/api/v1/swee/nodes",
+      "classification": "HANDLER_OR_MIXED",
+      "path": "crates/tracera-server/src/router.rs",
+      "line": 314
+    },
+    {
+      "route_template": "/api/v1/swee/nodes/{id}",
+      "classification": "HANDLER_OR_MIXED",
+      "path": "crates/tracera-server/src/router.rs",
+      "line": 317
+    },
+    {
+      "route_template": "/api/v1/swee/edges",
+      "classification": "HANDLER_OR_MIXED",
+      "path": "crates/tracera-server/src/router.rs",
+      "line": 319
+    },
+    {
+      "route_template": "/api/v1/swee/nodes/{id}/neighbors",
+      "classification": "HANDLER_OR_MIXED",
+      "path": "crates/tracera-server/src/router.rs",
+      "line": 323
+    },
+    {
+      "route_template": "/sw/nodes",
+      "classification": "HANDLER_OR_MIXED",
+      "path": "crates/tracera-server/src/router.rs",
+      "line": 328
+    },
+    {
+      "route_template": "/sw/nodes/{id}",
+      "classification": "HANDLER_OR_MIXED",
+      "path": "crates/tracera-server/src/router.rs",
+      "line": 331
+    },
+    {
+      "route_template": "/sw/edges",
+      "classification": "HANDLER_OR_MIXED",
+      "path": "crates/tracera-server/src/router.rs",
+      "line": 333
+    },
+    {
+      "route_template": "/sw/nodes/{id}/neighbors",
+      "classification": "HANDLER_OR_MIXED",
+      "path": "crates/tracera-server/src/router.rs",
+      "line": 337
+    },
+    {
+      "route_template": "/api/v1/accounts/{id}/switch",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/accounts.rs",
+      "line": 5
+    },
+    {
+      "route_template": "/api/v1/agent/sessions",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/agent.rs",
+      "line": 5
+    },
+    {
+      "route_template": "/api/v1/ai/analyze",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/ai.rs",
+      "line": 5
+    },
+    {
+      "route_template": "/api/v1/ai/stream-chat",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/ai.rs",
+      "line": 5
+    },
+    {
+      "route_template": "/api/v1/auth/login",
+      "classification": "HANDLER_OR_MIXED",
+      "path": "crates/tracera-server/src/routes/auth.rs",
+      "line": 38
+    },
+    {
+      "route_template": "/api/v1/auth/logout",
+      "classification": "HANDLER_OR_MIXED",
+      "path": "crates/tracera-server/src/routes/auth.rs",
+      "line": 39
+    },
+    {
+      "route_template": "/api/v1/auth/refresh",
+      "classification": "HANDLER_OR_MIXED",
+      "path": "crates/tracera-server/src/routes/auth.rs",
+      "line": 40
+    },
+    {
+      "route_template": "/api/v1/auth/account",
+      "classification": "HANDLER_OR_MIXED",
+      "path": "crates/tracera-server/src/routes/auth.rs",
+      "line": 44
+    },
+    {
+      "route_template": "/api/v1/auth/authkit/authorize",
+      "classification": "HANDLER_OR_MIXED",
+      "path": "crates/tracera-server/src/routes/auth.rs",
+      "line": 45
+    },
+    {
+      "route_template": "/api/v1/auth/authkit/callback",
+      "classification": "HANDLER_OR_MIXED",
+      "path": "crates/tracera-server/src/routes/auth.rs",
+      "line": 46
+    },
+    {
+      "route_template": "/api/v1/auth/authkit/refresh",
+      "classification": "HANDLER_OR_MIXED",
+      "path": "crates/tracera-server/src/routes/auth.rs",
+      "line": 47
+    },
+    {
+      "route_template": "/api/v1/auth/change-password",
+      "classification": "HANDLER_OR_MIXED",
+      "path": "crates/tracera-server/src/routes/auth.rs",
+      "line": 48
+    },
+    {
+      "route_template": "/api/v1/auth/profile",
+      "classification": "HANDLER_OR_MIXED",
+      "path": "crates/tracera-server/src/routes/auth.rs",
+      "line": 49
+    },
+    {
+      "route_template": "/api/v1/auth/request-verification",
+      "classification": "HANDLER_OR_MIXED",
+      "path": "crates/tracera-server/src/routes/auth.rs",
+      "line": 50
+    },
+    {
+      "route_template": "/api/v1/auth/reset-password",
+      "classification": "HANDLER_OR_MIXED",
+      "path": "crates/tracera-server/src/routes/auth.rs",
+      "line": 51
+    },
+    {
+      "route_template": "/api/v1/auth/reset-password/confirm",
+      "classification": "HANDLER_OR_MIXED",
+      "path": "crates/tracera-server/src/routes/auth.rs",
+      "line": 52
+    },
+    {
+      "route_template": "/api/v1/auth/user",
+      "classification": "HANDLER_OR_MIXED",
+      "path": "crates/tracera-server/src/routes/auth.rs",
+      "line": 53
+    },
+    {
+      "route_template": "/api/v1/auth/verify-email",
+      "classification": "HANDLER_OR_MIXED",
+      "path": "crates/tracera-server/src/routes/auth.rs",
+      "line": 54
+    },
+    {
+      "route_template": "/auth/me",
+      "classification": "HANDLER_OR_MIXED",
+      "path": "crates/tracera-server/src/routes/auth.rs",
+      "line": 55
+    },
+    {
+      "route_template": "/api/v1/products/{product}/baselines/{baseline}/benchmark-observations",
+      "classification": "HANDLER_OR_MIXED",
+      "path": "crates/tracera-server/src/routes/benchmark_observations.rs",
+      "line": 117
+    },
+    {
+      "route_template": "/api/v1/branches/{id}",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/branches.rs",
+      "line": 6
+    },
+    {
+      "route_template": "/api/v1/branches/{id}/compare/{param6}",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/branches.rs",
+      "line": 7
+    },
+    {
+      "route_template": "/api/v1/branches/{id}/merge",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/branches.rs",
+      "line": 8
+    },
+    {
+      "route_template": "/api/v1/branches/{id}/versions",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/branches.rs",
+      "line": 9
+    },
+    {
+      "route_template": "/api/v1/projects/{project_id}/branches",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/branches.rs",
+      "line": 10
+    },
+    {
+      "route_template": "/api/v1/chat/stream",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/chat.rs",
+      "line": 5
+    },
+    {
+      "route_template": "/api/v1/projects/{project_id}/codex/interactions",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/codex.rs",
+      "line": 5
+    },
+    {
+      "route_template": "/api/v1/projects/{project_id}/codex/review-image",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/codex.rs",
+      "line": 6
+    },
+    {
+      "route_template": "/api/v1/projects/{project_id}/codex/review-video",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/codex.rs",
+      "line": 7
+    },
+    {
+      "route_template": "/api/v1/projects/{project_id}/codex/auth-status",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/codex.rs",
+      "line": 8
+    },
+    {
+      "route_template": "/api/v1/concepts/{id}",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/concepts.rs",
+      "line": 6
+    },
+    {
+      "route_template": "/api/v1/concepts/{id}/projections",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/concepts.rs",
+      "line": 7
+    },
+    {
+      "route_template": "/api/v1/concepts/{id}/projections/{param6}",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/concepts.rs",
+      "line": 8
+    },
+    {
+      "route_template": "/api/v1/projects/{project_id}/concepts",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/concepts.rs",
+      "line": 9
+    },
+    {
+      "route_template": "/api/v1/coverage",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/coverage.rs",
+      "line": 6
+    },
+    {
+      "route_template": "/api/v1/coverage/{id}",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/coverage.rs",
+      "line": 7
+    },
+    {
+      "route_template": "/api/v1/coverage/{id}/activities",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/coverage.rs",
+      "line": 8
+    },
+    {
+      "route_template": "/api/v1/coverage/{id}/verify",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/coverage.rs",
+      "line": 9
+    },
+    {
+      "route_template": "/api/v1/projects/{project_id}/coverage",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/coverage.rs",
+      "line": 10
+    },
+    {
+      "route_template": "/api/v1/projects/{project_id}/coverage/gaps",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/coverage.rs",
+      "line": 11
+    },
+    {
+      "route_template": "/api/v1/projects/{project_id}/coverage/matrix",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/coverage.rs",
+      "line": 12
+    },
+    {
+      "route_template": "/api/v1/projects/{project_id}/coverage/stats",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/coverage.rs",
+      "line": 13
+    },
+    {
+      "route_template": "/api/v1/projects/{project_id}/coverage/{param6}",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/coverage.rs",
+      "line": 14
+    },
+    {
+      "route_template": "/api/v1/projects/{project_id}/coverage/{param6}/verify",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/coverage.rs",
+      "line": 15
+    },
+    {
+      "route_template": "/api/v1/docs",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/docs.rs",
+      "line": 5
+    },
+    {
+      "route_template": "/api/v1/docs/search",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/docs.rs",
+      "line": 5
+    },
+    {
+      "route_template": "/api/v1/docs/{id}",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/docs.rs",
+      "line": 5
+    },
+    {
+      "route_template": "/api/v1/projects/{project_id}/equivalence/export",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/equivalence.rs",
+      "line": 6
+    },
+    {
+      "route_template": "/api/v1/projects/{project_id}/equivalence/export-statistics",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/equivalence.rs",
+      "line": 7
+    },
+    {
+      "route_template": "/api/v1/projects/{project_id}/equivalence/import",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/equivalence.rs",
+      "line": 8
+    },
+    {
+      "route_template": "/api/v1/projects/{project_id}/equivalence/validate",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/equivalence.rs",
+      "line": 9
+    },
+    {
+      "route_template": "/api/v1/equivalences/batch-confirm",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/equivalences.rs",
+      "line": 5
+    },
+    {
+      "route_template": "/api/v1/equivalences/batch-reject",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/equivalences.rs",
+      "line": 6
+    },
+    {
+      "route_template": "/api/v1/equivalences/{id}/confirm",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/equivalences.rs",
+      "line": 7
+    },
+    {
+      "route_template": "/api/v1/equivalences/{id}/reject",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/equivalences.rs",
+      "line": 8
+    },
+    {
+      "route_template": "/api/v1/projects/{project_id}/equivalences",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/equivalences.rs",
+      "line": 19
+    },
+    {
+      "route_template": "/api/v1/equivalences/{id}",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/equivalences.rs",
+      "line": 20
+    },
+    {
+      "route_template": "/api/v1/projects/{project_id}/equivalences/detect",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/equivalences.rs",
+      "line": 21
+    },
+    {
+      "route_template": "/api/v1/events",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/events.rs",
+      "line": 5
+    },
+    {
+      "route_template": "/api/v1/events/{id}",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/events.rs",
+      "line": 5
+    },
+    {
+      "route_template": "/api/v1/projects/{project_id}/execution-config",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/execution_config.rs",
+      "line": 5
+    },
+    {
+      "route_template": "/api/v1/executions/{id}",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/executions.rs",
+      "line": 6
+    },
+    {
+      "route_template": "/api/v1/executions/{id}/advance",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/executions.rs",
+      "line": 7
+    },
+    {
+      "route_template": "/api/v1/executions/{id}/complete",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/executions.rs",
+      "line": 8
+    },
+    {
+      "route_template": "/api/v1/executions/{id}/start",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/executions.rs",
+      "line": 9
+    },
+    {
+      "route_template": "/api/v1/projects/{project_id}/executions",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/executions.rs",
+      "line": 10
+    },
+    {
+      "route_template": "/api/v1/projects/{project_id}/executions/{param6}",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/executions.rs",
+      "line": 11
+    },
+    {
+      "route_template": "/api/v1/projects/{project_id}/executions/{param6}/artifacts",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/executions.rs",
+      "line": 12
+    },
+    {
+      "route_template": "/api/v1/projects/{project_id}/executions/{param6}/artifacts/{param8}/download",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/executions.rs",
+      "line": 13
+    },
+    {
+      "route_template": "/api/v1/projects/{project_id}/executions/{param6}/complete",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/executions.rs",
+      "line": 14
+    },
+    {
+      "route_template": "/api/v1/projects/{project_id}/executions/{param6}/start",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/executions.rs",
+      "line": 15
+    },
+    {
+      "route_template": "/api/v1/projects/{project_id}/export",
+      "classification": "HANDLER_OR_MIXED",
+      "path": "crates/tracera-server/src/routes/export_import.rs",
+      "line": 55
+    },
+    {
+      "route_template": "/api/v1/projects/{project_id}/import",
+      "classification": "HANDLER_OR_MIXED",
+      "path": "crates/tracera-server/src/routes/export_import.rs",
+      "line": 59
+    },
+    {
+      "route_template": "/api/v1/import",
+      "classification": "HANDLER_OR_MIXED",
+      "path": "crates/tracera-server/src/routes/export_import.rs",
+      "line": 62
+    },
+    {
+      "route_template": "/api/v1/projects/{project_id}/graphs",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/graphs.rs",
+      "line": 5
+    },
+    {
+      "route_template": "/api/v1/integrations/conflicts",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/integrations.rs",
+      "line": 6
+    },
+    {
+      "route_template": "/api/v1/integrations/conflicts/{param5}/resolve",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/integrations.rs",
+      "line": 7
+    },
+    {
+      "route_template": "/api/v1/integrations/credentials",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/integrations.rs",
+      "line": 8
+    },
+    {
+      "route_template": "/api/v1/integrations/credentials/{param5}",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/integrations.rs",
+      "line": 9
+    },
+    {
+      "route_template": "/api/v1/integrations/credentials/{param5}/validate",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/integrations.rs",
+      "line": 10
+    },
+    {
+      "route_template": "/api/v1/integrations/github/app/install-url",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/integrations.rs",
+      "line": 11
+    },
+    {
+      "route_template": "/api/v1/integrations/github/app/installations",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/integrations.rs",
+      "line": 12
+    },
+    {
+      "route_template": "/api/v1/integrations/github/app/installations/{param7}",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/integrations.rs",
+      "line": 13
+    },
+    {
+      "route_template": "/api/v1/integrations/github/app/installations/{param7}/link",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/integrations.rs",
+      "line": 14
+    },
+    {
+      "route_template": "/api/v1/integrations/github/projects",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/integrations.rs",
+      "line": 15
+    },
+    {
+      "route_template": "/api/v1/integrations/github/repos",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/integrations.rs",
+      "line": 16
+    },
+    {
+      "route_template": "/api/v1/integrations/github/repos/{param6}/{param7}/issues",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/integrations.rs",
+      "line": 17
+    },
+    {
+      "route_template": "/api/v1/integrations/linear/projects",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/integrations.rs",
+      "line": 18
+    },
+    {
+      "route_template": "/api/v1/integrations/linear/teams",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/integrations.rs",
+      "line": 19
+    },
+    {
+      "route_template": "/api/v1/integrations/linear/teams/{param6}/issues",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/integrations.rs",
+      "line": 20
+    },
+    {
+      "route_template": "/api/v1/integrations/mappings",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/integrations.rs",
+      "line": 21
+    },
+    {
+      "route_template": "/api/v1/integrations/mappings/{param5}",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/integrations.rs",
+      "line": 22
+    },
+    {
+      "route_template": "/api/v1/integrations/oauth/callback",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/integrations.rs",
+      "line": 23
+    },
+    {
+      "route_template": "/api/v1/integrations/oauth/start",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/integrations.rs",
+      "line": 24
+    },
+    {
+      "route_template": "/api/v1/integrations/stats",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/integrations.rs",
+      "line": 25
+    },
+    {
+      "route_template": "/api/v1/integrations/sync/queue",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/integrations.rs",
+      "line": 26
+    },
+    {
+      "route_template": "/api/v1/integrations/sync/status",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/integrations.rs",
+      "line": 27
+    },
+    {
+      "route_template": "/api/v1/integrations/sync/trigger",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/integrations.rs",
+      "line": 28
+    },
+    {
+      "route_template": "/api/v1/projects/{project_id}/item-specs/analyze/coverage-gaps",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/item_specs.rs",
+      "line": 6
+    },
+    {
+      "route_template": "/api/v1/projects/{project_id}/item-specs/analyze/suspect-links",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/item_specs.rs",
+      "line": 7
+    },
+    {
+      "route_template": "/api/v1/projects/{project_id}/item-specs/defects",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/item_specs.rs",
+      "line": 8
+    },
+    {
+      "route_template": "/api/v1/projects/{project_id}/item-specs/defects/by-item/{param8}",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/item_specs.rs",
+      "line": 9
+    },
+    {
+      "route_template": "/api/v1/projects/{project_id}/item-specs/defects/{param7}",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/item_specs.rs",
+      "line": 10
+    },
+    {
+      "route_template": "/api/v1/projects/{project_id}/item-specs/defects/{param7}/analyze/cvss",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/item_specs.rs",
+      "line": 11
+    },
+    {
+      "route_template": "/api/v1/projects/{project_id}/item-specs/defects/{param7}/analyze/odc",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/item_specs.rs",
+      "line": 12
+    },
+    {
+      "route_template": "/api/v1/projects/{project_id}/item-specs/epics",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/item_specs.rs",
+      "line": 13
+    },
+    {
+      "route_template": "/api/v1/projects/{project_id}/item-specs/epics/by-item/{param8}",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/item_specs.rs",
+      "line": 14
+    },
+    {
+      "route_template": "/api/v1/projects/{project_id}/item-specs/epics/{param7}",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/item_specs.rs",
+      "line": 15
+    },
+    {
+      "route_template": "/api/v1/projects/{project_id}/item-specs/requirements",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/item_specs.rs",
+      "line": 16
+    },
+    {
+      "route_template": "/api/v1/projects/{project_id}/item-specs/requirements/by-item/{param8}",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/item_specs.rs",
+      "line": 17
+    },
+    {
+      "route_template": "/api/v1/projects/{project_id}/item-specs/requirements/high-risk",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/item_specs.rs",
+      "line": 18
+    },
+    {
+      "route_template": "/api/v1/projects/{project_id}/item-specs/requirements/unverified",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/item_specs.rs",
+      "line": 19
+    },
+    {
+      "route_template": "/api/v1/projects/{project_id}/item-specs/requirements/{param7}",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/item_specs.rs",
+      "line": 20
+    },
+    {
+      "route_template": "/api/v1/projects/{project_id}/item-specs/requirements/{param7}/analyze-impact",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/item_specs.rs",
+      "line": 21
+    },
+    {
+      "route_template": "/api/v1/projects/{project_id}/item-specs/requirements/{param7}/analyze-quality",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/item_specs.rs",
+      "line": 22
+    },
+    {
+      "route_template": "/api/v1/projects/{project_id}/item-specs/requirements/{param7}/analyze/ears",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/item_specs.rs",
+      "line": 23
+    },
+    {
+      "route_template": "/api/v1/projects/{project_id}/item-specs/requirements/{param7}/analyze/quality",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/item_specs.rs",
+      "line": 24
+    },
+    {
+      "route_template": "/api/v1/projects/{project_id}/item-specs/requirements/{param7}/verify",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/item_specs.rs",
+      "line": 25
+    },
+    {
+      "route_template": "/api/v1/projects/{project_id}/item-specs/tasks",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/item_specs.rs",
+      "line": 26
+    },
+    {
+      "route_template": "/api/v1/projects/{project_id}/item-specs/tasks/by-item/{param8}",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/item_specs.rs",
+      "line": 27
+    },
+    {
+      "route_template": "/api/v1/projects/{project_id}/item-specs/tasks/{param7}",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/item_specs.rs",
+      "line": 28
+    },
+    {
+      "route_template": "/api/v1/projects/{project_id}/item-specs/tests",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/item_specs.rs",
+      "line": 29
+    },
+    {
+      "route_template": "/api/v1/projects/{project_id}/item-specs/tests/by-item/{param8}",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/item_specs.rs",
+      "line": 30
+    },
+    {
+      "route_template": "/api/v1/projects/{project_id}/item-specs/tests/flaky",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/item_specs.rs",
+      "line": 31
+    },
+    {
+      "route_template": "/api/v1/projects/{project_id}/item-specs/tests/health-report",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/item_specs.rs",
+      "line": 32
+    },
+    {
+      "route_template": "/api/v1/projects/{project_id}/item-specs/tests/quarantined",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/item_specs.rs",
+      "line": 33
+    },
+    {
+      "route_template": "/api/v1/projects/{project_id}/item-specs/tests/{param7}",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/item_specs.rs",
+      "line": 34
+    },
+    {
+      "route_template": "/api/v1/projects/{project_id}/item-specs/tests/{param7}/analyze/flakiness",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/item_specs.rs",
+      "line": 35
+    },
+    {
+      "route_template": "/api/v1/projects/{project_id}/item-specs/tests/{param7}/quarantine",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/item_specs.rs",
+      "line": 36
+    },
+    {
+      "route_template": "/api/v1/projects/{project_id}/item-specs/tests/{param7}/record-run",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/item_specs.rs",
+      "line": 37
+    },
+    {
+      "route_template": "/api/v1/projects/{project_id}/item-specs/tests/{param7}/unquarantine",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/item_specs.rs",
+      "line": 38
+    },
+    {
+      "route_template": "/api/v1/projects/{project_id}/item-specs/user-stories",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/item_specs.rs",
+      "line": 39
+    },
+    {
+      "route_template": "/api/v1/projects/{project_id}/item-specs/user-stories/by-item/{param8}",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/item_specs.rs",
+      "line": 40
+    },
+    {
+      "route_template": "/api/v1/projects/{project_id}/item-specs/user-stories/{param7}",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/item_specs.rs",
+      "line": 41
+    },
+    {
+      "route_template": "/api/v1/projects/{project_id}/item-specs/{param6}/{param7}/analyze/impact",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/item_specs.rs",
+      "line": 42
+    },
+    {
+      "route_template": "/api/v1/projects/{project_id}/item-specs/{param6}/{param7}/analyze/similarity",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/item_specs.rs",
+      "line": 43
+    },
+    {
+      "route_template": "/api/v1/projects/{project_id}/item-specs/{param6}/{param7}/content-address",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/item_specs.rs",
+      "line": 44
+    },
+    {
+      "route_template": "/api/v1/projects/{project_id}/item-specs/{param6}/{param7}/merkle-proof",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/item_specs.rs",
+      "line": 45
+    },
+    {
+      "route_template": "/api/v1/projects/{project_id}/item-specs/{param6}/{param7}/prioritization",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/item_specs.rs",
+      "line": 46
+    },
+    {
+      "route_template": "/api/v1/projects/{project_id}/item-specs/{param6}/{param7}/verify-baseline",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/item_specs.rs",
+      "line": 47
+    },
+    {
+      "route_template": "/api/v1/projects/{project_id}/item-specs/{param6}/{param7}/version-chain",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/item_specs.rs",
+      "line": 48
+    },
+    {
+      "route_template": "/api/v1",
+      "classification": "HANDLER_OR_MIXED",
+      "path": "crates/tracera-server/src/routes/journeys.rs",
+      "line": 196
+    },
+    {
+      "route_template": "/api/v1/projects/{project_id}",
+      "classification": "HANDLER_OR_MIXED",
+      "path": "crates/tracera-server/src/routes/journeys.rs",
+      "line": 196
+    },
+    {
+      "route_template": "/api/v1/projects/{project_id}/journeys/detect",
+      "classification": "HANDLER_OR_MIXED",
+      "path": "crates/tracera-server/src/routes/journeys.rs",
+      "line": 215
+    },
+    {
+      "route_template": "/api/v1/projects/{project_id}/libraries",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/libraries.rs",
+      "line": 5
+    },
+    {
+      "route_template": "/api/v1/libraries/{id}",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/libraries.rs",
+      "line": 6
+    },
+    {
+      "route_template": "/api/v1/libraries/{id}/components",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/libraries.rs",
+      "line": 7
+    },
+    {
+      "route_template": "/api/v1/components/{id}",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/libraries.rs",
+      "line": 8
+    },
+    {
+      "route_template": "/api/v1/components/{id}/usage",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/libraries.rs",
+      "line": 9
+    },
+    {
+      "route_template": "/api/v1/projects/{project_id}/matrix",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/matrix.rs",
+      "line": 6
+    },
+    {
+      "route_template": "/api/v1/projects/{project_id}/matrix/export",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/matrix.rs",
+      "line": 7
+    },
+    {
+      "route_template": "/api/v1/mcp/config",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/mcp.rs",
+      "line": 5
+    },
+    {
+      "route_template": "/api/v1/metrics/bundle-size",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/metrics.rs",
+      "line": 6
+    },
+    {
+      "route_template": "/api/v1/metrics/component-render",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/metrics.rs",
+      "line": 7
+    },
+    {
+      "route_template": "/api/v1/metrics/errors",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/metrics.rs",
+      "line": 8
+    },
+    {
+      "route_template": "/api/v1/metrics/web-vitals",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/metrics.rs",
+      "line": 9
+    },
+    {
+      "route_template": "/api/v1/mutations",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/mutations.rs",
+      "line": 5
+    },
+    {
+      "route_template": "/api/v1/notifications",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/notifications.rs",
+      "line": 6
+    },
+    {
+      "route_template": "/api/v1/notifications/read-all",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/notifications.rs",
+      "line": 7
+    },
+    {
+      "route_template": "/api/v1/notifications/stream",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/notifications.rs",
+      "line": 8
+    },
+    {
+      "route_template": "/api/v1/notifications/{id}",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/notifications.rs",
+      "line": 9
+    },
+    {
+      "route_template": "/api/v1/notifications/{id}/read",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/notifications.rs",
+      "line": 10
+    },
+    {
+      "route_template": "/api/v1/problems",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/problems.rs",
+      "line": 6
+    },
+    {
+      "route_template": "/api/v1/problems/{id}",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/problems.rs",
+      "line": 7
+    },
+    {
+      "route_template": "/api/v1/problems/{id}/activities",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/problems.rs",
+      "line": 8
+    },
+    {
+      "route_template": "/api/v1/problems/{id}/close",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/problems.rs",
+      "line": 9
+    },
+    {
+      "route_template": "/api/v1/problems/{id}/rca",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/problems.rs",
+      "line": 10
+    },
+    {
+      "route_template": "/api/v1/problems/{id}/status",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/problems.rs",
+      "line": 11
+    },
+    {
+      "route_template": "/api/v1/projects/{project_id}/problems/stats",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/problems.rs",
+      "line": 12
+    },
+    {
+      "route_template": "/api/v1/processes",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/processes.rs",
+      "line": 6
+    },
+    {
+      "route_template": "/api/v1/processes/{id}",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/processes.rs",
+      "line": 7
+    },
+    {
+      "route_template": "/api/v1/processes/{id}/activate",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/processes.rs",
+      "line": 8
+    },
+    {
+      "route_template": "/api/v1/processes/{id}/deprecate",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/processes.rs",
+      "line": 9
+    },
+    {
+      "route_template": "/api/v1/processes/{id}/executions",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/processes.rs",
+      "line": 10
+    },
+    {
+      "route_template": "/api/v1/processes/{id}/versions",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/processes.rs",
+      "line": 11
+    },
+    {
+      "route_template": "/api/v1/projects/{project_id}/processes/stats",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/processes.rs",
+      "line": 12
+    },
+    {
+      "route_template": "/api/v1/products/{product}/baselines/{baseline}/observations",
+      "classification": "HANDLER_OR_MIXED",
+      "path": "crates/tracera-server/src/routes/product_observations.rs",
+      "line": 78
+    },
+    {
+      "route_template": "/api/v1/products/{product}/baselines/{baseline}/findings",
+      "classification": "HANDLER_OR_MIXED",
+      "path": "crates/tracera-server/src/routes/product_observations.rs",
+      "line": 82
+    },
+    {
+      "route_template": "/api/v1/qa/metrics/coverage",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/qa.rs",
+      "line": 6
+    },
+    {
+      "route_template": "/api/v1/qa/metrics/defect-density",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/qa.rs",
+      "line": 7
+    },
+    {
+      "route_template": "/api/v1/qa/metrics/execution-history",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/qa.rs",
+      "line": 8
+    },
+    {
+      "route_template": "/api/v1/qa/metrics/flaky-tests",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/qa.rs",
+      "line": 9
+    },
+    {
+      "route_template": "/api/v1/qa/metrics/pass-rate",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/qa.rs",
+      "line": 10
+    },
+    {
+      "route_template": "/api/v1/qa/metrics/summary",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/qa.rs",
+      "line": 11
+    },
+    {
+      "route_template": "/api/v1/quality/items/{param5}",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/quality.rs",
+      "line": 5
+    },
+    {
+      "route_template": "/api/v1/reports",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/reports.rs",
+      "line": 6
+    },
+    {
+      "route_template": "/api/v1/reports/export",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/reports.rs",
+      "line": 7
+    },
+    {
+      "route_template": "/api/v1/reports/templates",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/reports.rs",
+      "line": 8
+    },
+    {
+      "route_template": "/api/v1/search",
+      "classification": "HANDLER_OR_MIXED",
+      "path": "crates/tracera-server/src/routes/search.rs",
+      "line": 19
+    },
+    {
+      "route_template": "/api/v1/search/suggest",
+      "classification": "HANDLER_OR_MIXED",
+      "path": "crates/tracera-server/src/routes/search.rs",
+      "line": 22
+    },
+    {
+      "route_template": "/api/v1/search/index/{id}",
+      "classification": "HANDLER_OR_MIXED",
+      "path": "crates/tracera-server/src/routes/search.rs",
+      "line": 23
+    },
+    {
+      "route_template": "/api/v1/search/batch-index",
+      "classification": "HANDLER_OR_MIXED",
+      "path": "crates/tracera-server/src/routes/search.rs",
+      "line": 24
+    },
+    {
+      "route_template": "/api/v1/search/reindex",
+      "classification": "HANDLER_OR_MIXED",
+      "path": "crates/tracera-server/src/routes/search.rs",
+      "line": 25
+    },
+    {
+      "route_template": "/api/v1/search/stats",
+      "classification": "HANDLER_OR_MIXED",
+      "path": "crates/tracera-server/src/routes/search.rs",
+      "line": 26
+    },
+    {
+      "route_template": "/api/v1/search/health",
+      "classification": "HANDLER_OR_MIXED",
+      "path": "crates/tracera-server/src/routes/search.rs",
+      "line": 27
+    },
+    {
+      "route_template": "/api/v1/search",
+      "classification": "HANDLER_OR_MIXED",
+      "path": "crates/tracera-server/src/routes/search.rs",
+      "line": 118
+    },
+    {
+      "route_template": "/api/v1/search/suggest",
+      "classification": "HANDLER_OR_MIXED",
+      "path": "crates/tracera-server/src/routes/search.rs",
+      "line": 133
+    },
+    {
+      "route_template": "/api/v1/projects/{project_id}/search/advanced",
+      "classification": "HANDLER_OR_MIXED",
+      "path": "crates/tracera-server/src/routes/search.rs",
+      "line": 145
+    },
+    {
+      "route_template": "/api/v1/settings",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/settings.rs",
+      "line": 5
+    },
+    {
+      "route_template": "/api/v1/spec-analytics/analyze",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/spec_analytics.rs",
+      "line": 6
+    },
+    {
+      "route_template": "/api/v1/spec-analytics/batch-analyze",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/spec_analytics.rs",
+      "line": 7
+    },
+    {
+      "route_template": "/api/v1/spec-analytics/ears-patterns",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/spec_analytics.rs",
+      "line": 8
+    },
+    {
+      "route_template": "/api/v1/spec-analytics/validate-iso29148",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/spec_analytics.rs",
+      "line": 9
+    },
+    {
+      "route_template": "/api/v1/{kind}",
+      "classification": "HANDLER_OR_MIXED",
+      "path": "crates/tracera-server/src/routes/specs.rs",
+      "line": 260
+    },
+    {
+      "route_template": "/api/v1/{kind}/{{id}}",
+      "classification": "HANDLER_OR_MIXED",
+      "path": "crates/tracera-server/src/routes/specs.rs",
+      "line": 262
+    },
+    {
+      "route_template": "/api/v1/projects/{{project_id}}/{kind}/stats",
+      "classification": "HANDLER_OR_MIXED",
+      "path": "crates/tracera-server/src/routes/specs.rs",
+      "line": 268
+    },
+    {
+      "route_template": "/api/v1/contracts/{id}/verify",
+      "classification": "HANDLER_OR_MIXED",
+      "path": "crates/tracera-server/src/routes/specs.rs",
+      "line": 273
+    },
+    {
+      "route_template": "/api/v1/contracts/{id}/activities",
+      "classification": "HANDLER_OR_MIXED",
+      "path": "crates/tracera-server/src/routes/specs.rs",
+      "line": 274
+    },
+    {
+      "route_template": "/api/v1/features/{id}/activities",
+      "classification": "HANDLER_OR_MIXED",
+      "path": "crates/tracera-server/src/routes/specs.rs",
+      "line": 275
+    },
+    {
+      "route_template": "/api/v1/scenarios/{id}/run",
+      "classification": "HANDLER_OR_MIXED",
+      "path": "crates/tracera-server/src/routes/specs.rs",
+      "line": 276
+    },
+    {
+      "route_template": "/api/v1/specifications/scenarios/{id}/activities",
+      "classification": "HANDLER_OR_MIXED",
+      "path": "crates/tracera-server/src/routes/specs.rs",
+      "line": 277
+    },
+    {
+      "route_template": "/api/v1/specifications/projects/{project_id}/scenarios/activities",
+      "classification": "HANDLER_OR_MIXED",
+      "path": "crates/tracera-server/src/routes/specs.rs",
+      "line": 278
+    },
+    {
+      "route_template": "/api/v1/adrs/{id}/verify",
+      "classification": "HANDLER_OR_MIXED",
+      "path": "crates/tracera-server/src/routes/specs.rs",
+      "line": 279
+    },
+    {
+      "route_template": "/api/v1/adrs/{id}/activities",
+      "classification": "HANDLER_OR_MIXED",
+      "path": "crates/tracera-server/src/routes/specs.rs",
+      "line": 280
+    },
+    {
+      "route_template": "/api/v1/projects/{project_id}/specifications/summary",
+      "classification": "HANDLER_OR_MIXED",
+      "path": "crates/tracera-server/src/routes/specs.rs",
+      "line": 281
+    },
+    {
+      "route_template": "/api/v1/projects/{project_id}/specifications/stats",
+      "classification": "HANDLER_OR_MIXED",
+      "path": "crates/tracera-server/src/routes/specs.rs",
+      "line": 282
+    },
+    {
+      "route_template": "/api/v1/specifications/projects/{project_id}/scenarios",
+      "classification": "HANDLER_OR_MIXED",
+      "path": "crates/tracera-server/src/routes/specs.rs",
+      "line": 287
+    },
+    {
+      "route_template": "/api/v1/storage/presigned-upload",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/storage.rs",
+      "line": 6
+    },
+    {
+      "route_template": "/api/v1/storage/{id}",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/storage.rs",
+      "line": 7
+    },
+    {
+      "route_template": "/api/v1/sync/status",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/sync.rs",
+      "line": 5
+    },
+    {
+      "route_template": "/api/v1/projects/{project_id}/test-cases/stats",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/test_cases.rs",
+      "line": 6
+    },
+    {
+      "route_template": "/api/v1/test-cases",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/test_cases.rs",
+      "line": 7
+    },
+    {
+      "route_template": "/api/v1/test-cases/{id}",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/test_cases.rs",
+      "line": 8
+    },
+    {
+      "route_template": "/api/v1/test-cases/{id}/activities",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/test_cases.rs",
+      "line": 9
+    },
+    {
+      "route_template": "/api/v1/test-cases/{id}/approve",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/test_cases.rs",
+      "line": 10
+    },
+    {
+      "route_template": "/api/v1/test-cases/{id}/deprecate",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/test_cases.rs",
+      "line": 11
+    },
+    {
+      "route_template": "/api/v1/test-cases/{id}/status",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/test_cases.rs",
+      "line": 12
+    },
+    {
+      "route_template": "/api/v1/test-cases/{id}/submit-review",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/test_cases.rs",
+      "line": 13
+    },
+    {
+      "route_template": "/api/v1/projects/{project_id}/test-runs/stats",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/test_runs.rs",
+      "line": 6
+    },
+    {
+      "route_template": "/api/v1/test-runs",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/test_runs.rs",
+      "line": 7
+    },
+    {
+      "route_template": "/api/v1/test-runs/{id}",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/test_runs.rs",
+      "line": 8
+    },
+    {
+      "route_template": "/api/v1/test-runs/{id}/activities",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/test_runs.rs",
+      "line": 9
+    },
+    {
+      "route_template": "/api/v1/test-runs/{id}/cancel",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/test_runs.rs",
+      "line": 10
+    },
+    {
+      "route_template": "/api/v1/test-runs/{id}/complete",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/test_runs.rs",
+      "line": 11
+    },
+    {
+      "route_template": "/api/v1/test-runs/{id}/results",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/test_runs.rs",
+      "line": 12
+    },
+    {
+      "route_template": "/api/v1/test-runs/{id}/results/bulk",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/test_runs.rs",
+      "line": 13
+    },
+    {
+      "route_template": "/api/v1/test-runs/{id}/start",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/test_runs.rs",
+      "line": 14
+    },
+    {
+      "route_template": "/api/v1/projects/{project_id}/test-suites/stats",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/test_suites.rs",
+      "line": 6
+    },
+    {
+      "route_template": "/api/v1/test-suites",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/test_suites.rs",
+      "line": 7
+    },
+    {
+      "route_template": "/api/v1/test-suites/{id}",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/test_suites.rs",
+      "line": 8
+    },
+    {
+      "route_template": "/api/v1/test-suites/{id}/activities",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/test_suites.rs",
+      "line": 9
+    },
+    {
+      "route_template": "/api/v1/test-suites/{id}/status",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/test_suites.rs",
+      "line": 10
+    },
+    {
+      "route_template": "/api/v1/test-suites/{id}/test-cases",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/test_suites.rs",
+      "line": 11
+    },
+    {
+      "route_template": "/api/v1/test-suites/{id}/test-cases/reorder",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/test_suites.rs",
+      "line": 12
+    },
+    {
+      "route_template": "/api/v1/test-suites/{id}/test-cases/{param6}",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/test_suites.rs",
+      "line": 13
+    },
+    {
+      "route_template": "/api/v1/tokens/{id}",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/tokens.rs",
+      "line": 5
+    },
+    {
+      "route_template": "/api/v1/projects/{project_id}/versions/compare/bulk",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/versions.rs",
+      "line": 6
+    },
+    {
+      "route_template": "/api/v1/projects/{project_id}/versions/compare/summary",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/versions.rs",
+      "line": 7
+    },
+    {
+      "route_template": "/api/v1/versions/{id}",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/versions.rs",
+      "line": 8
+    },
+    {
+      "route_template": "/api/v1/versions/{id}/snapshot",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/versions.rs",
+      "line": 9
+    },
+    {
+      "route_template": "/api/v1/projects/{project_id}/webhooks/stats",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/webhooks.rs",
+      "line": 6
+    },
+    {
+      "route_template": "/api/v1/webhooks",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/webhooks.rs",
+      "line": 7
+    },
+    {
+      "route_template": "/api/v1/webhooks/{id}",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/webhooks.rs",
+      "line": 8
+    },
+    {
+      "route_template": "/api/v1/webhooks/{id}/logs",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/webhooks.rs",
+      "line": 9
+    },
+    {
+      "route_template": "/api/v1/webhooks/{id}/regenerate-secret",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/webhooks.rs",
+      "line": 10
+    },
+    {
+      "route_template": "/api/v1/webhooks/{id}/status",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/webhooks.rs",
+      "line": 11
+    },
+    {
+      "route_template": "/api/v1/projects/{project_id}/workflows/runs",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/workflows.rs",
+      "line": 6
+    },
+    {
+      "route_template": "/api/v1/projects/{project_id}/workflows/schedules",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/workflows.rs",
+      "line": 7
+    },
+    {
+      "route_template": "/api/v1/projects/{project_id}/workflows/schedules/bootstrap",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/workflows.rs",
+      "line": 8
+    },
+    {
+      "route_template": "/api/v1/projects/{project_id}/workflows/schedules/{param7}",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/workflows.rs",
+      "line": 9
+    },
+    {
+      "route_template": "/api/v1/ws",
+      "classification": "UNAVAILABLE_501",
+      "path": "crates/tracera-server/src/routes/ws.rs",
+      "line": 5
+    },
+    {
+      "route_template": "/api/v1/contracts",
+      "classification": "GET_HANDLER_OTHER_METHODS_501",
+      "path": "crates/tracera-server/src/routes/specs.rs",
+      "line": 256
+    },
+    {
+      "route_template": "/api/v1/contracts/{id}",
+      "classification": "GET_HANDLER_OTHER_METHODS_501",
+      "path": "crates/tracera-server/src/routes/specs.rs",
+      "line": 256
+    },
+    {
+      "route_template": "/api/v1/features",
+      "classification": "GET_HANDLER_OTHER_METHODS_501",
+      "path": "crates/tracera-server/src/routes/specs.rs",
+      "line": 256
+    },
+    {
+      "route_template": "/api/v1/features/{id}",
+      "classification": "GET_HANDLER_OTHER_METHODS_501",
+      "path": "crates/tracera-server/src/routes/specs.rs",
+      "line": 256
+    },
+    {
+      "route_template": "/api/v1/scenarios",
+      "classification": "GET_HANDLER_OTHER_METHODS_501",
+      "path": "crates/tracera-server/src/routes/specs.rs",
+      "line": 256
+    },
+    {
+      "route_template": "/api/v1/scenarios/{id}",
+      "classification": "GET_HANDLER_OTHER_METHODS_501",
+      "path": "crates/tracera-server/src/routes/specs.rs",
+      "line": 256
+    },
+    {
+      "route_template": "/api/v1/adrs",
+      "classification": "GET_HANDLER_OTHER_METHODS_501",
+      "path": "crates/tracera-server/src/routes/specs.rs",
+      "line": 256
+    },
+    {
+      "route_template": "/api/v1/adrs/{id}",
+      "classification": "GET_HANDLER_OTHER_METHODS_501",
+      "path": "crates/tracera-server/src/routes/specs.rs",
+      "line": 256
+    },
+    {
+      "route_template": "/api/v1/projects/{project_id}/contracts/stats",
+      "classification": "GET_HANDLER_OTHER_METHODS_501",
+      "path": "crates/tracera-server/src/routes/specs.rs",
+      "line": 266
+    },
+    {
+      "route_template": "/api/v1/projects/{project_id}/features/stats",
+      "classification": "GET_HANDLER_OTHER_METHODS_501",
+      "path": "crates/tracera-server/src/routes/specs.rs",
+      "line": 266
+    },
+    {
+      "route_template": "/api/v1/projects/{project_id}/adrs/stats",
+      "classification": "GET_HANDLER_OTHER_METHODS_501",
+      "path": "crates/tracera-server/src/routes/specs.rs",
+      "line": 266
+    }
+  ],
+  "unique_templates": 361
+}

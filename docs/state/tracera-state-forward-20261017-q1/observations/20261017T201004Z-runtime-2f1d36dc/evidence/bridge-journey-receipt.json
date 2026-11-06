@@ -1,0 +1,214 @@
+{
+  "source_sha": "2f1d36dc5264e0b36811036913ed9b47083ef968",
+  "dirty": "",
+  "binary_sha256": "6be5a8d8c29091ccd46a192b27467f6f78626a5d5262f6c6dc19882f249c08c9",
+  "build_command": "SDKROOT=/Library/Developer/CommandLineTools/SDKs/MacOSX26.sdk MACOSX_DEPLOYMENT_TARGET=15.0 CC=/usr/bin/clang CXX=/usr/bin/clang++ cargo build --locked -p tracera-server --bin tracera-server --target-dir /tmp/tracera-runtime-resume-20261017/target -j 2",
+  "placement": "local cached APFS private target, j2",
+  "host": "ProductName:\t\tmacOS\nProductVersion:\t\t27.0\nBuildVersion:\t\t26A5353q\n",
+  "utc": "2026-10-17T20:15:57Z",
+  "port": 19267,
+  "checks": {
+    "ready": [
+      200,
+      {
+        "status": "ready",
+        "service": "tracera-server",
+        "version": "0.2.0",
+        "backend": "sqlite",
+        "uptime_seconds": 0
+      }
+    ],
+    "anonymous": [
+      401,
+      "unauthorized"
+    ],
+    "missing": [
+      404,
+      {
+        "error": "product_baseline_not_found"
+      }
+    ],
+    "csrf_missing": [
+      403,
+      ""
+    ],
+    "invalid_batch": [
+      422,
+      "Failed to deserialize the JSON body into the target type: missing field `product_id` at line 1 column 2"
+    ]
+  },
+  "input_sha256": "984d4210e2cf624f0a65988381c83b4e17fb842e39a1f441114d2c3204e23024",
+  "source_evidence_sha256": "028f3e89d04788bad14e92d60cefb31051f5284ce7ea32b2a86c4c43acad8a1c",
+  "first": [
+    200,
+    {
+      "accepted": 1,
+      "replayed": false
+    }
+  ],
+  "before": [
+    200,
+    {
+      "product_id": "helios-controlled",
+      "baseline": 1,
+      "intents": [
+        {
+          "id": "controlled-command-execution",
+          "kind": "Capability",
+          "title": "Controlled print commands execute and retain provenance",
+          "description": "Actual Helios harness execution of three deliberately trivial print commands; qualifies producer bridge mechanics only",
+          "status": "Accepted",
+          "baseline": 1
+        }
+      ],
+      "observations": [
+        {
+          "id": "phenotype:run_165fe01400fc0226e4cd36033aa3e6c280a285055388eabd8466cf23e990a137:att_764d6dd55323af9d7c04a93419f534b1970eb915c05479e14d8f564638af777b",
+          "product_id": "helios-controlled",
+          "baseline": 1,
+          "kind": "TestResult",
+          "result": "Passed",
+          "source": {
+            "causality": {
+              "tenant_id": "phenotype",
+              "run_id": "run_165fe01400fc0226e4cd36033aa3e6c280a285055388eabd8466cf23e990a137",
+              "session_id": "ses_30ae420db91a86f565ed1dbd17246cfd1726874b49bfbd9192085825a3349828",
+              "attempt_id": "att_764d6dd55323af9d7c04a93419f534b1970eb915c05479e14d8f564638af777b",
+              "replay_hash": "9584a6e44defa69af0e9f1af476e55722d25a0533d82d43ff322104e1c14c377",
+              "envelope_sha256": "babb1207765b662b6088963b4d95a57d855da8bf13206182ff2d1ff8e592c2a9"
+            },
+            "collector": "helios-benchmark-envelope",
+            "version": "1.0.0",
+            "artifact_ref": "urn:helios:run:run_165fe01400fc0226e4cd36033aa3e6c280a285055388eabd8466cf23e990a137"
+          },
+          "recorded_at": "2026-10-17T20:09:30.961977Z",
+          "capability_id": "controlled-command-execution"
+        }
+      ]
+    }
+  ],
+  "findings": [
+    200,
+    {
+      "findings": [],
+      "products_scanned": 1,
+      "capabilities_scanned": 1,
+      "detector_version": "1.1.0",
+      "ran_at": "2026-10-17T20:15:57.379225Z"
+    }
+  ],
+  "foreign_scope": [
+    404,
+    {
+      "error": "product_baseline_not_found"
+    }
+  ],
+  "scope_mismatch": [
+    422,
+    {
+      "error": "product_scope_mismatch"
+    }
+  ],
+  "conflict": [
+    409,
+    {
+      "error": "immutable_evidence_conflict"
+    }
+  ],
+  "atomic_after_failure": [
+    200,
+    {
+      "product_id": "helios-controlled",
+      "baseline": 1,
+      "intents": [
+        {
+          "id": "controlled-command-execution",
+          "kind": "Capability",
+          "title": "Controlled print commands execute and retain provenance",
+          "description": "Actual Helios harness execution of three deliberately trivial print commands; qualifies producer bridge mechanics only",
+          "status": "Accepted",
+          "baseline": 1
+        }
+      ],
+      "observations": [
+        {
+          "id": "phenotype:run_165fe01400fc0226e4cd36033aa3e6c280a285055388eabd8466cf23e990a137:att_764d6dd55323af9d7c04a93419f534b1970eb915c05479e14d8f564638af777b",
+          "product_id": "helios-controlled",
+          "baseline": 1,
+          "kind": "TestResult",
+          "result": "Passed",
+          "source": {
+            "causality": {
+              "tenant_id": "phenotype",
+              "run_id": "run_165fe01400fc0226e4cd36033aa3e6c280a285055388eabd8466cf23e990a137",
+              "session_id": "ses_30ae420db91a86f565ed1dbd17246cfd1726874b49bfbd9192085825a3349828",
+              "attempt_id": "att_764d6dd55323af9d7c04a93419f534b1970eb915c05479e14d8f564638af777b",
+              "replay_hash": "9584a6e44defa69af0e9f1af476e55722d25a0533d82d43ff322104e1c14c377",
+              "envelope_sha256": "babb1207765b662b6088963b4d95a57d855da8bf13206182ff2d1ff8e592c2a9"
+            },
+            "collector": "helios-benchmark-envelope",
+            "version": "1.0.0",
+            "artifact_ref": "urn:helios:run:run_165fe01400fc0226e4cd36033aa3e6c280a285055388eabd8466cf23e990a137"
+          },
+          "recorded_at": "2026-10-17T20:09:30.961977Z",
+          "capability_id": "controlled-command-execution"
+        }
+      ]
+    }
+  ],
+  "after": [
+    200,
+    {
+      "product_id": "helios-controlled",
+      "baseline": 1,
+      "intents": [
+        {
+          "id": "controlled-command-execution",
+          "kind": "Capability",
+          "title": "Controlled print commands execute and retain provenance",
+          "description": "Actual Helios harness execution of three deliberately trivial print commands; qualifies producer bridge mechanics only",
+          "status": "Accepted",
+          "baseline": 1
+        }
+      ],
+      "observations": [
+        {
+          "id": "phenotype:run_165fe01400fc0226e4cd36033aa3e6c280a285055388eabd8466cf23e990a137:att_764d6dd55323af9d7c04a93419f534b1970eb915c05479e14d8f564638af777b",
+          "product_id": "helios-controlled",
+          "baseline": 1,
+          "kind": "TestResult",
+          "result": "Passed",
+          "source": {
+            "causality": {
+              "tenant_id": "phenotype",
+              "run_id": "run_165fe01400fc0226e4cd36033aa3e6c280a285055388eabd8466cf23e990a137",
+              "session_id": "ses_30ae420db91a86f565ed1dbd17246cfd1726874b49bfbd9192085825a3349828",
+              "attempt_id": "att_764d6dd55323af9d7c04a93419f534b1970eb915c05479e14d8f564638af777b",
+              "replay_hash": "9584a6e44defa69af0e9f1af476e55722d25a0533d82d43ff322104e1c14c377",
+              "envelope_sha256": "babb1207765b662b6088963b4d95a57d855da8bf13206182ff2d1ff8e592c2a9"
+            },
+            "collector": "helios-benchmark-envelope",
+            "version": "1.0.0",
+            "artifact_ref": "urn:helios:run:run_165fe01400fc0226e4cd36033aa3e6c280a285055388eabd8466cf23e990a137"
+          },
+          "recorded_at": "2026-10-17T20:09:30.961977Z",
+          "capability_id": "controlled-command-execution"
+        }
+      ]
+    }
+  ],
+  "restart_exact_equality": true,
+  "replay": [
+    200,
+    {
+      "accepted": 0,
+      "replayed": true
+    }
+  ],
+  "producer_journey": "Actual installed Helios harness script executed controlled synthetic subject print commands. Real producer output, unsigned; NOT authentic tenant ownership, valuable product benchmark, or user acceptance.",
+  "mapping_authority": "Explicit manual product/capability assignment to producer command execution; original source time, session/run/attempt/replay identities preserved.",
+  "observation_end": "2026-10-17T20:15:57Z",
+  "owned_process_stopped": true,
+  "port_closed": true,
+  "causality_exact_match": true
+}

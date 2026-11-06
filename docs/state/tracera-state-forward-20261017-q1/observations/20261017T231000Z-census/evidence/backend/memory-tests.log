@@ -1,0 +1,25 @@
+warning: linker stderr: rust-lld: Option `-no_compact_unwind' is undocumented. Should lld implement it?
+  |
+  = note: `#[warn(linker_messages)]` on by default
+
+warning: `tracera-server` (bin "tracera-server" test) generated 1 warning
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.92s
+     Running unittests src/main.rs (/tmp/tracera-runtime-8dd-20261017/target/debug/deps/tracera_server-b27705bb95e9c228)
+
+running 13 tests
+test memory::distillation::tests::test_memory_entry_touch_increments ... ok
+test memory::distillation::tests::test_memory_entry_decay ... ok
+test memory::distillation::tests::test_pattern_confidence_capped ... ok
+test memory::distillation::tests::test_pattern_confidence_normal ... ok
+test memory::distillation::tests::test_pattern_confidence_zero_total ... ok
+test memory::distillation::tests::test_fingerprint_path_basic ... ok
+test memory::distillation::tests::test_count_patterns ... ok
+test memory::distillation::tests::test_distill_patterns_filters_low_occurrence ... ok
+test memory::distillation::tests::test_extract_paths_from_snapshot ... ok
+test memory::distillation::tests::test_distill_patterns_qualifying ... ok
+test memory::distillation::tests::test_distiller_find_memory ... ok
+test memory::distillation::tests::test_distiller_clear ... ok
+test memory::distillation::tests::test_distiller_lifecycle ... ok
+
+test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 112 filtered out; finished in 0.01s
+

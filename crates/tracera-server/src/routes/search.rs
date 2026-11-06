@@ -89,7 +89,9 @@ async fn query(
             StatusCode::NOT_IMPLEMENTED,
             Json(json!({"error":"not_implemented","route":route})),
         ),
-        StoreError::Database(_) => error(StatusCode::INTERNAL_SERVER_ERROR, "search_store_error"),
+        StoreError::Database(_) | StoreError::Conflict(_) => {
+            error(StatusCode::INTERNAL_SERVER_ERROR, "search_store_error")
+        }
     })
 }
 async fn search_get(State(state): State<AppState>, Query(params): Query<SearchParams>) -> Reply {
