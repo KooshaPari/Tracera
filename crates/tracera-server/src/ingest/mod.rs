@@ -32,7 +32,8 @@ mod trace_refs;
 pub use self::agcord::AgcordConfig;
 pub use self::github::GitHubConfig;
 pub use self::jira::JiraConfig;
-pub use self::persist::{ingest_from_payload, ingest_live};
+#[allow(unused_imports)] // Preserve the explicit aggregate ingest API.
+pub use self::persist::{ingest_from_payload, ingest_live, ingest_live_source, IngestSource};
 
 // ---------------------------------------------------------------------------
 // Error type
