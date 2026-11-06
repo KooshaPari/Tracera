@@ -1,4 +1,6 @@
+mod agileplus;
 mod items;
+mod product_observations;
 /// PgStore — Postgres backend implementing `Store`.
 ///
 /// Uses runtime `sqlx::query()` (not macros) so `env -u DATABASE_URL cargo build`
@@ -39,6 +41,21 @@ impl PgStore {
 }
 
 impl Store for PgStore {
+    fn ingest_product_observations(
+        &self,
+        batch: crate::product::persistence::ProductObservationBatch,
+    ) -> BoxFuture<'_, StoreResult<crate::product::persistence::ProductIngestReceipt>> {
+        Box::pin(async move { product_observations::ingest(&self.pool, batch).await })
+    }
+    fn product_observations(
+        &self,
+        product_id: String,
+        baseline: u64,
+    ) -> BoxFuture<'_, StoreResult<Option<crate::product::persistence::ProductObservationModel>>>
+    {
+        Box::pin(async move { product_observations::read(&self.pool, product_id, baseline).await })
+    }
+
     fn list_items(
         &self,
         filter: crate::item::ItemFilter,
@@ -350,5 +367,30 @@ impl Store for PgStore {
         direction: String,
     ) -> BoxFuture<'_, StoreResult<Vec<Value>>> {
         Box::pin(swee::get_swee_neighbors(&self.pool, id, direction))
+    }
+
+    fn get_agileplus_ingest_key(
+        &self,
+        idempotency_key: String,
+    ) -> BoxFuture<'_, StoreResult<Option<crate::store::AgilePlusIngestKey>>> {
+        Box::pin(agileplus::get_agileplus_ingest_key(
+            &self.pool,
+            idempotency_key,
+        ))
+    }
+
+    fn record_agileplus_ingest(
+        &self,
+        record: crate::store::AgilePlusIngestRecord,
+        now: DateTime<Utc>,
+    ) -> BoxFuture<'_, StoreResult<()>> {
+        Box::pin(agileplus::record_agileplus_ingest(&self.pool, record, now))
+    }
+
+    fn get_agileplus_revision(
+        &self,
+        agileplus_id: String,
+    ) -> BoxFuture<'_, StoreResult<Option<i64>>> {
+        Box::pin(agileplus::get_agileplus_revision(&self.pool, agileplus_id))
     }
 }

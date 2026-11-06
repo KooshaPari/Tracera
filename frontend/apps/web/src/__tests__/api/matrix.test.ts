@@ -30,6 +30,16 @@ vi.mock("@/api/availability", () => ({
   invalidResponse: vi.fn(() => {
     throw new Error("Invalid response from service");
   }),
+  isNonApiContent: vi.fn((contentType: string) => {
+    const normalized = contentType.toLowerCase();
+    return normalized.includes("text/html") || normalized.includes("text/plain");
+  }),
+  rejectNonApiContent: vi.fn((contentType: string) => {
+    const normalized = contentType.toLowerCase();
+    if (normalized.includes("text/html") || normalized.includes("text/plain")) {
+      throw new Error("Invalid response from service");
+    }
+  }),
 }));
 
 import { client } from "@/api/client";

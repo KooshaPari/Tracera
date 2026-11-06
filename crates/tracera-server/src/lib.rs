@@ -25,6 +25,7 @@ pub mod datastore;
 pub mod db;
 pub mod item;
 pub mod neo4j;
+pub mod observation_store;
 pub mod pg_store;
 pub mod product;
 pub mod r2;

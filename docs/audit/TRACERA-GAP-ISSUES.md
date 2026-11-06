@@ -1,5 +1,84 @@
 # Tracera gap inventory
 
+### [Instinct] GAP-025 Known project cannot open its project sidebar
+
+On 2026-10-15 PDT the current valid TRACERA project root rendered Project Not
+Found, with no project sidebar. An independent read-only GET of that same
+project detail returned HTTP200, named TRACERA, without a stub marker. The
+actual navigation lane could click only Dashboard, Projects, Items and Agents
+global command links; forty expected baseline links were unavailable. Reconcile
+project route lookup/state with the detail API and restore the selected-project
+navigation. Evidence: `TRACERA-SIDEBAR-CLICK-RECEIPTS.csv`. This is current local
+gateway evidence; earlier successful direct-URL DOM receipts remain dated
+observations and are not overwritten. Public Access acceptance is unverified.
+
+### [Instinct] GAP-023 Existing component detail reports Item Not Found
+
+Direct capture-free navigation of the code-item detail route with component
+ID `tracera-00a9c4483bd109a5`, selected from the actual project item collection,
+rendered Item Not Found. Reconcile the detail lookup and declared supported
+view types with canonical project IDs; unsupported types should have explicit
+semantics. Evidence: DOM receipt index 56. No mutation requests were allowed.
+
+### [Instinct] GAP-024 ADR detail loses selected artifact identity
+
+A valid ADR ID selected from the eleven returned ADR items was used in the
+ADR detail URL. Navigation ended at the project specifications list, with
+Architecture Decision Records heading and no selected ADR detail heading.
+Preserve and render the selected ADR identity through routing or explicitly
+report unsupported detail behavior. Evidence: DOM receipt index 45.
+
+### [Instinct] GAP-022 Named views render the same mixed item table
+
+Capture-free local-gateway DOM observation found 533-row tables containing the
+same ADR, component, test and requirement headings in fourteen navigation
+entries: Source Map, Validation, Domain Model, Database Schema, Data Flow,
+Timeline, Reports, Dependency Graph, Performance Metrics, Security Analysis,
+Monitoring Dashboard, direct configuration and infrastructure views, and the
+generic code view route.
+Timeline/Monitoring share one route; Reports/Performance share another. These
+are fourteen entries, not fourteen distinct URLs. Different page headings do
+not establish artifact identity: Code/Test/Domain/Database/Dataflow/Monitoring/
+Performance/Dependency/Security/Configuration/Infrastructure need their named
+artifact projections, not the unfiltered 533-item project collection. Apply
+artifact-specific schemas, relationships, filtering and completeness checks.
+Evidence: `TRACERA-DOM-VIEW-RECEIPTS.csv`, table_rows=533 rows, and
+`TRACERA-ITEM-PAGINATION-RECEIPTS.json`. These are direct local navigation
+observations, not public Access acceptance or a complete sidebar click journey.
+
+Runtime refresh 2026-10-14 23:55 PDT: GAP-001 is now independently confirmed
+on the authorized Windows 8091 gateway for TRACERA and CIVIS. GAP-018 now
+has a non-stub CIVIS flat-items receipt with zero records and total zero;
+the ingestion cause remains unknown. Flat TRACERA items return 533 unique
+records and total 533, distinct from project-scoped item stubs and canonical
+Rust source route findings in GAP-010. See `TRACERA-SAFE-GET-RECEIPTS.csv`
+and `TRACERA-ITEM-PAGINATION-RECEIPTS.json`. Public Access acceptance remains
+unverified. Earlier source-only paragraphs below retain their dated scope.
+
+### [Instinct] GAP-021 Deployed gateway turns missing API routes into successful empty data
+
+The deployed Windows `front.js` gateway forwards loopback 8091 to 8080.
+For `/api/*` upstream HTML responses its GET fallback emits HTTP 200 empty
+JSON with `stub:true`; selected collection roots instead emit `[]` without a
+stub field. The TRACERA summary was independently observed through 8091 as
+HTTP 200 with `x-tracera-stub: unimplemented-route` and the reported empty
+stub envelope. This explains the separate 8080 HTML response. Return explicit
+unavailable/not-implemented states, preserve errors versus true emptiness,
+and document deployment ownership. Evidence and scope:
+`TRACERA-RUNTIME-RECEIPTS.md`, gateway reconciliation. Public Access and
+rendered artifact completeness remain unverified. No source repair made.
+
+Refresh 2026-10-14: see `TRACERA-AUDIT-COVERAGE.md` for current baseline
+provenance and `TRACERA-RUNTIME-RECEIPTS.md` for scoped runtime observations.
+The original static findings below remain distinct from live acceptance.
+
+### [Instinct] GAP-020 Machine-readable traceability baseline is empty
+
+`docs/ops/TRACEABILITY.json` is zero bytes at source revision `4ec07444`.
+It cannot serve as a parseable FR/endpoint/test oracle. Populate and validate
+the authoritative projection, keeping missing test linkage explicit.
+Evidence: `git cat-file -s 4ec07444:docs/ops/TRACEABILITY.json` returns 0.
+
 Read-only static audit against the `origin/main` source snapshot at `9a4360e812eeee81ee7c0367b12a967cf7764440`. No app code was changed and no tests were run. The live application is behind Cloudflare Access; this inventory does not claim an authenticated live-service verification. The Specifications summary payload and CIVIS item count are operator-provided observations, not re-probed here.
 
 ## Baseline selection
@@ -198,3 +277,70 @@ The route strings below are registered directly in the flat Axum router at `crat
 - Journeys (registered 501): `/api/v1/journeys`, `/api/v1/journeys/{id}`, `/api/v1/journeys/{id}/steps`, `/api/v1/journeys/{id}/steps/{step_id}`, `/api/v1/journeys/{id}/detect`, `/api/v1/journeys/{id}/visualize`, `/api/v1/projects/{project_id}/journeys`, `/api/v1/projects/{project_id}/journeys/{id}`, `/api/v1/projects/{project_id}/journeys/{id}/steps`, `/api/v1/projects/{project_id}/journeys/{id}/steps/{step_id}`, `/api/v1/projects/{project_id}/journeys/{id}/detect`, `/api/v1/projects/{project_id}/journeys/{id}/visualize`.
 - Libraries/components/tokens (registered 501): `/api/v1/libraries`, `/api/v1/libraries/{id}`, `/api/v1/libraries/{id}/components`, `/api/v1/libraries/{id}/tokens`, `/api/v1/components`, `/api/v1/components/{id}`, `/api/v1/components/{id}/usage`, `/api/v1/tokens`.
 - Codex/docs/AI (registered 501): `/api/v1/projects/{project_id}/codex/auth-status`, `/api/v1/projects/{project_id}/codex/sessions`, `/api/v1/projects/{project_id}/codex/sessions/{session_id}`, `/api/v1/projects/{project_id}/docs/generate`, `/api/v1/projects/{project_id}/ai/summarize`, `/api/v1/projects/{project_id}/ai/classify`.
+
+### [Instinct] GAP-026 Endpoint governance map falsely marks auth/me unmounted
+
+- Severity: Medium; source-only at `5a9f45fb`.
+- Expected: Governance mount status matches active router.
+- Actual: Map marks unmounted; active router mounts auth_me.
+- Evidence: docs/governance/policy/endpoint_traceability_map.md:15; crates/tracera-server/src/router.rs:231; crates/tracera-server/src/main.rs:249.
+- Suggested fix: Correct mount status with revision-pinned owner evidence.
+- Runtime acceptance: not established by this documentary finding.
+
+### [Instinct] GAP-027 Endpoint governance test links reference a missing Python test file
+
+- Severity: Medium; source-only at `5a9f45fb`.
+- Expected: Test links resolve to existing definitions.
+- Actual: Three links target missing tests/unit/test_governance_and_models.py.
+- Evidence: docs/governance/policy/endpoint_traceability_map.md:22,24,25; tests/e2e/contract/impact.e2e.yml:2; tests/e2e/contract/coverage-matrix.e2e.yml:2; tests/e2e/contract/spec-check.e2e.yml:2.
+- Suggested fix: Map FRs to existing definitions and separately record execution receipts.
+- Runtime acceptance: not established by this documentary finding.
+
+### [Instinct] GAP-028 Endpoint governance map omits existing contract-test linkage
+
+- Severity: Medium; source-only at `5a9f45fb`.
+- Expected: Distinguish existing test definitions from execution acceptance.
+- Actual: Ten map rows say Not covered despite exact method/path contract definitions. Five additional rows were source-checked at `0ccf98c8`: GET org metrics, GET teams, GET sprints, GET stories, POST sprints.
+- Evidence: docs/governance/policy/endpoint_traceability_map.md:17-19,27,30; tests/e2e/contract/evidence-list.e2e.yml:2,6; tests/e2e/contract/evidence-create.e2e.yml:2,6; tests/e2e/contract/evidence-health.e2e.yml:2,6; tests/e2e/contract/org-intel-health.e2e.yml:2,6; tests/e2e/contract/sdlc-pm-health.e2e.yml:2,6.
+- Additional evidence: docs/governance/policy/endpoint_traceability_map.md:28-29,31-33; tests/e2e/contract/org-metrics.e2e.yml:2,6; tests/e2e/contract/teams-list.e2e.yml:2,6; tests/e2e/contract/sprints-list.e2e.yml:2,6; tests/e2e/contract/stories-list.e2e.yml:2,6; tests/e2e/contract/sprints-create.e2e.yml:2,6.
+- Suggested fix: Link definitions and label execution UNKNOWN until independently run.
+- Runtime acceptance: not established by this documentary finding.
+
+### [Instinct] GAP-029 Migration oracle Go On main claims reference absent service
+
+- Severity: Medium; source-only at `5a9f45fb`.
+- Expected: On main claims resolve to source at cited revision.
+- Actual: All 13 rows say YES and cite absent cmd/server/main.go.
+- Evidence: docs/FEATURE_INVENTORY.md:331-347; git ls-files cmd/server/main.go returns no tracked path at 5a9f45fb.
+- Suggested fix: Mark Go entries historical with provenance and current migration owner mapping.
+- Runtime acceptance: not established by this documentary finding.
+
+## 2026-10-17 append-only census follow-up
+
+The original static inventory above retains its historical source identity. The [current evidence tree](../state/tracera-state-forward-20261017-q1/observations/20261017T231000Z-census/STATUS.md) separately collects current intent/interface/backend/Desk evidence; old rows are not silently reclassified or accepted as closed.
+
+### [Instinct] GAP-030 Desk CLI cannot qualify a stack without matching layout assets
+
+The installed `C:\Users\koosh\.cargo\bin\tracera.exe` identifies as 0.1.0 in the operator's [dated Desk report](../state/tracera-state-forward-20261017-q1/observations/20261017T231000Z-census/evidence/desk-status-2026-10-17.md). Current source resolves an ancestor `docker-compose.bundle.yml` or `docker-compose.local.yml`; explicit `--root` / `TRACERA_ROOT` requires `<root>/tracera-bundle/docker-compose.bundle.yml` or `<root>/docker-compose.local.yml`. A standalone executable in cargo-bin does not establish those assets. Record the actual failure and matching package/worktree before choosing a runtime. Source: `048f44d2c38925f4c7c9968dfeaeda1a97f4d970:crates/tracera-cli/src/bundle.rs:47-142`; `commands.rs:145-170`.
+
+Follow the [Desk forward path](../state/tracera-state-forward-20261017-q1/observations/20261017T231000Z-census/DESK-FORWARD-PATH.md): discover matching assets, select an already available Compose-capable runtime, then preflight disk/ports/CPU and data ownership. No service, WSL, Docker, installation, or cleanup action is part of this docs change.
+
+### [Instinct] GAP-031 Reconcile Desk runtime identities before acceptance
+
+A Compose management CLI and a manually launched SQLite API are different candidates. The report's absent native Tracera process/service does not prove a later or differently named API is down. Preserve each exact binary hash/version, PID/listeners, config/root, database, and readiness receipt. No requirement for a Windows service is inferred. The actual one-GPU/vLLM occupancy, C: headroom, and Fedora/docker-desktop states constrain placement; they are not automatic feature failures. Evidence: the [dated operator report](../state/tracera-state-forward-20261017-q1/observations/20261017T231000Z-census/evidence/desk-status-2026-10-17.md) and [separate forward plan](../state/tracera-state-forward-20261017-q1/observations/20261017T231000Z-census/DESK-FORWARD-PATH.md). Startup qualification requires a separately authorized owned action; this work only records the plan.
+
+Fresh GAP-030 evidence: [actual Desk CLI/bundle reconciliation](../state/tracera-state-forward-20261017-q1/observations/20261017T231000Z-census/evidence/backend/desk-reconciliation.json) confirms status fails before Compose because cargo-bin ancestor discovery cannot see sibling `C:\Users\koosh\Tracera\docker-compose.local.yml`. `--root` is advertised but not executed because status can write env files.
+
+Fresh GAP-031 evidence: [runtime receipt](../state/tracera-state-forward-20261017-q1/observations/20261017T231000Z-census/evidence/backend/live-runtime.json) preserves manual PID20208and early200readiness separately from later timeouts. [UI witness](../state/tracera-state-forward-20261017-q1/observations/20261017T231000Z-census/evidence/live-view-report.json) records five direct empty-response paths and missing8091listener, with54dynamic paths NOT_RUNand deployed SHAUNKNOWN. CIVIS genuine0items at22:33Zis qualified only for that response; other project manifests remain incomplete.
+
+## D-04 operator follow-up (2026-10-18T06:53Z report receipt)
+
+GAP-030 additionally requires the exact root-qualified status/up sequence and prerequisites documented in [D-04 preflight](D04-ROOT-PREFLIGHT.md). This extends the existing launch/layout issue rather than duplicating it. Historical GAP-030/021 records remain unchanged.
+
+### [Instinct] GAP-032 Qualify the selected Desk Compose backend before launch
+
+Docker selected with docker-desktop reported Stopped is an unqualified launch prerequisite, not independent proof of every endpoint being down. Fedora Podman on port 7777 does not automatically satisfy native `podman compose` or `wsl+docker`. Source supports Podman but compatibility of that endpoint remains UNKNOWN. See [source identities, evidence limits, and positive/negative closure oracles](D04-ROOT-PREFLIGHT.md). First perform read-only root/config/backend identification and preserve configuration; no backend switch or startup was executed.
+
+### [Instinct] GAP-033 Preserve env configuration during root-qualified status
+
+Source `cmd_status` runs env preparation before Compose. `ensure_env_file` preserves a file containing a nonempty exact `POSTGRES_PASSWORD=` line but regenerates the whole file otherwise, including read failure. Existing real compose-side env files are retained by the link helper; different symlink targets can be replaced. This is source-qualified conditional overwrite risk; actual Desk overwrite is UNKNOWN. See [source proof and isolated positive/negative closure oracles](D04-ROOT-PREFLIGHT.md). Secure byte/metadata preservation and a read-only preflight precede any status/up call. Runtime validation NOT_RUN.

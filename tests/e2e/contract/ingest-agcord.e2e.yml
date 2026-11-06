@@ -1,0 +1,28 @@
+name: ingest-agcord
+endpoint: /ingest/agcord
+base_url: http://127.0.0.1:8080
+# AgCord ingestion keeps its own explicit path. Payload shape is `items[]`, and
+# a 200 here means AgCord data landed, not that AgilePlus governance was
+# accepted (that contract is /api/v1/ingest/agileplus, SPEC-009).
+tests:
+  happy_path:
+    method: POST
+    body:
+      {
+        "items":
+          [{ "id": "agent-1", "name": "Ingest Agent", "status": "active" }],
+      }
+    expect:
+      status: 200
+      has_body: true
+  empty_input:
+    method: POST
+    body: {}
+    expect:
+      status: 422
+  legacy_alias_redirects:
+    method: POST
+    endpoint: /ingest/agileplus
+    body: { "items": [{ "id": "agent-2", "name": "Legacy Agent" }] }
+    expect:
+      status: 308

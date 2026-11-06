@@ -6,156 +6,64 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { fetchSystemStatus } from "@/api/system";
 
-// Mock client
+const mocks = vi.hoisted(() => ({ get: vi.fn() }));
+
 vi.mock("@/api/client", () => ({
   client: {
-    apiClient: {
-      GET: vi.fn(),
-    },
-    ApiError: class ApiError extends Error {
-      status: number;
-      statusText: string;
-      constructor(status: number, statusText: string) {
-        super(`API Error ${status}: ${statusText}`);
-        this.status = status;
-        this.statusText = statusText;
-      }
-    },
+    API_BASE_URL: "",
+    apiClient: { GET: mocks.get },
+    getAuthHeaders: () => ({}),
   },
 }));
 
-vi.mock("@/api/availability", () => ({
-  requireAvailable: vi.fn(
-    async (promise: Promise<{ data?: unknown; error?: unknown; response: Response }>) => {
-      const { data, response } = await promise;
-      if (!response.ok)
-        throw new Error(response.status === 501 ? "Not implemented yet" : "Service unavailable");
-      if (data === undefined) throw new Error("Invalid response from service");
-      return data;
+const reply = (status: number, data?: unknown) => ({
+  response: new Response(null, { status }),
+  data,
+  error: status >= 400 ? { error: "failed" } : undefined,
+});
+
+beforeEach(() => {
+  vi.clearAllMocks();
+});
+
+describe(fetchSystemStatus, () => {
+  it("reports real backend health when the payload carries status and uptime", async () => {
+    mocks.get.mockResolvedValue(reply(200, { status: "ok", uptime_seconds: 12 }));
+
+    expect(await fetchSystemStatus()).toMatchObject({
+      status: "healthy",
+      uptime: 12,
+      queuedJobs: undefined,
+    });
+  });
+
+  it("preserves a degraded backend as degraded", async () => {
+    mocks.get.mockResolvedValue(reply(200, { status: "degraded", uptime_seconds: 3 }));
+
+    expect(await fetchSystemStatus()).toMatchObject({ status: "degraded", uptime: 3 });
+  });
+
+  it.each([401, 403, 404, 429, 500, 502, 503])(
+    "never reports healthy on HTTP %s",
+    async (status) => {
+      mocks.get.mockResolvedValue(reply(status));
+
+      await expect(fetchSystemStatus()).rejects.toMatchObject({ status });
     },
-  ),
-  invalidResponse: vi.fn(() => {
-    throw new Error("Invalid response from service");
-  }),
-}));
+  );
 
-vi.mock("@/api/mcp-config", () => ({
-  getMcpConfig: vi.fn(),
-}));
+  it("propagates transport failure instead of inventing uptime", async () => {
+    mocks.get.mockRejectedValue(new TypeError("Failed to fetch"));
 
-import { client } from "@/api/client";
-
-const { apiClient } = client;
-
-describe("System API", () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
+    await expect(fetchSystemStatus()).rejects.toThrow("Failed to fetch");
   });
 
-  describe(fetchSystemStatus, () => {
-    it("should fetch system status successfully", async () => {
-      const mockApiResponse = {
-        queuedJobs: 2,
-        status: "healthy",
-        uptime_seconds: 99.9,
-        version: "1.0.0",
-      };
-      vi.mocked(apiClient.GET).mockResolvedValue({
-        data: mockApiResponse,
-        error: undefined,
-        response: new Response(),
-      });
+  it.each([null, {}, "<html>sign in</html>", { status: "ok" }] as unknown[])(
+    "rejects a 2xx payload that is not a health contract (%#)",
+    async (payload) => {
+      mocks.get.mockResolvedValue(reply(200, payload));
 
-      const result = await fetchSystemStatus();
-      expect(result).toEqual({
-        queuedJobs: 2,
-        status: "healthy",
-        uptime: 99.9,
-        version: "1.0.0",
-      });
-      expect(apiClient.GET).toHaveBeenCalledWith("/api/v1/health", {});
-    });
-
-    it("should propagate error via requireAvailable", async () => {
-      vi.mocked(apiClient.GET).mockRejectedValue(new Error("Network error"));
-
-      await expect(fetchSystemStatus()).rejects.toThrow("Network error");
-    });
-
-    it("should normalize ok status to healthy", async () => {
-      const responseData = {
-        status: "ok",
-        uptime_seconds: 50,
-      };
-      vi.mocked(apiClient.GET).mockResolvedValue({
-        data: responseData,
-        error: undefined,
-        response: new Response(),
-      });
-
-      const result = await fetchSystemStatus();
-      expect(result.status).toBe("healthy");
-      expect(result.uptime).toBe(50);
-    });
-
-    it("should normalize ready status to healthy", async () => {
-      const responseData = {
-        status: "ready",
-        uptime_seconds: 100,
-      };
-      vi.mocked(apiClient.GET).mockResolvedValue({
-        data: responseData,
-        error: undefined,
-        response: new Response(),
-      });
-
-      const result = await fetchSystemStatus();
-      expect(result.status).toBe("healthy");
-      expect(result.uptime).toBe(100);
-    });
-
-    it("should pass through degraded status", async () => {
-      const responseData = {
-        status: "degraded",
-        uptime_seconds: 50,
-      };
-      vi.mocked(apiClient.GET).mockResolvedValue({
-        data: responseData,
-        error: undefined,
-        response: new Response(),
-      });
-
-      const result = await fetchSystemStatus();
-      expect(result.status).toBe("degraded");
-      expect(result.uptime).toBe(50);
-    });
-
-    it("should throw invalidResponse when uptime is missing", async () => {
-      const responseData = {
-        status: "degraded",
-        version: "2.0.0",
-      };
-      vi.mocked(apiClient.GET).mockResolvedValue({
-        data: responseData,
-        error: undefined,
-        response: new Response(),
-      });
-
-      await expect(fetchSystemStatus()).rejects.toThrow("Invalid response from service");
-    });
-
-    it("should throw invalidResponse when status is invalid", async () => {
-      const responseData = {
-        status: "unknown_status",
-        uptime_seconds: 50,
-      };
-      vi.mocked(apiClient.GET).mockResolvedValue({
-        data: responseData,
-        error: undefined,
-        response: new Response(),
-      });
-
-      await expect(fetchSystemStatus()).rejects.toThrow("Invalid response from service");
-    });
-  });
+      await expect(fetchSystemStatus()).rejects.toMatchObject({ status: 502 });
+    },
+  );
 });

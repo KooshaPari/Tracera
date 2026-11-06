@@ -1,5 +1,7 @@
 #[path = "routes/auth.rs"]
 mod auth_routes;
+#[path = "routes/benchmark_observations.rs"]
+mod benchmark_observation_routes;
 #[path = "routes/export_import.rs"]
 mod export_import_routes;
 #[path = "routes/graph.rs"]
@@ -8,6 +10,8 @@ mod graph_routes;
 mod item_routes;
 #[path = "routes/journeys.rs"]
 mod journeys_routes;
+#[path = "routes/product_observations.rs"]
+mod product_observation_routes;
 #[path = "routes/search.rs"]
 mod search_routes;
 #[path = "routes/specs.rs"]
@@ -23,10 +27,11 @@ use http::{header, HeaderValue, Method};
 use std::collections::HashSet;
 
 use crate::handlers::{
+    agileplus_ingest::ingest_agileplus,
     dashboard::{dashboard_summary, get_project, list_projects, list_teams, org_metrics},
     evidence::{create_evidence, list_evidence},
     governance::{blast_radius, confidence, coverage_matrix, impact, spec_check},
-    ingest_api::{ingest_agileplus, ingest_github, ingest_jira},
+    ingest_api::{ingest_agcord, ingest_agileplus_legacy, ingest_github, ingest_jira},
     problems::{create_problem, list_problems},
     sprints::{create_sprint, list_sprints},
     stories::{create_story, create_trace_link, list_stories, list_stories_api},
@@ -131,6 +136,8 @@ pub(crate) fn build_router_with_auth(
 ) -> Router {
     let workos_router = build_workos_router::<AppState>(state.workos_client.clone());
     Router::new()
+        .merge(product_observation_routes::routes())
+        .merge(benchmark_observation_routes::routes())
         .merge(export_import_routes::routes())
         .merge(specs_routes::routes())
         .merge(w9_routes::routes())
@@ -162,7 +169,13 @@ pub(crate) fn build_router_with_auth(
         .route("/evidence/health", get(crate::health::health))
         .route("/ingest/github", post(ingest_github))
         .route("/ingest/jira", post(ingest_jira))
-        .route("/ingest/agileplus", post(ingest_agileplus))
+        // AgCord ingestion keeps its own explicit path; `/ingest/agileplus`
+        // is a legacy alias that redirects here (see issue #1164).
+        .route("/ingest/agcord", post(ingest_agcord))
+        .route("/ingest/agileplus", post(ingest_agileplus_legacy))
+        // SPEC-009 governed AgilePlus ingestion (distinct producer, payload,
+        // auth and idempotency contract).
+        .route("/api/v1/ingest/agileplus", post(ingest_agileplus))
         .route("/sdlc-pm/health", get(crate::health::health))
         .route("/sdlc-pm/sprints", get(list_sprints).post(create_sprint))
         .route("/sdlc-pm/stories", get(list_stories))
