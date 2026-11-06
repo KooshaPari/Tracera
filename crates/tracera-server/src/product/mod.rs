@@ -11,7 +11,7 @@
 //!   a specific product baseline.
 //! - **Traversal** (`traversal`) — bounded graph traversal with cycle detection.
 //! - **Queries** (`queries`) — product views, invalidation index, and search.
-//! - **Ingest** (`ingest`) — observation ingestion with idempotency.
+//! - **Persistence** (`persistence`) — atomic durable observation ingestion.
 //! - **Assessment** (`assessment`) — deterministic product health assessment.
 //! - **Detectors** (`detectors`) — freshness, coverage, and contradiction detectors.
 
@@ -19,7 +19,6 @@ pub mod assessment;
 pub mod baseline;
 pub mod detectors;
 pub mod identity;
-pub mod ingest;
 pub mod observation;
 pub mod queries;
 pub mod traversal;
@@ -33,7 +32,6 @@ pub use detectors::{
     ProductDetectorSuite,
 };
 pub use identity::{AcceptedIntent, BaselineRevision, IntentKind, IntentStatus, ProductId};
-pub use ingest::{IngestResult, ObservationIngestRequest, ObservationStore};
 pub use observation::{Observation, ObservationKind, ObservationResult, ObservationSource};
 pub use queries::{
     build_invalidation_index, build_product_view, compute_product_stats, query_intents,
@@ -43,3 +41,5 @@ pub use queries::{
 pub use traversal::{
     build_adjacency, GraphTraversal, TraversalBudget, TraversalNode, TraversalResult,
 };
+
+pub mod persistence;

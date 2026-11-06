@@ -1,0 +1,736 @@
+{
+  "snapshot_id": "tracera-state-forward-20261017-q1",
+  "record_version": "1.0",
+  "generated_at": "2026-10-17T09:39:28.530213+00:00",
+  "source_sha": "ae68aea7febd772282606bf1e142d507316cfea0",
+  "candidate": {
+    "subject": "KooshaPari/Tracera",
+    "base_sha": "ae68aea7febd772282606bf1e142d507316cfea0",
+    "candidate_sha": "3fd3310fb98fdd2f9bca99eddd669f974fb1fb61",
+    "branch": "feat/instinct-product-observations-20261017",
+    "pr": "https://github.com/KooshaPari/Tracera/pull/1157",
+    "worktree": "/tmp/tracera-q1-20261017",
+    "observed_at": "2026-10-17T09:34:03.568105+00:00",
+    "changes": [
+      "crates/tracera-mcp/src/bin/mcp-server.rs",
+      "crates/tracera-server/migrations-postgres/0012_product_observations.sql",
+      "crates/tracera-server/migrations-sqlite/0012_product_observations.sql",
+      "crates/tracera-server/src/main.rs",
+      "crates/tracera-server/src/not_implemented.rs",
+      "crates/tracera-server/src/pg_store/mod.rs",
+      "crates/tracera-server/src/pg_store/product_observations.rs",
+      "crates/tracera-server/src/product/detectors.rs",
+      "crates/tracera-server/src/product/detectors_tests.rs",
+      "crates/tracera-server/src/product/ingest.rs",
+      "crates/tracera-server/src/product/mod.rs",
+      "crates/tracera-server/src/product/persistence.rs",
+      "crates/tracera-server/src/router.rs",
+      "crates/tracera-server/src/routes/auth.rs",
+      "crates/tracera-server/src/routes/export_import.rs",
+      "crates/tracera-server/src/routes/journeys.rs",
+      "crates/tracera-server/src/routes/product_observation_tests.rs",
+      "crates/tracera-server/src/routes/product_observations.rs",
+      "crates/tracera-server/src/routes/search.rs",
+      "crates/tracera-server/src/sqlite_store/mod.rs",
+      "crates/tracera-server/src/sqlite_store/product_observations.rs",
+      "crates/tracera-server/src/store.rs",
+      "crates/tracera-server/tests/product_persistence.rs",
+      "docs/contracts/product-observations.openapi.json",
+      "docs/sessions/20261017-product-observations/README.md",
+      "docs/sessions/20261017-product-observations/runtime-receipt.json"
+    ],
+    "tests": {
+      "detector": {
+        "red": 4,
+        "green": 17
+      },
+      "library": 96,
+      "binary": 121,
+      "existing_db": 4,
+      "new_sqlite": 5,
+      "postgres_explicit": 1,
+      "strict_clippy": "pass",
+      "fmt": "pass",
+      "diff": "pass"
+    },
+    "runtime": {
+      "binary_sha256": "47a7a5bba1eaff02264b6c338ee0d748312c83b8012cd3b1d4512f91656e0daf",
+      "first": [
+        200,
+        {
+          "accepted": 1,
+          "replayed": false
+        }
+      ],
+      "before": [
+        200,
+        {
+          "product_id": "q1-runtime",
+          "baseline": 1,
+          "intents": [
+            {
+              "id": "durable-read",
+              "kind": "Capability",
+              "title": "Evidence persists",
+              "description": "Read evidence after restart",
+              "status": "Accepted",
+              "baseline": 1
+            }
+          ],
+          "observations": [
+            {
+              "id": "runtime-check",
+              "product_id": "q1-runtime",
+              "baseline": 1,
+              "kind": "TestResult",
+              "result": "Failed",
+              "source": {
+                "collector": "q1-runtime",
+                "version": "1",
+                "artifact_ref": "file:runtime-assertion.txt"
+              },
+              "recorded_at": "2026-10-15T00:00:00Z",
+              "capability_id": "durable-read"
+            }
+          ]
+        }
+      ],
+      "after": [
+        200,
+        {
+          "product_id": "q1-runtime",
+          "baseline": 1,
+          "intents": [
+            {
+              "id": "durable-read",
+              "kind": "Capability",
+              "title": "Evidence persists",
+              "description": "Read evidence after restart",
+              "status": "Accepted",
+              "baseline": 1
+            }
+          ],
+          "observations": [
+            {
+              "id": "runtime-check",
+              "product_id": "q1-runtime",
+              "baseline": 1,
+              "kind": "TestResult",
+              "result": "Failed",
+              "source": {
+                "collector": "q1-runtime",
+                "version": "1",
+                "artifact_ref": "file:runtime-assertion.txt"
+              },
+              "recorded_at": "2026-10-15T00:00:00Z",
+              "capability_id": "durable-read"
+            }
+          ]
+        }
+      ],
+      "replay": [
+        200,
+        {
+          "accepted": 0,
+          "replayed": true
+        }
+      ],
+      "findings": [
+        200,
+        {
+          "findings": [
+            {
+              "kind": "Freshness",
+              "product_id": "q1-runtime",
+              "capability_id": "durable-read",
+              "message": "Observation 'runtime-check' is 206869 seconds old (max: 86400s). The result may no longer be current.",
+              "evidence": ["runtime-check"],
+              "detector_version": "1.1.0",
+              "detected_at": "2026-10-17T09:27:49.705085Z",
+              "severity": "High"
+            }
+          ],
+          "products_scanned": 1,
+          "capabilities_scanned": 1,
+          "detector_version": "1.1.0",
+          "ran_at": "2026-10-17T09:27:49.708578Z"
+        }
+      ],
+      "restart_exact_equality": true,
+      "candidate_stopped": true
+    },
+    "goal_delta": {
+      "TRC-G01": "separate identity and detector isolation verified",
+      "TRC-G02": "atomic durable SQLite and PostgreSQL ingestion verified",
+      "TRC-G03": "mounted typed API persistence and actual detector path verified"
+    },
+    "remaining": [
+      "automated trace/session and repository source bridge",
+      "UI user journey",
+      "per-product authorization",
+      "real-product discrepancy and user acceptance"
+    ],
+    "artifacts": {
+      "runtime-server.log": "f4d331480f467df85d6e4dc71cde36f9aff244fde783a36e5521bb357f6efaae",
+      "persistence-green.log": "930b8d400346353ea624f01a33b93be1729fe0e1d901b42dda560e638a869865",
+      "red.log": "c050be6d155aeadf7d852f05181d6289ce6dde51ee5e4329737ed0e492be1e7c",
+      "clippy-final.log": "42246af8c26f60698439dcbfbff665926f576055152482d3454d15908104552d",
+      "router-red.log": "df7d90299e4c548c78e038155171c4e35af4d137d9acd7f4cca490b13ffc3370",
+      "persistence-red.log": "5da470f1b2a96b26d2f58c3cdf705f45fbaf8bb304f711ea57814a3e31994272",
+      "detector-red.log": "e614b2944f5274f072cc99002de231002e45242ff35a7787dc477d8538efe6c6",
+      "clippy.log": "33eb930dd6edd915ae6168f16c1f362327e3d789f6522b379a1b777de18be620",
+      "detector-green.log": "124727dc02929e11a4997efa4762afc84feef651b08af208d197ef1d851bf26b",
+      "pg-init.log": "35a3f091670410cf5bea53d7791878e89986815fd188e801f69fcce1c6a7dff1",
+      "postgres.log": "a20d4fb3196cc3fc0f6730693a2d42f294789d573b390326657742ed743013db",
+      "full-tests.log": "9ea20e98c10cc852644eeb029d5c7f11d1220c54eb86d185991009a81a10b820",
+      "postgres-final.log": "4e0f8dc42e0861bb406c0c6681cb7028e25f6476e1849b15879eed3a194b508b",
+      "router-green.log": "6fbd79f00a821e98749d4d255c17c8324c855deadd38a52b6ddc0c269cc0ba49",
+      "red-combined.log": "a65176f0b807302d2ffce03ba5d29c057a2cf4876215460130912513470965dc",
+      "full-tests-final.log": "82237b674ccf91e20db2403d6f2bb276688ead5736bce76a8e1c955dfd7d18c6",
+      "persistence-extended.log": "6edb8c60e54e79a970bb1327f8d9cc7079c9b48fe7c540d3c48a29cdd36f2a30",
+      "pg-server.log": "dc4fb18ff1a477bf17535def651b98bc2185745ba34ea98b50d2aefd934cd774"
+    }
+  },
+  "goals": [
+    {
+      "id": "G01",
+      "title": "Authority and mature identity",
+      "expected": "Direct user accepted explicitly unified trace/session/memory/audit and product/discrepancy scope at2026-10-17T09:22:59Z.",
+      "location": "inputs/registry-intent.md; inputs/registry-cvp.md; inputs/docs5-DOSSIER.md",
+      "status": "PASS",
+      "closure_oracle": "Owning intent records retain both and define identity-preserving bridge acceptance; no retrospective feature acceptance.",
+      "authority": "Mixed; see intent source attribution",
+      "review": "PROPOSED",
+      "applicability": "UNRESOLVED",
+      "owner": "Tracera product owner",
+      "effort": "Unestimated pending exact retained scope",
+      "positive_verification": "Record accepted unified or precedence decision without deleting retained promises.",
+      "negative_verification": "Foreign scope/stale/missing/failed dependency must fail honestly; no fabricated success",
+      "dependencies": []
+    },
+    {
+      "id": "G02",
+      "title": "Local trace capture",
+      "expected": "Capture real input/tool/output session to durable local workspace with source/spec/session identifiers.",
+      "location": "README.md; crates/tracera-server/src/router.rs:153-173",
+      "status": "UNKNOWN",
+      "closure_oracle": "Real session capture, exact count/content after restart; invalid/foreign/dangling edges rejected.",
+      "authority": "Mixed; see intent source attribution",
+      "review": "PROPOSED",
+      "applicability": "APPLICABLE",
+      "owner": "Tracera product owner",
+      "effort": "Unestimated pending exact retained scope",
+      "positive_verification": "Real session capture, exact count/content after restart; invalid/foreign/dangling edges rejected.",
+      "negative_verification": "Foreign scope/stale/missing/failed dependency must fail honestly; no fabricated success",
+      "dependencies": ["G01"]
+    },
+    {
+      "id": "G03",
+      "title": "Cross-run dependency reasoning",
+      "expected": "Answer affected prior sessions when a spec changes, using persisted trace graph.",
+      "location": "crates/tracera-server/src/handlers/governance.rs:9-45",
+      "status": "UNKNOWN",
+      "closure_oracle": "Seed known dependency plus unrelated session; persisted query yields exact affected set after reopen. Supplied-links computation alone insufficient.",
+      "authority": "Mixed; see intent source attribution",
+      "review": "PROPOSED",
+      "applicability": "APPLICABLE",
+      "owner": "Tracera product owner",
+      "effort": "Unestimated pending exact retained scope",
+      "positive_verification": "Seed known dependency plus unrelated session; persisted query yields exact affected set after reopen. Supplied-links computation alone insufficient.",
+      "negative_verification": "Foreign scope/stale/missing/failed dependency must fail honestly; no fabricated success",
+      "dependencies": ["G01"]
+    },
+    {
+      "id": "G04",
+      "title": "Memory distillation",
+      "expected": "Distill lastN real sessions into stable memory consumable by next session with provenance and privacy.",
+      "location": "crates/tracera-server/src/memory/distillation/distiller.rs:12-26",
+      "status": "FAIL",
+      "closure_oracle": "Persist memory, link source sessions and serve real consumer; restart restores same accepted entry; private/untrusted input cannot escape into public projection.",
+      "authority": "Mixed; see intent source attribution",
+      "review": "PROPOSED",
+      "applicability": "APPLICABLE",
+      "owner": "Tracera product owner",
+      "effort": "Unestimated pending exact retained scope",
+      "positive_verification": "Persist memory, link source sessions and serve real consumer; restart restores same accepted entry; private/untrusted input cannot escape into public projection.",
+      "negative_verification": "Foreign scope/stale/missing/failed dependency must fail honestly; no fabricated success",
+      "dependencies": ["G01"]
+    },
+    {
+      "id": "G05",
+      "title": "Audit and evidence replay",
+      "expected": "Reproduce who ran what/when per workspace; evidence freshness and integrity explicit.",
+      "location": "crates/tracera-server/src/handlers/evidence.rs",
+      "status": "UNKNOWN",
+      "closure_oracle": "Real evidence/source/run timestamps survive restart, altered/missing/stale evidence fails honestly; audit export replay verified.",
+      "authority": "Mixed; see intent source attribution",
+      "review": "PROPOSED",
+      "applicability": "APPLICABLE",
+      "owner": "Tracera product owner",
+      "effort": "Unestimated pending exact retained scope",
+      "positive_verification": "Real evidence/source/run timestamps survive restart, altered/missing/stale evidence fails honestly; audit export replay verified.",
+      "negative_verification": "Foreign scope/stale/missing/failed dependency must fail honestly; no fabricated success",
+      "dependencies": ["G01"]
+    },
+    {
+      "id": "G06",
+      "title": "Product semantic model",
+      "expected": "Durable typed product observations now verified at3fd3310; full actual-product discrepancy UI remains unfinished.",
+      "location": "crates/tracera-server/src/product/; docs/WP-07-product-graph-design.md (DRAFT)",
+      "status": "UNKNOWN",
+      "closure_oracle": "Real owned product import and independently adjudicated gap; no cross-product/baseline/capability leakage; source change invalidates affected evidence.",
+      "authority": "Mixed; see intent source attribution",
+      "review": "PROPOSED",
+      "applicability": "UNRESOLVED",
+      "owner": "Tracera product owner",
+      "effort": "Unestimated pending exact retained scope",
+      "positive_verification": "Real owned product import and independently adjudicated gap; no cross-product/baseline/capability leakage; source change invalidates affected evidence.",
+      "negative_verification": "Foreign scope/stale/missing/failed dependency must fail honestly; no fabricated success",
+      "dependencies": ["G01"]
+    },
+    {
+      "id": "G07",
+      "title": "Import and canonical identity",
+      "expected": "Sources, products and namespaces preserved across replay, partial failure and complete pagination.",
+      "location": "crates/tracera-server/src/ingest/persist.rs:39-107",
+      "status": "UNKNOWN",
+      "closure_oracle": "Two sources same externalID stay distinct; retry idempotent; late error atomic or explicit recoverable partial contract. Q1 product batch does not automatically repair Story importer.",
+      "authority": "Mixed; see intent source attribution",
+      "review": "PROPOSED",
+      "applicability": "APPLICABLE",
+      "owner": "Tracera product owner",
+      "effort": "Unestimated pending exact retained scope",
+      "positive_verification": "Two sources same externalID stay distinct; retry idempotent; late error atomic or explicit recoverable partial contract. Q1 product batch does not automatically repair Story importer.",
+      "negative_verification": "Foreign scope/stale/missing/failed dependency must fail honestly; no fabricated success",
+      "dependencies": ["G01"]
+    },
+    {
+      "id": "G08",
+      "title": "Project catalog and CIVIS",
+      "expected": "All owned projects have stable identity; CIVIS genuine zero items distinct from absent/unavailable.",
+      "location": "crates/tracera-server/src/pg_store/projects.rs; historical audit",
+      "status": "UNKNOWN",
+      "closure_oracle": "Item-only and empty project load correctly; all pages complete; failure never reported as empty.",
+      "authority": "Mixed; see intent source attribution",
+      "review": "PROPOSED",
+      "applicability": "APPLICABLE",
+      "owner": "Tracera product owner",
+      "effort": "Unestimated pending exact retained scope",
+      "positive_verification": "Item-only and empty project load correctly; all pages complete; failure never reported as empty.",
+      "negative_verification": "Foreign scope/stale/missing/failed dependency must fail honestly; no fabricated success",
+      "dependencies": ["G01"]
+    },
+    {
+      "id": "G09",
+      "title": "Named artifact fidelity",
+      "expected": "Every named view X renders only complete artifact X, correct project/type and detail fields.",
+      "location": "frontend/apps/web/src/pages/projects/views/; inputs/TRACERA-HISTORICAL-VIEW-COVERAGE.csv",
+      "status": "UNKNOWN",
+      "closure_oracle": "Click every required sidebar/view and representative typed detail using real IDs; 44 historical rows require current requalification.",
+      "authority": "Mixed; see intent source attribution",
+      "review": "PROPOSED",
+      "applicability": "APPLICABLE",
+      "owner": "Tracera product owner",
+      "effort": "Unestimated pending exact retained scope",
+      "positive_verification": "Click every required sidebar/view and representative typed detail using real IDs; 44 historical rows require current requalification.",
+      "negative_verification": "Foreign scope/stale/missing/failed dependency must fail honestly; no fabricated success",
+      "dependencies": ["G01"]
+    },
+    {
+      "id": "G10",
+      "title": "Specifications Hub",
+      "expected": "Real ADR/contract/feature/scenario aggregates plus honest health/evidence denominator.",
+      "location": "crates/tracera-server/src/routes/specs.rs; frontend SpecificationDashboard.tsx",
+      "status": "FAIL",
+      "closure_oracle": "Summary shape matches summary-hooks; totals reconcile complete typed collections; missing compliance/pass data null; failures distinct from zero.",
+      "authority": "Mixed; see intent source attribution",
+      "review": "PROPOSED",
+      "applicability": "APPLICABLE",
+      "owner": "Tracera product owner",
+      "effort": "Unestimated pending exact retained scope",
+      "positive_verification": "Summary shape matches summary-hooks; totals reconcile complete typed collections; missing compliance/pass data null; failures distinct from zero.",
+      "negative_verification": "Foreign scope/stale/missing/failed dependency must fail honestly; no fabricated success",
+      "dependencies": ["G01"]
+    },
+    {
+      "id": "G11",
+      "title": "Authoring and links",
+      "expected": "Accepted project/item editing and intent->code->test/evidence linking durable and authorized.",
+      "location": "crates/tracera-server/src/handlers/projects.rs; routes/links.rs",
+      "status": "FAIL",
+      "closure_oracle": "Actual scoped CRUD and links survive restart; invalid/cross-project updates rejected; UI cannot advertise unavailable methods as implemented.",
+      "authority": "Mixed; see intent source attribution",
+      "review": "PROPOSED",
+      "applicability": "APPLICABLE",
+      "owner": "Tracera product owner",
+      "effort": "Unestimated pending exact retained scope",
+      "positive_verification": "Actual scoped CRUD and links survive restart; invalid/cross-project updates rejected; UI cannot advertise unavailable methods as implemented.",
+      "negative_verification": "Foreign scope/stale/missing/failed dependency must fail honestly; no fabricated success",
+      "dependencies": ["G01"]
+    },
+    {
+      "id": "G12",
+      "title": "Bounded search and exploration",
+      "expected": "Explainable bounded navigation, explicit truncation/unsupported dynamic relationships.",
+      "location": "crates/tracera-server/src/routes/graph.rs; routes/search.rs",
+      "status": "UNKNOWN",
+      "closure_oracle": "Known source anchor found; bounded query terminates cycles and marks truncation; no fabricated edge or silently missing page.",
+      "authority": "Mixed; see intent source attribution",
+      "review": "PROPOSED",
+      "applicability": "APPLICABLE",
+      "owner": "Tracera product owner",
+      "effort": "Unestimated pending exact retained scope",
+      "positive_verification": "Known source anchor found; bounded query terminates cycles and marks truncation; no fabricated edge or silently missing page.",
+      "negative_verification": "Foreign scope/stale/missing/failed dependency must fail honestly; no fabricated success",
+      "dependencies": ["G01"]
+    },
+    {
+      "id": "G13",
+      "title": "Native test/result integration",
+      "expected": "Distinguish test definitions, execution, results and freshness.",
+      "location": "crates/tracera-server/src/routes/test_runs.rs; routes/spec_analytics.rs",
+      "status": "FAIL",
+      "closure_oracle": "Ingest actual native report, preserve failed cases/denominators and source revision; unsupported execution honest unavailable.",
+      "authority": "Mixed; see intent source attribution",
+      "review": "PROPOSED",
+      "applicability": "APPLICABLE",
+      "owner": "Tracera product owner",
+      "effort": "Unestimated pending exact retained scope",
+      "positive_verification": "Ingest actual native report, preserve failed cases/denominators and source revision; unsupported execution honest unavailable.",
+      "negative_verification": "Foreign scope/stale/missing/failed dependency must fail honestly; no fabricated success",
+      "dependencies": ["G01"]
+    },
+    {
+      "id": "G14",
+      "title": "API CLI MCP parity",
+      "expected": "Current Rust interfaces share canonical data and errors; historical Python oracle not mistaken for current implementation.",
+      "location": "Cargo.toml; crates/tracera-cli/; crates/tracera-mcp/; crates/tracertm-mcp/",
+      "status": "UNKNOWN",
+      "closure_oracle": "One real supported operation roundtrips same IDs across required interfaces; unsupported declared; demo modes excluded from acceptance.",
+      "authority": "Mixed; see intent source attribution",
+      "review": "PROPOSED",
+      "applicability": "APPLICABLE",
+      "owner": "Tracera product owner",
+      "effort": "Unestimated pending exact retained scope",
+      "positive_verification": "One real supported operation roundtrips same IDs across required interfaces; unsupported declared; demo modes excluded from acceptance.",
+      "negative_verification": "Foreign scope/stale/missing/failed dependency must fail honestly; no fabricated success",
+      "dependencies": ["G01"]
+    },
+    {
+      "id": "G15",
+      "title": "Authentication privacy isolation",
+      "expected": "Trusted single-user local boundary explicit; shared URL protected; secrets and evidence remain private.",
+      "location": "crates/tracera-server/src/auth.rs; router.rs; deploy/selfhost/README.md",
+      "status": "UNKNOWN",
+      "closure_oracle": "401 missing credential,403/404foreign scope, no public backend bypass, redacted logs/export, payload limits and hostile prose tests.",
+      "authority": "Mixed; see intent source attribution",
+      "review": "PROPOSED",
+      "applicability": "APPLICABLE",
+      "owner": "Tracera product owner",
+      "effort": "Unestimated pending exact retained scope",
+      "positive_verification": "401 missing credential,403/404foreign scope, no public backend bypass, redacted logs/export, payload limits and hostile prose tests.",
+      "negative_verification": "Foreign scope/stale/missing/failed dependency must fail honestly; no fabricated success",
+      "dependencies": []
+    },
+    {
+      "id": "G16",
+      "title": "Durability recovery migration",
+      "expected": "SQLite/PG durable accepted models, backup/restore, upgrade/cutover with original records preserved.",
+      "location": "crates/tracera-server/src/db.rs; migrations-*; Q0/Q1 receipts",
+      "status": "UNKNOWN",
+      "closure_oracle": "Real persistent reopen plus crash/backup/restore/migration trial; compare IDs/content beforeafter; old/new data contract explicit.",
+      "authority": "Mixed; see intent source attribution",
+      "review": "PROPOSED",
+      "applicability": "APPLICABLE",
+      "owner": "Tracera product owner",
+      "effort": "Unestimated pending exact retained scope",
+      "positive_verification": "Real persistent reopen plus crash/backup/restore/migration trial; compare IDs/content beforeafter; old/new data contract explicit.",
+      "negative_verification": "Foreign scope/stale/missing/failed dependency must fail honestly; no fabricated success",
+      "dependencies": []
+    },
+    {
+      "id": "G17",
+      "title": "Install and desktop delivery",
+      "expected": "Real local server+web and packaged nondeveloper desktop, update/recovery under accepted platform boundary.",
+      "location": "desktop/README.md; crates/tracera-tauri/; docs/ARCHITECTURE.md",
+      "status": "UNKNOWN",
+      "closure_oracle": "Fresh install useful journey, local-first no mandatory remote API, update retains data and recoverable previous artifact.",
+      "authority": "Mixed; see intent source attribution",
+      "review": "PROPOSED",
+      "applicability": "APPLICABLE",
+      "owner": "Tracera product owner",
+      "effort": "Unestimated pending exact retained scope",
+      "positive_verification": "Fresh install useful journey, local-first no mandatory remote API, update retains data and recoverable previous artifact.",
+      "negative_verification": "Foreign scope/stale/missing/failed dependency must fail honestly; no fabricated success",
+      "dependencies": ["G01"]
+    },
+    {
+      "id": "G18",
+      "title": "Deployment artifact provenance",
+      "expected": "SourceSHA->binaryhash->configuration->database->reachable URL attested.",
+      "location": "inputs/TRACERA-Q0-RUNTIME-QUALIFICATION.md",
+      "status": "UNKNOWN",
+      "closure_oracle": "Current hosted and installed artifact exact identity, authenticated real path; Q0 isolated readiness does not qualify production.",
+      "authority": "Mixed; see intent source attribution",
+      "review": "PROPOSED",
+      "applicability": "APPLICABLE",
+      "owner": "Tracera product owner",
+      "effort": "Unestimated pending exact retained scope",
+      "positive_verification": "Current hosted and installed artifact exact identity, authenticated real path; Q0 isolated readiness does not qualify production.",
+      "negative_verification": "Foreign scope/stale/missing/failed dependency must fail honestly; no fabricated success",
+      "dependencies": ["G01"]
+    },
+    {
+      "id": "G19",
+      "title": "UX accessibility and DX",
+      "expected": "Keyboard navigation, accessible errors/loading/empty states, fresh-start docs and truthful API capability labels.",
+      "location": "frontend/apps/web/src/pages/projects/views/ApiView.tsx; frontend/apps/web/src/routes/",
+      "status": "UNKNOWN",
+      "closure_oracle": "Keyboard/focus/labels/contrast assistive audit without captures; no mock data presented as real; documented command starts actual profile.",
+      "authority": "Mixed; see intent source attribution",
+      "review": "PROPOSED",
+      "applicability": "APPLICABLE",
+      "owner": "Tracera product owner",
+      "effort": "Unestimated pending exact retained scope",
+      "positive_verification": "Keyboard/focus/labels/contrast assistive audit without captures; no mock data presented as real; documented command starts actual profile.",
+      "negative_verification": "Foreign scope/stale/missing/failed dependency must fail honestly; no fabricated success",
+      "dependencies": ["G01"]
+    },
+    {
+      "id": "G20",
+      "title": "Assurance and security gates",
+      "expected": "Meaningful positive/negative integration, critical coverage, no masked gates, dependency threats assessed.",
+      "location": ".github/workflows/coverage.yml; lefthook.yml; frontend/apps/web/vitest.config.ts",
+      "status": "UNKNOWN",
+      "closure_oracle": "Run required local gates with explicit coverage denominator/floor; deliberate regression fails; masked Ruff/Python collection fixed if retained.",
+      "authority": "Mixed; see intent source attribution",
+      "review": "PROPOSED",
+      "applicability": "APPLICABLE",
+      "owner": "Tracera product owner",
+      "effort": "Unestimated pending exact retained scope",
+      "positive_verification": "Run required local gates with explicit coverage denominator/floor; deliberate regression fails; masked Ruff/Python collection fixed if retained.",
+      "negative_verification": "Foreign scope/stale/missing/failed dependency must fail honestly; no fabricated success",
+      "dependencies": []
+    },
+    {
+      "id": "G21",
+      "title": "Research and alternatives",
+      "expected": "Test reuse/retain/adopt hypothesis against real beneficiary task, not marketing superiority.",
+      "location": "inputs/docs5-DOSSIER.md:comparators",
+      "status": "NOT_RUN",
+      "closure_oracle": "Version-pin manualworkflow, catalog/search, requirements/source links and dependency exploration peers; matched seeded cases plus idiomatic comparisons.",
+      "authority": "Mixed; see intent source attribution",
+      "review": "PROPOSED",
+      "applicability": "APPLICABLE",
+      "owner": "Tracera product owner",
+      "effort": "Unestimated pending exact retained scope",
+      "positive_verification": "Version-pin manualworkflow, catalog/search, requirements/source links and dependency exploration peers; matched seeded cases plus idiomatic comparisons.",
+      "negative_verification": "Foreign scope/stale/missing/failed dependency must fail honestly; no fabricated success",
+      "dependencies": ["G01"]
+    },
+    {
+      "id": "G22",
+      "title": "Operations and economic ownership",
+      "expected": "Owned startup/shutdown, logs, backup schedule, cost/resource boundary and sunset owner.",
+      "location": "docs/04-guides/DEPLOYMENT_GUIDE.md; prior heartbeat ledger",
+      "status": "UNKNOWN",
+      "closure_oracle": "Restore rehearsal, dependency failure, resource bounds and explicit recurring-job owner; no billed services added; actual hosting cost unknown.",
+      "authority": "Mixed; see intent source attribution",
+      "review": "PROPOSED",
+      "applicability": "APPLICABLE",
+      "owner": "Tracera product owner",
+      "effort": "Unestimated pending exact retained scope",
+      "positive_verification": "Restore rehearsal, dependency failure, resource bounds and explicit recurring-job owner; no billed services added; actual hosting cost unknown.",
+      "negative_verification": "Foreign scope/stale/missing/failed dependency must fail honestly; no fabricated success",
+      "dependencies": ["G01"]
+    },
+    {
+      "id": "G23",
+      "title": "Actual beneficiary acceptance",
+      "expected": "Real user completes useful identity-preserving journey and confirms value.",
+      "location": "No actual user-session/feedback receipt supplied",
+      "status": "NOT_RUN",
+      "closure_oracle": "Unfamiliar authorized user real owned input, recorded task outcome/interventions/feedback, failures retained; fixture pass does not qualify.",
+      "authority": "Mixed; see intent source attribution",
+      "review": "PROPOSED",
+      "applicability": "APPLICABLE",
+      "owner": "Tracera product owner",
+      "effort": "Unestimated pending exact retained scope",
+      "positive_verification": "Unfamiliar authorized user real owned input, recorded task outcome/interventions/feedback, failures retained; fixture pass does not qualify.",
+      "negative_verification": "Foreign scope/stale/missing/failed dependency must fail honestly; no fabricated success",
+      "dependencies": ["G01"]
+    },
+    {
+      "id": "G24",
+      "title": "Full historical parity disposition",
+      "expected": "Retain652 baseline promise records and29historical gaps without treating overlaps as accepted scope or closure.",
+      "location": "inputs/TRACERA-BASELINE-PROMISES.csv; inputs/TRACERA-GAP-INVENTORY.csv",
+      "status": "UNKNOWN",
+      "closure_oracle": "Each retained promise maps accepted goal/current contract/closure proof, or explicit authority for supersession/defer/retire; no silent sunset.",
+      "authority": "Mixed; see intent source attribution",
+      "review": "PROPOSED",
+      "applicability": "UNRESOLVED",
+      "owner": "Tracera product owner",
+      "effort": "Unestimated pending exact retained scope",
+      "positive_verification": "Each retained promise maps accepted goal/current contract/closure proof, or explicit authority for supersession/defer/retire; no silent sunset.",
+      "negative_verification": "Foreign scope/stale/missing/failed dependency must fail honestly; no fabricated success",
+      "dependencies": ["G01"]
+    },
+    {
+      "id": "G25",
+      "title": "Unified trace-to-product evidence bridge",
+      "expected": "Actual session/run -> source/product/capability observations -> discrepancy and affected dependencies -> attributable durable memory consumed next session.",
+      "location": "README.md; router.rs codex session endpoints; Q1 product observations API",
+      "status": "UNKNOWN",
+      "closure_oracle": "Real authorized producer and source anchor, semantic causal navigation, exact restart/replay equality and foreign-product negative controls; meaningful actual user outcome.",
+      "authority": "Direct user unified decision2026-10-17T09:22:59Z",
+      "review": "PROPOSED",
+      "applicability": "APPLICABLE",
+      "owner": "Tracera implementation owner",
+      "effort": "First4h decomposition; full duration uncalibrated",
+      "positive_verification": "Actual producer session plus original trace navigable after restart",
+      "negative_verification": "Foreign product/baseline/source cannot gain evidence credit; malformed replay rejected atomically",
+      "dependencies": ["G02", "G03", "G04", "G06", "G07", "G15", "G16"]
+    }
+  ],
+  "sections": [
+    {
+      "title": "Two-minute cockpit",
+      "text": "Tracera is an original owned project, with accepted unified intent: local-first trace/session linking, memory distillation and audit replay plus persistent product modelling and discrepancy discovery. Q1 delivered a real durable product-observation API, detector identity corrections, SQLite/PostgreSQL atomicity and a restart/replay runtime journey. Full unified CVP and real user acceptance remain unproved. Source PR1157 is open; no merge or production promotion."
+    },
+    {
+      "title": "Intent and source authority",
+      "text": "Direct user requirements: complete API/frontend gap inventory, named artifact fidelity, complete data, CIVIS zero-item note, read-only original audit then explicit authorized implementation, preserved checkouts and no merges. Registry at05e1638 defines local-first trace/session dependency reasoning, memory distillation and audit replay. Its CVP also includes desktop. docs5 explicitly calls its persistent product-model program proposed; it is not authority to erase Registry identity. Draft WP07 is a design proposal, not accepted wholesale. Preserve contradiction for user decision. UPDATE2026-10-17T09:22:59Z: user explicitly chose BOTH with unified scope. This supersedes the unresolved authority question; preserves both branches and adds a missing integration obligation. No implementation credit is earned by changing the scope denominator."
+    },
+    {
+      "title": "Actual usability today",
+      "text": "Q0 exactmain ae68 was built and exercised in an isolated Windows SQLite runtime: readiness, valid issue ingest, persisted Story after restart; empty ingest422 and pagination400/missing404. That proves this limited API path, not full product semantic import or trace-memory CVP. Historical deployed ports8080/8091 were later refused; current public path behind Access was not qualified. No current GUI, desktop installation, release or actual beneficiary acceptance is claimed. Q1 now additionally proves actual candidate binary47a7a5bba1eaff02264b6c338ee0d748312c83b8012cd3b1d4512f91656e0daf on owned loopback19147: typed batch200, persisted read200, real freshness detector finding200 referencing observation, foreign product404, restart exact read equality, replay200 accepted0/replayedtrue. Owned processes stopped. This is a synthetic local API journey, not an actual external producer or user session."
+    },
+    {
+      "title": "Architecture and data flow",
+      "text": "Agents/session and external source adapters -> Axum authenticated routes -> Store -> SQLite or PostgreSQL. Canonical Items, Story/Evidence/TraceLink and SWEE graph are distinct models. Product semantic observations add product/baseline/capability/source scope in Q1. Frontend projections and two MCP packages may expose different entrypoints; no proof yet all share one coherent beneficiary model. Memory distiller currently owns Vec state and Instant in process; source presence is not durable cross-session API acceptance."
+    },
+    {
+      "title": "CVP and MVP boundary",
+      "text": "Registry identity-preserving CVP: one user/machine/durable workspace captures a real session, queries cross-run spec dependency, distills memory consumed by next session, and survives restart locally; desktop primary nondeveloper install surface retained. docs5 candidate CVP: real owned product import, genuine source-backed discrepancy, bounded navigation, sourcechange/restart. Both are now explicitly unified by the user decision. An appropriate MVP adds only agreed retained authoring/typed views and safe local delivery around the selected CVP; it cannot be declared merely because Q1 batch persistence passes. Unified bridge acceptance: capture actual authorized session/run with stable product, capability, baseline and source IDs; persist causal links; explain a genuine discrepancy and affected sessions/capabilities; derive attributable memory consumed next session; reconcile source changes and restart without duplication/leakage. This bridge is not yet qualified."
+    },
+    {
+      "title": "Four independent progress axes",
+      "text": "Raw implementation: Q1 code/checkpoints reported in candidate receipts. Verified engineering: exact selected SQLite/PG/router/detector tests and independent review only. Complete usable journeys: Q0 limited API import/reopen; no full identity-preserving CVP yet. Real user validation/value: no receipt, unknown total denominator and no earned acceptance. Full-product numeric progress is undefined; all four numerator/denominator values null until accepted nonoverlapping baseline is locked. Q1 selected raw implementation checkpoints3/3 (identity/durability/mounted API); engineering scope qualified by17detector,96library,121binary,4existingDB,5newSQLite and1explicit PostgreSQL tests, strict clippy/fmt/diff. One bounded independent reviewer inspected actual code/logs, did not rerun suite. One local synthetic API journey succeeded; zero actual user-validation receipts. These selected counts are not full-product numerators."
+    },
+    {
+      "title": "Historical evidence and drift",
+      "text": "Prior audit29issues +44view rows =73inventory rows;7baselines652promise records;284frontend method/reference rows. Those denominators overlap semantically and are not percentages of current product completion. Historical TRACERA533items and CIVIS0 were genuine nonstub observations. Earlier43stub200responses among57GETprobes describe old deployment. New source honest501 is improvement in truthfulness, not implementation of missing feature. Old code-count estimates240+60+10 were overlapping and are superseded by bounded unique literal census, not summed."
+    },
+    {
+      "title": "Testing and adversarial explanation",
+      "text": "Positive fixture proof must be paired with foreign product/capability/baseline/source, malformed IDs, replay conflict, concurrent identical replay, late rollback and reopened persistent state. Alternative explanation: empty result may be legitimate zero rather than stub; use nonstub Store path and source counts. A501 may be honest missing capability rather than regression. Unit detector pass may hide unmounted data path; require router/database journey. Current owner logs are originating evidence, independent review is separate but does not count as rerunning tests. Fullsuite exposed stale reprobe threshold>=48 while base root literal list had35; fix-forward exact35 retained route assertions and explicit unknown404, not feature tests. Original RED and final GREEN both preserved in owner receipts. Isolated per-route reprobes do not prove all mounted routes."
+    },
+    {
+      "title": "Security privacy and integrity",
+      "text": "Loopback-only trusted singleoperator is materially different from multiuser hosted deployment. Shared bearer does not establish perproject authorization. Selfhost docs explicitly warn forward-auth placeholder is not public protection. Preserve failclosed gates; no policy bypass. Need privateevidence export controls, untrustedprose/data injection tests, principal/projectnegativecases, payloadbounds, restoreintegrity. Hashes prove byteidentity not truthful claims/authorship. No credentials are included in this dossier."
+    },
+    {
+      "title": "UX AX DX and documentation",
+      "text": "Historical sidebar44rows had40project links gated by ProjectNotFound and3typed detailIDs unavailable. These are stale observations requiring current requalification. Source ApiView advertises project/item writes inconsistent with unavailable server paths: make status generated from a real capability contract. Keyboard focus, screenreader labels, loading/errors/trueempty and largepagination remain unqualified. Current RustCLI stack management is not historical Typer fullCRUD parity; historical matrix explicitly labels retired Python stack. New independent source review: packaged desktop defaults external rich gateway18000 and only explicit legacy override starts Compose; standalone install/runtime not qualified. Desktop/main.js defaults hosted endpoint while frontend desktop target defaults loopback; choose supported shell. Dormant updater declares signature/publicKey but checked download path validates SHA only and no streaming cap; module unimported, so not a mounted exploit. Activate only with authenticity/stream limits and negative tests."
+    },
+    {
+      "title": "Lineage rewrite and migration",
+      "text": "GitHub prior metadata says original project fork=false,parent=null; oldtracertm name does not imply external upstream fork. Do not invent upstream divergence requirements. Python->Rust transition and multiple desktop/MCP surfaces do require retainedbehavior/data/consumer parity and explicit retirement decisions. Snapshot import and Q1typedbatch do not prove all historic data migrated; preserve durable records and rehearse update/rollback without history rewrite."
+    },
+    {
+      "title": "Research alternatives and discriminating pilot",
+      "text": "docs5 shortlist manualGit/search, Backstagecatalog, StrictDoc, SCIP/LSPdependencysearch and hotspotanalysis remains a hypothesis ledger, not verified current comparisons. No unsupported superiority or cost claims. First compare exact owned seededgap task under matched input revisions and separate idiomatic alternatives; record missingdynamicrelationships, staleevidence, falsepositive/negative, time/interventions/privacy and maintenance costs. Reuse localDB/nativeindex/testreports before customengines where actual consumer outcome permits."
+    },
+    {
+      "title": "Tracking and operations",
+      "text": "Actual AgilePlus wrapper absent and local8765 connection failed in bounded collector. Engine state UNKNOWN, no invented feature/WP IDs; this dossier is an assessment snapshot, not competing taskregistry. Existing heartbeat sunsetblocked after unchangedexternalblocker ticks; no claim new scheduler installed. No paidCI, productionrestart, deploymentpromotion or merge occurred. Actual cloudmonthlycost unknown; local64GiBWindows compute suitable heavierbuilds, localmac selected smallPDF/schema work."
+    },
+    {
+      "title": "Forward path and dependencies",
+      "text": "The accepted unified identity requires a detailed nonoverlapping obligation baseline before mature-completion scoring. Q1verifiedcandidate -> independentreview -> localrealadapterjourney -> canonical project/source/linkidentity -> selectedCVP ingest/query/memory or discrepancy UI -> freshinstall/restore -> actualuserfeedback -> retainedparityclosure. Integrate exactcandidate before claiming deployedbehavior. Parallelize nonoverlap frontendartifactfidelity, trace-memory wiring and assurance; sharedStore/schema owners serialize integration."
+    },
+    {
+      "title": "Estimates and calibration",
+      "text": "Planning ranges are expert scenarios, not statisticalP50/P90. Comparableaccepted fullCVP sample size0; observedQ1 narrowed contract work and Q0 isolatedbuild are different work classes. Next30m: validate candidate targeted gates and consolidate exactreceipt;1h: reviewedcodePR plus generateddocket publication if hooks pass;4h: one realownedadapter dataset through scopedpersist/read/detector path and truthful UI/APIstatus;24h: exercise selectedlocalCVP integration or expose preciseblockeddependency, plus restore/errorcontrols. Humanintentdecision and realuserfeedback are externalwaiting, not agentcoding effort. Actual narrowed Q1 delivery ~24minutes versus prior25minute estimate is one sample of narrowly scoped engineering output, not accepted fullCVP calibration. Next milestones are measured from this snapshot, not promises of user acceptance."
+    },
+    {
+      "title": "CVP and mature completion scenarios",
+      "text": "Productmodel candidateCVP remaining24-44engineeringdays from prior audit is lowconfidence and may shrink materially with scoped acceptance; trace-memoryCVP has not been decomposed/estimated sufficiently, so time unknown until next4h mapping. At constrained2seniorowners+agents effective1.2-1.5engdays/workday, former scenario roughly4-8workweeks, not a commitment. Full retainedv1 prior95-215engineeringdays is provisional lower/likely/high planning spread, not ceiling; unresolved disposition of the 652 historical promise records prevents maturecompletion forecast. Do not divide by nominalagentcount or pretend everyunknown is scaling."
+    },
+    {
+      "title": "Operating cost resources and rework",
+      "text": "No new paidresource authorized or spent by this doclane. PDF/schema smalllocalCPU job; heavyRustWindows placement available. Actual computehours, hostingbill, bandwidth, storagegrowth and maintenancecost not measured. Budget planning: reserve20-40percent of scoped implementation effort for integration/negativecontrols/rework until comparableoutcomes qualify; this is explicit uncalibrated planning allowance, not observedrate. Reviewqueue and externalfeedback add walltime independently."
+    },
+    {
+      "title": "Decisions risks and stop conditions",
+      "text": "D01 unified identity accepted: retain both goal branches; retire nothing without explicit authority. D02no merge/deploy without exactauthorization. D03keep historicalevidence immutable; correctionappend rather than rewrite. R01crossproduct/namespacecollision highimpact; typedbatch isolationcontrols. R02silentemptyhealth highimpact; explicit unavailable/unknown. R03privateevidence publicleak critical; export/authorizationnegativecontrols. R04staleevidence medium/high; sourceboundfreshness. Stop promotion on lossidentity, dataownership, privacy, atomicity or failclosedauth; continuedocs alone never closes product."
+    },
+    {
+      "title": "Publication and closeout",
+      "text": "Canonical typedrecords and frozeninputs generate MarkdownHTMLPDFCSV; schema validator is structural only. Sourceandoutputhashes bind snapshot, evaluator and renderer. NewdocPR is separate from sourcecandidate and audit1132. Registry pointer must reference actual productcommit and samePDFhash afterremoteverification. Safari command success proves launchrequest, not that user read or acceptedPDF. Every remote outcome remains explicit until verified; localfile/openPR/merged/installed/accepted are separate states."
+    },
+    {
+      "title": "Coverage matrix and explicit uninspected frontier",
+      "text": "Intent: actual Registry intent/CVP/boundary, docs5 dossier, README and WP07 inspected; full historic conversation archive and1963commit history NOT reinspected. Implementation: source baseline architecture, governance, memory state, unavailable route families and prior bounded audit inspected; all functions/optional build profiles NOT examined. Frontend: all63tracked route filenames and955lexical API candidate lines enumerated, not all journeys executed. Explicit family census197unique literals excludes direct router, mixed/dynamic registrations and fallback, so differs from earlier216/39module census and is not additive. Assurance: Q1 owner tests and one independent bounded review, no numeric wholeproduct coverage or new AX/browser/user tests. Deployment: Q0 isolated receipt and historic unavailable deployed path, no current production qualification. Releases/cost/adoption: NOT inspected or unmeasured. Research: shortlist from proposed dossier, no new comparative pilot. These limits are coverage gaps, not passes."
+    }
+  ],
+  "axes": {
+    "raw_implementation": {
+      "numerator": null,
+      "denominator": null,
+      "state": "UNKNOWN",
+      "reason": "Complete accepted nonoverlap fullintent denominator not established"
+    },
+    "verified_engineering_assurance": {
+      "numerator": null,
+      "denominator": null,
+      "state": "UNKNOWN",
+      "reason": "Complete accepted nonoverlap fullintent denominator not established"
+    },
+    "complete_usable_journeys": {
+      "numerator": null,
+      "denominator": null,
+      "state": "UNKNOWN",
+      "reason": "Complete accepted nonoverlap fullintent denominator not established"
+    },
+    "real_user_validation_value": {
+      "numerator": null,
+      "denominator": null,
+      "state": "UNKNOWN",
+      "reason": "Complete accepted nonoverlap fullintent denominator not established"
+    }
+  },
+  "publication": {
+    "project_commit": null,
+    "project_pr": null,
+    "registry_commit": null,
+    "registry_pr": null,
+    "safari": "NOT_OPENED",
+    "code_pr": "https://github.com/KooshaPari/Tracera/pull/1157",
+    "code_sha": "3fd3310fb98fdd2f9bca99eddd669f974fb1fb61",
+    "code_state": "OPEN; UNSTABLE hosted checks; unmerged; not deployed",
+    "registry_intent_pr": "https://github.com/KooshaPari/PhenoRegistry/pull/662",
+    "registry_intent_sha": "22e8cdeb82f868faa805e884bdae63a9c715e0bc"
+  },
+  "delta_events": [
+    {
+      "id": "D20261017-Q1",
+      "prior": "No durable canonical productobservation Storepath",
+      "current": "Candidate typedatomicSQLitePG batch and mountedroutes under verification",
+      "earned": "Scoped engineering evidence only; no fullCVP/useracceptance",
+      "lost": "Prior identityauthority assumption corrected: docs5proposedprogram conflictsRegistryCVP",
+      "retained": "Historicalparity obligations and Q0 limitedruntime proof",
+      "scope_change": "Fullintentbaseline unresolved; no comparableglobalpercentage"
+    }
+  ],
+  "decisions": [
+    {
+      "id": "DEC-UNIFY-20261017",
+      "authority": "Direct user answer to mature-identity question",
+      "observed_at": "2026-10-17T09:22:59Z",
+      "text": "Both, with an explicitly unified scope",
+      "effect": "Retain local-first trace/session linking, memory distillation, audit replay AND persistent product modelling/discrepancy discovery; bridge identities and evidence. Scope restatement, no earned implementation credit."
+    }
+  ]
+}

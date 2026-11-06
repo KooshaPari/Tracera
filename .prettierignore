@@ -1,0 +1,142 @@
+# Bloat guard (2026-06-28): electron build binaries + caches that bloated .git
+**/app-builder-bin*/
+**/app-builder*
+node_modules/
+dist/
+.cache/
+target/
+*.pack
+.venv/
+__pycache__/
+.astro/
+
+# Local Compose credentials and host overrides (never commit secrets).
+.env.local
+.env.*.local
+
+# Release manifests are generated per build/commit and must be archived as CI
+# artifacts, not committed from a developer worktree.
+/release-manifest.json
+
+# Transient deploy / debugging artifacts (created by forge/deploy scripts;
+# never commit). Includes Render API response captures, GHCR / Render log
+# dumps, AGI/AgCord runtime logs, and any *.json/*-log.txt created from
+# ad-hoc API probing during a deploy session.
+bl.txt
+blueprint_create.json
+builds.json
+deleted_svc.json
+dep_status.json
+deploy.json
+deploy2.json
+deploy3.json
+deploy_status.json
+deploys.json
+env_update.json
+ev.json
+events.json
+logs.json
+mock-agcord.log
+owners.json
+patch.json
+pg_create.json
+deleted_svc.json
+flowsvc.json
+del.json
+dep.json
+pg_create.json
+tracera_build_log.txt
+Tracera_*.json
+Tracera_*.txt
+Tracera_*.log
+deploy_*.log
+deploy_*.txt
+build_log*.txt
+build_run.json
+vercel_*.json
+vercel_*.log
+job*.json
+job*.txt
+deploys.json
+services.json
+sf.json
+*.deploy.json
+*.deploy.txt
+.vault.local.env
+services_full.json
+svc.json
+ws_create.json
+mock-agcord.log
+*.flowsvc.json
+*_flowsvc.json
+# Loose log/cmd debug artifacts at repo root (created during ad-hoc
+# deploy probes; safe to delete).
+/*.log
+/_run_*.cmd
+/probe_health.txt
+/build_out.log
+/s*.log
+/_run_push.cmd
+
+# Runtime data directory (SQLite DBs, uploaded artifacts). Always local-only.
+/data/
+/data/*
+
+# Node lockfiles + electron-builder output (not committed per repo convention)
+package-lock.json
+frontend/apps/desktop/release/
+frontend/apps/desktop/build/icon.*
+sidecar/go/tracera-sidecar
+
+# Build caches (Turbo / Wrangler / Helios / Turbo logs)
+.turbo/
+frontend/.turbo/
+**/.turbo/
+frontend/.wrangler/
+**/.wrangler/
+frontend/.helios-harness/
+**/.helios-harness/
+frontend/runtime-performance-results.json
+**/runtime-performance-results.json
+frontend/**/.tsbuildinfo
+**/*.tsbuildinfo
+Tracera/worktrees/
+**/worktrees/
+frontend/packages/**/build/
+
+# Live dev-server logs (rootless deploy runner + local dev) — held open by process, re-spawn on restart.
+server.err.log
+server.log
+server.out.log
+vite.err
+vite.log
+vite.out.log
+e2e_run.log
+dev_server*.log
+
+.vercel
+.env*.local
+.vault.local.env
+
+# Trunk local cache. `.trunk/trunk.yaml` is tracked; everything else trunk
+# writes under `.trunk/` is machine-local (plugins, tools, logs, results).
+.trunk/actions
+.trunk/logs
+.trunk/notifications
+.trunk/out
+.trunk/plugins
+.trunk/tools
+
+# Python coverage artifacts. `pytest --cov` writes .coverage locally and CI
+# uploads coverage.xml as a Codecov artifact; neither belongs in the tree.
+.coverage
+.coverage.*
+coverage.xml
+htmlcov/
+
+# Hash-pinned evidence artifacts. Their bytes are attested by sibling
+# SHA256SUMS / EVIDENCE-SHA256.json / input-manifest.json manifests, so a
+# formatting pass would break the attestation. Verify with
+# `python3 scripts/verify_evidence_hashes.py`.
+docs/state/**
+docs/audit/readiness/**

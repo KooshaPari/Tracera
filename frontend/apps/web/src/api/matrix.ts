@@ -2,7 +2,7 @@ import type { Item, Link } from "./types";
 
 // Traceability Matrix API stub
 import { client } from "./client";
-import { requireAvailable, invalidResponse } from "./availability";
+import { requireAvailable, invalidResponse, rejectNonApiContent } from "./availability";
 
 interface TraceabilityMatrix {
   coverage: {
@@ -51,12 +51,12 @@ const fetchMatrix = async (projectId: string): Promise<TraceabilityMatrix> => {
 };
 
 const exportMatrix = async (projectId: string, format: "csv" | "json" | "xlsx"): Promise<Blob> => {
-  const data = await requireAvailable(
-    get("/api/v1/projects/{id}/matrix/export", {
-      params: { path: { id: projectId }, query: { format } },
-      parseAs: "blob",
-    }),
-  );
+  const result = await get("/api/v1/projects/{id}/matrix/export", {
+    params: { path: { id: projectId }, query: { format } },
+    parseAs: "blob",
+  });
+  const data = await requireAvailable(Promise.resolve(result));
+  rejectNonApiContent(result.response.headers.get("content-type") ?? "");
   if (!(data instanceof Blob)) return invalidResponse();
   return data;
 };
