@@ -183,7 +183,7 @@ pub(crate) async fn ingest_jira(
     (axum::http::StatusCode::OK, Json(result))
 }
 
-/// POST /ingest/agileplus
+/// POST /ingest/agcord
 ///
 /// Ingests agent and task data from AgCord (autonomous agent communication
 /// platform) into Tracera's traceability graph.
@@ -193,9 +193,11 @@ pub(crate) async fn ingest_jira(
 ///      AgCord's HTTP API (`/api/agents`, `/api/tasks`).
 ///   2. Payload push -- caller-supplied `items` array (agents/tasks).
 ///
-/// AgCord provides the governance and work-management layer that Tracera
-/// expands into full graph-based traceability for agentic product engineering.
-pub(crate) async fn ingest_agileplus(
+/// This handler used to be registered at `/ingest/agileplus`, which made a 200
+/// look like AgilePlus governance acceptance. AgilePlus governance is a
+/// different contract (SPEC-009) served by
+/// `POST /api/v1/ingest/agileplus`; see `handlers::agileplus_ingest`.
+pub(crate) async fn ingest_agcord(
     axum::extract::State(state): axum::extract::State<AppState>,
     Json(req): Json<AgcordIngestRequest>,
 ) -> (axum::http::StatusCode, Json<BulkIngestionResult>) {
@@ -232,4 +234,56 @@ pub(crate) async fn ingest_agileplus(
 
     let result = ingest::ingest_from_payload(&req.items, "id", "agcord", &state.store).await;
     (axum::http::StatusCode::OK, Json(result))
+}
+
+/// POST /ingest/agileplus -- legacy path, no longer an ingestion endpoint.
+///
+/// Consumers that pushed AgCord `items[]` here are redirected to
+/// `/ingest/agcord` with 308 (method and body preserved by conforming clients),
+/// so they keep working but can never read a 200 as AgilePlus governance
+/// acceptance. A body that actually carries the SPEC-009 envelope is rejected
+/// with an explicit pointer to `/api/v1/ingest/agileplus` rather than being
+/// silently reinterpreted as AgCord data.
+pub(crate) async fn ingest_agileplus_legacy(
+    body: Result<Json<Value>, axum::extract::rejection::JsonRejection>,
+) -> axum::response::Response {
+    use axum::response::IntoResponse;
+
+    let Ok(Json(body)) = body else {
+        return (
+            axum::http::StatusCode::BAD_REQUEST,
+            Json(serde_json::json!({
+                "status": "rejected",
+                "error": "agileplus_malformed_body",
+                "message": "request body must be JSON",
+            })),
+        )
+            .into_response();
+    };
+
+    let is_governance_envelope = body.get("source").and_then(Value::as_str) == Some("agileplus")
+        || (body.get("entities").is_some_and(Value::is_array) && body.get("items").is_none());
+    if is_governance_envelope {
+        return (
+            axum::http::StatusCode::BAD_REQUEST,
+            Json(serde_json::json!({
+                "status": "rejected",
+                "error": "agileplus_wrong_path",
+                "message": "SPEC-009 AgilePlus ingestion is POST /api/v1/ingest/agileplus",
+            })),
+        )
+            .into_response();
+    }
+
+    (
+        axum::http::StatusCode::PERMANENT_REDIRECT,
+        [(http::header::LOCATION, "/ingest/agcord")],
+        Json(serde_json::json!({
+            "status": "moved",
+            "error": "agcord_ingest_moved",
+            "message": "AgCord ingestion moved to POST /ingest/agcord",
+            "location": "/ingest/agcord",
+        })),
+    )
+        .into_response()
 }
