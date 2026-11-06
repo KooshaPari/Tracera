@@ -30,6 +30,7 @@ mod tests;
 mod trace_refs;
 
 pub use self::agcord::AgcordConfig;
+pub(crate) use self::benchmark::benchmark_run_to_issue;
 pub use self::github::GitHubConfig;
 pub use self::jira::JiraConfig;
 pub use self::persist::{ingest_from_payload, ingest_live};

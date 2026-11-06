@@ -2,6 +2,7 @@ mod agileplus;
 mod evidence;
 mod items;
 mod problems;
+mod product_observations;
 mod projects;
 mod sprints;
 mod stories;
@@ -54,6 +55,21 @@ pub(super) fn str_to_opt_ts(s: Option<String>) -> Option<DateTime<Utc>> {
 }
 
 impl Store for SqliteStore {
+    fn ingest_product_observations(
+        &self,
+        batch: crate::product::persistence::ProductObservationBatch,
+    ) -> BoxFuture<'_, StoreResult<crate::product::persistence::ProductIngestReceipt>> {
+        Box::pin(async move { product_observations::ingest(&self.pool, batch).await })
+    }
+    fn product_observations(
+        &self,
+        product_id: String,
+        baseline: u64,
+    ) -> BoxFuture<'_, StoreResult<Option<crate::product::persistence::ProductObservationModel>>>
+    {
+        Box::pin(async move { product_observations::read(&self.pool, product_id, baseline).await })
+    }
+
     fn search_items(
         &self,
         query: String,

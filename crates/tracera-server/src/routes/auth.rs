@@ -119,3 +119,42 @@ mod tests {
         assert_contract("/api/v1/auth/refresh").await;
     }
 }
+
+/// Authorized product scope shared by every durable observation handler.
+pub(super) struct ProductScope(pub (String, u64));
+
+#[derive(Serialize)]
+struct ProductAccessDenied {
+    error: &'static str,
+}
+
+impl<S: Send + Sync> axum::extract::FromRequestParts<S> for ProductScope {
+    type Rejection = axum::response::Response;
+
+    async fn from_request_parts(
+        parts: &mut axum::http::request::Parts,
+        state: &S,
+    ) -> Result<Self, Self::Rejection> {
+        use axum::{extract::Path, response::IntoResponse};
+        let Path(scope) = Path::<(String, u64)>::from_request_parts(parts, state)
+            .await
+            .map_err(IntoResponse::into_response)?;
+        let allowed = std::env::var("TRACERA_PRODUCT_IDS")
+            .ok()
+            .is_some_and(|ids| {
+                ids.split(',')
+                    .map(str::trim)
+                    .any(|id| !id.is_empty() && id == scope.0)
+            });
+        if !allowed {
+            return Err((
+                StatusCode::FORBIDDEN,
+                Json(ProductAccessDenied {
+                    error: "product_access_denied",
+                }),
+            )
+                .into_response());
+        }
+        Ok(Self(scope))
+    }
+}

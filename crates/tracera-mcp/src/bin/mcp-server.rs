@@ -150,6 +150,32 @@ mod demo {
     pub struct DemoStore;
 
     impl Store for DemoStore {
+        fn ingest_product_observations(
+            &self,
+            _: tracera_server::product::persistence::ProductObservationBatch,
+        ) -> BoxFuture<'_, StoreResult<tracera_server::product::persistence::ProductIngestReceipt>>
+        {
+            Box::pin(async {
+                Err(StoreError::UnsupportedOperation(
+                    "DemoStore::ingest_product_observations",
+                ))
+            })
+        }
+        fn product_observations(
+            &self,
+            _: String,
+            _: u64,
+        ) -> BoxFuture<
+            '_,
+            StoreResult<Option<tracera_server::product::persistence::ProductObservationModel>>,
+        > {
+            Box::pin(async {
+                Err(StoreError::UnsupportedOperation(
+                    "DemoStore::product_observations",
+                ))
+            })
+        }
+
         fn list_items(
             &self,
             _filter: ItemFilter,
