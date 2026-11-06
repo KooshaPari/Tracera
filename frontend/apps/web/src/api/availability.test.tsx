@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import { ApiError } from "./client-errors";
-import { requireAvailable } from "./availability";
+import { describeFailure, isNonApiContent, requireAvailable } from "./availability";
 import { Unavailable } from "@/components/Availability";
 import { ProjectSummary } from "@/components/ProjectSummary";
 import { fetchProject } from "@/hooks/useProjects";
@@ -109,5 +109,59 @@ describe("valid listed project routing", () => {
     vi.stubGlobal("fetch", fetch);
     await expect(fetchProject("valid", "token")).rejects.toMatchObject({ status: 403 });
     expect(fetch).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe("failure state model", () => {
+  it.each([
+    [new ApiError(401, "unauthorized"), "unauthorized"],
+    [new ApiError(403, "forbidden"), "forbidden"],
+    [new ApiError(404, "absent"), "absent_route"],
+    [new ApiError(405, "method"), "absent_route"],
+    [new ApiError(429, "limited"), "rate_limited"],
+    [new ApiError(501, "not implemented"), "not_implemented"],
+    [new ApiError(500, "server"), "unavailable"],
+    [new ApiError(502, "invalid", { error: "invalid_response" }), "invalid_response"],
+    [new ApiError(400, "bad request"), "failed"],
+    [new Error("offline"), "unavailable"],
+    [undefined, "unavailable"],
+  ])("classifies %# as %s", (error, kind) => {
+    expect(describeFailure(error).kind).toBe(kind);
+  });
+
+  it.each([
+    [new ApiError(401, "unauthorized"), "Sign-in required"],
+    [new ApiError(403, "forbidden"), "Access denied"],
+    [new ApiError(404, "absent"), "Route not available"],
+    [new ApiError(429, "limited"), "Too many requests"],
+    [new ApiError(502, "invalid", { error: "invalid_response" }), "Invalid response"],
+    [new ApiError(500, "server"), "Service unavailable"],
+  ])("renders a distinct actionable state for %#", (error, heading) => {
+    render(<Unavailable error={error} />);
+    expect(screen.getByRole("alert")).toHaveTextContent(heading);
+  });
+
+  it("does not report a 2xx sign-in page as data", () => {
+    expect(isNonApiContent("text/html; charset=utf-8")).toBe(true);
+    expect(isNonApiContent("text/plain")).toBe(true);
+    expect(isNonApiContent("application/json")).toBe(false);
+    expect(isNonApiContent("text/csv")).toBe(false);
+  });
+
+  it("does not produce a downloadable artifact from an HTML 200", async () => {
+    mocks.get.mockResolvedValue({
+      response: new Response(null, { status: 200, headers: { "content-type": "text/html" } }),
+      data: new Blob(["<html>sign in</html>"]),
+    });
+    await expect(exportMatrix("p", "csv")).rejects.toMatchObject({ status: 502 });
+  });
+
+  it("still returns a real CSV artifact", async () => {
+    mocks.get.mockResolvedValue({
+      response: new Response(null, { status: 200, headers: { "content-type": "text/csv" } }),
+      data: new Blob(["id,traced\n1,true\n"]),
+    });
+    const artifact = await exportMatrix("p", "csv");
+    expect(artifact).toBeInstanceOf(Blob);
   });
 });
