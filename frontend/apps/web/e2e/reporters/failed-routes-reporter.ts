@@ -73,7 +73,7 @@ class FailedRoutesReporter implements Reporter {
         skipped: this.testResults.filter((r) => r.status === "skipped").length,
         timedout: this.testResults.filter((r) => r.status === "timedout").length,
       },
-      failedRoutes: [...this.failedRoutes].toSorted(),
+      failedRoutes: [...this.failedRoutes].toSorted((a, b) => a.localeCompare(b)),
       details: this.testResults,
     };
 
