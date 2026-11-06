@@ -13,7 +13,7 @@ tracera --root C:\Users\koosh\Tracera status
 tracera --root C:\Users\koosh\Tracera up
 ```
 
-Prerequisites: establish installed binary/source identity, selected root and compose assets, configuration/data ownership, preserved env bytes and file/link metadata, a reachable compatible backend, and owned startup authorization. Do not use `status` as a read-only preflight. GAP-020 retains the launch/layout obligation; GAP-022 covers backend qualification; GAP-023 covers env preservation.
+Prerequisites: establish installed binary/source identity, selected root and compose assets, configuration/data ownership, preserved env bytes and file/link metadata, a reachable compatible backend, and owned startup authorization. Do not use `status` as a read-only preflight. GAP-030 retains the launch/layout obligation; GAP-032 covers backend qualification; GAP-033 covers env preservation.
 
 ## Source-qualified write behavior
 
@@ -31,9 +31,9 @@ Operator reports Docker selected, `docker-desktop` WSL distro Stopped, and Fedor
 
 ## Closure oracles and safe forward work
 
-- GAP-020 positive: exact installed CLI hash/version and matching selected root/assets documented, then the intended sequence qualified under owned authorization. Negative: sibling/alternate root or missing assets rejected without misidentifying the candidate.
-- GAP-022 positive: selected backend, endpoint, Compose provider/version and daemon readiness demonstrated for this root. Negative: unavailable selected backend produces explicit unavailable evidence; another running WSL distro or port cannot count as success.
-- GAP-023 positive: future read-only preflight preserves env bytes, file/link metadata and data ownership for valid, missing-password and unreadable fixtures. Negative: a missing/empty password or unreadable file cannot silently regenerate/replace user config during status. Test symlink targets and Windows copy behavior in isolated fixtures, never against the Desk env.
+- GAP-030 positive: exact installed CLI hash/version and matching selected root/assets documented, then the intended sequence qualified under owned authorization. Negative: sibling/alternate root or missing assets rejected without misidentifying the candidate.
+- GAP-032 positive: selected backend, endpoint, Compose provider/version and daemon readiness demonstrated for this root. Negative: unavailable selected backend produces explicit unavailable evidence; another running WSL distro or port cannot count as success.
+- GAP-033 positive: future read-only preflight preserves env bytes, file/link metadata and data ownership for valid, missing-password and unreadable fixtures. Negative: a missing/empty password or unreadable file cannot silently regenerate/replace user config during status. Test symlink targets and Windows copy behavior in isolated fixtures, never against the Desk env.
 
 First forward action is a file/metadata-only preflight and secure configuration preservation; no CLI status/up, Docker/WSL/Podman startup or migration is authorized by this document. Runtime validation remains NOT_RUN.
 
@@ -42,17 +42,17 @@ First forward action is a file/metadata-only preflight and secure configuration 
 Generated: 2026-10-18T07:18:52Z
 
 ```text
-GAP-020 Explicit root launch/layout
+GAP-030 Explicit root launch/layout
   Implementation: PASS | 5146d7f4e1a038be2acc73082df33aec5ee3d452:crates/tracera-cli/src/commands.rs:145-170
   Usability: UNKNOWN | D04-ROOT-PREFLIGHT.md: report identity and original observation time unknown
   Validation: NOT_RUN | D04-ROOT-PREFLIGHT.md: scope excludes runtime commands; no execution witness
   Assurance: UNKNOWN | D04-ROOT-PREFLIGHT.md: installed binary equivalence and current runtime unverified
-GAP-022 Selected backend readiness
+GAP-032 Selected backend readiness
   Implementation: UNKNOWN | 5146d7f4e1a038be2acc73082df33aec5ee3d452:D04-ROOT-PREFLIGHT.md: Backend evidence boundary
   Usability: UNKNOWN | D04-ROOT-PREFLIGHT.md: report identity and original observation time unknown
   Validation: NOT_RUN | D04-ROOT-PREFLIGHT.md: scope excludes runtime commands; no execution witness
   Assurance: UNKNOWN | D04-ROOT-PREFLIGHT.md: installed binary equivalence and current runtime unverified
-GAP-023 Read-only status preserves configuration
+GAP-033 Read-only status preserves configuration
   Implementation: FAIL | 5146d7f4e1a038be2acc73082df33aec5ee3d452:crates/tracera-cli/src/commands.rs:244-246; crates/tracera-cli/src/compose.rs:168-202
   Usability: UNKNOWN | D04-ROOT-PREFLIGHT.md: report identity and original observation time unknown
   Validation: NOT_RUN | D04-ROOT-PREFLIGHT.md: scope excludes runtime commands; no execution witness
