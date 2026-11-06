@@ -62,6 +62,17 @@ fn store_failure(error: StoreError) -> (StatusCode, Json<Value>) {
             "agileplus_provenance_unsupported",
             &format!("store backend cannot record `{operation}`"),
         ),
+        // The store reports a lost insert race or a duplicate receipt as a
+        // conflict. That is a client-correctable precondition failure, so it
+        // must not be reported as a server-side persistence error.
+        StoreError::Conflict(message) => {
+            tracing::warn!("AgilePlus ingest store conflict: {message}");
+            rejection(
+                StatusCode::CONFLICT,
+                "agileplus_store_conflict",
+                "provenance persistence conflict",
+            )
+        }
         StoreError::Database(message) => {
             tracing::error!("AgilePlus ingest store failure: {message}");
             rejection(
