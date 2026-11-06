@@ -222,18 +222,25 @@ jobs:
       - uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff # v5
         with:
           go-version: "stable"
-      # golangci-lint v1.x binaries are built with go1.24 and refuse to lint
-      # modules that declare a newer Go (sidecar/go targets go 1.25.13).
-      # The v7 action supports golangci-lint v2; v2.4.0 is the first release
-      # whose official binary is built with go1.25, so pin it explicitly and
-      # run once per module.
+      # golangci-lint refuses to lint a module that declares a newer Go than
+      # the version its binary was built with: v1.x ships go1.24, and v2.4.0
+      # ships go1.25, while sidecar/go declares go 1.26.9. The v7 action
+      # supports golangci-lint v2; v2.15.0 is built with go1.27.0, so it sits
+      # above the module's declared version with headroom for the next bump.
+      # Pin it explicitly and run once per module.
+      #
+      # Verified locally: `golangci-lint version` reports
+      #   "built with go1.27.0", and `golangci-lint run` in sidecar/go
+      #   reports "0 issues." with exit 0. The repo carries no
+      #   .golangci.yml, so this is a default-config run and the v2 -> v2
+      #   upgrade introduces no config migration.
       - uses: golangci/golangci-lint-action@9fae48acfc02a90574d7c304a1758ef9895495fa # v7
         with:
-          version: v2.4.0
+          version: v2.15.0
           working-directory: sidecar/go
       - uses: golangci/golangci-lint-action@9fae48acfc02a90574d7c304a1758ef9895495fa # v7
         with:
-          version: v2.4.0
+          version: v2.15.0
           working-directory: crates/tracera-go-cli
       - name: Vet sidecar/go
         working-directory: sidecar/go
