@@ -1,0 +1,367 @@
+warning: linker stderr: rust-lld: Option `-no_compact_unwind' is undocumented. Should lld implement it?
+  |
+  = note: `#[warn(linker_messages)]` on by default
+
+warning: unused imports: `AssessmentEngine`, `AssessmentFinding`, `AssessmentResult`, `AssessmentStatus`, and `FindingSeverity`
+  --> crates/tracera-server/src/product/mod.rs:28:5
+   |
+28 |     AssessmentEngine, AssessmentFinding, AssessmentResult, AssessmentStatus, FindingSeverity,
+   |     ^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^
+   |
+   = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused imports: `BaselineDelta`, `BaselineProposal`, `ProductBaseline`, and `ProposalStatus`
+  --> crates/tracera-server/src/product/mod.rs:30:20
+   |
+30 | pub use baseline::{BaselineDelta, BaselineProposal, ProductBaseline, ProposalStatus};
+   |                    ^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^
+
+warning: unused imports: `DetectorFinding`, `DetectorResult`, `DetectorVersion`, `FindingKind`, `FreshnessDetector`, and `ProductDetectorSuite`
+  --> crates/tracera-server/src/product/mod.rs:32:5
+   |
+32 |     DetectorFinding, DetectorResult, DetectorVersion, FindingKind, FreshnessDetector,
+   |     ^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^  ^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^
+33 |     ProductDetectorSuite,
+   |     ^^^^^^^^^^^^^^^^^^^^
+
+warning: unused imports: `IntentKind` and `IntentStatus`
+  --> crates/tracera-server/src/product/mod.rs:35:54
+   |
+35 | pub use identity::{AcceptedIntent, BaselineRevision, IntentKind, IntentStatus, ProductId};
+   |                                                      ^^^^^^^^^^  ^^^^^^^^^^^^
+
+warning: unused imports: `IngestResult`, `ObservationIngestRequest`, and `ObservationStore`
+  --> crates/tracera-server/src/product/mod.rs:36:18
+   |
+36 | pub use ingest::{IngestResult, ObservationIngestRequest, ObservationStore};
+   |                  ^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^
+
+warning: unused imports: `ObservationKind`, `ObservationResult`, and `ObservationSource`
+  --> crates/tracera-server/src/product/mod.rs:37:36
+   |
+37 | pub use observation::{Observation, ObservationKind, ObservationResult, ObservationSource};
+   |                                    ^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^
+
+warning: unused imports: `DEFAULT_QUERY_LIMIT`, `InvalidationIndex`, `MAX_QUERY_LIMIT`, `ProductQuery`, `ProductStats`, `ProductView`, `build_invalidation_index`, `build_product_view`, `compute_product_stats`, and `query_intents`
+  --> crates/tracera-server/src/product/mod.rs:39:5
+   |
+39 |     build_invalidation_index, build_product_view, compute_product_stats, query_intents,
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^
+40 |     InvalidationIndex, ProductQuery, ProductStats, ProductView, DEFAULT_QUERY_LIMIT,
+   |     ^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^  ^^^^^^^^^^^^  ^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^
+41 |     MAX_QUERY_LIMIT,
+   |     ^^^^^^^^^^^^^^^
+
+warning: unused imports: `GraphTraversal`, `TraversalBudget`, `TraversalNode`, `TraversalResult`, and `build_adjacency`
+  --> crates/tracera-server/src/product/mod.rs:44:5
+   |
+44 |     build_adjacency, GraphTraversal, TraversalBudget, TraversalNode, TraversalResult,
+   |     ^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^
+
+warning: function `ingest` is never used
+ --> crates/tracera-server/src/pg_store/product_observations.rs:3:14
+  |
+3 | pub async fn ingest(_: &PgPool, _: ProductObservationBatch) -> StoreResult<ProductIngestReceipt> { Err(StoreError::Database("not impl...
+  |              ^^^^^^
+  |
+  = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: function `read` is never used
+ --> crates/tracera-server/src/pg_store/product_observations.rs:4:14
+  |
+4 | pub async fn read(_: &PgPool, _: String, _: u64) -> StoreResult<Option<ProductObservationModel>> { Ok(None) }
+  |              ^^^^
+
+warning: enum `AssessmentStatus` is never used
+  --> crates/tracera-server/src/product/assessment.rs:27:10
+   |
+27 | pub enum AssessmentStatus {
+   |          ^^^^^^^^^^^^^^^^
+
+warning: methods `worse_than` and `ordinal` are never used
+  --> crates/tracera-server/src/product/assessment.rs:42:12
+   |
+40 | impl AssessmentStatus {
+   | --------------------- methods in this implementation
+41 |     /// Severity ordering: Violated > Inconclusive > Stale > Unknown > Satisfied.
+42 |     pub fn worse_than(self, other: Self) -> bool {
+   |            ^^^^^^^^^^
+...
+46 |     fn ordinal(self) -> u8 {
+   |        ^^^^^^^
+
+warning: enum `FindingSeverity` is never used
+  --> crates/tracera-server/src/product/assessment.rs:63:10
+   |
+63 | pub enum FindingSeverity {
+   |          ^^^^^^^^^^^^^^^
+
+warning: associated function `from_status` is never used
+  --> crates/tracera-server/src/product/assessment.rs:73:12
+   |
+71 | impl FindingSeverity {
+   | -------------------- associated function in this implementation
+72 |     /// Map assessment status to a default severity.
+73 |     pub fn from_status(status: AssessmentStatus) -> Self {
+   |            ^^^^^^^^^^^
+
+warning: struct `AssessmentFinding` is never constructed
+  --> crates/tracera-server/src/product/assessment.rs:90:12
+   |
+90 | pub struct AssessmentFinding {
+   |            ^^^^^^^^^^^^^^^^^
+
+warning: struct `AssessmentResult` is never constructed
+   --> crates/tracera-server/src/product/assessment.rs:111:12
+    |
+111 | pub struct AssessmentResult {
+    |            ^^^^^^^^^^^^^^^^
+
+warning: struct `AssessmentEngine` is never constructed
+   --> crates/tracera-server/src/product/assessment.rs:135:12
+    |
+135 | pub struct AssessmentEngine {
+    |            ^^^^^^^^^^^^^^^^
+
+warning: associated items `new`, `default_24h`, `assess_capability`, `assess_product`, and `assess_with_intents` are never used
+   --> crates/tracera-server/src/product/assessment.rs:145:12
+    |
+140 | impl AssessmentEngine {
+    | --------------------- associated items in this implementation
+...
+145 |     pub fn new(freshness_threshold_secs: i64) -> Self {
+    |            ^^^
+...
+152 |     pub fn default_24h() -> Self {
+    |            ^^^^^^^^^^^
+...
+157 |     pub fn assess_capability(
+    |            ^^^^^^^^^^^^^^^^^
+...
+266 |     pub fn assess_product(
+    |            ^^^^^^^^^^^^^^
+...
+327 |     pub fn assess_with_intents(
+    |            ^^^^^^^^^^^^^^^^^^^
+
+warning: struct `DetectorVersion` is never constructed
+  --> crates/tracera-server/src/product/detectors.rs:27:12
+   |
+27 | pub struct DetectorVersion(pub String);
+   |            ^^^^^^^^^^^^^^^
+
+warning: associated function `current` is never used
+  --> crates/tracera-server/src/product/detectors.rs:31:12
+   |
+29 | impl DetectorVersion {
+   | -------------------- associated function in this implementation
+30 |     /// Current version of all detectors.
+31 |     pub fn current() -> Self {
+   |            ^^^^^^^
+
+warning: enum `FindingKind` is never used
+  --> crates/tracera-server/src/product/detectors.rs:46:10
+   |
+46 | pub enum FindingKind {
+   |          ^^^^^^^^^^^
+
+warning: struct `DetectorFinding` is never constructed
+  --> crates/tracera-server/src/product/detectors.rs:58:12
+   |
+58 | pub struct DetectorFinding {
+   |            ^^^^^^^^^^^^^^^
+
+warning: struct `DetectorResult` is never constructed
+  --> crates/tracera-server/src/product/detectors.rs:83:12
+   |
+83 | pub struct DetectorResult {
+   |            ^^^^^^^^^^^^^^
+
+warning: struct `FreshnessDetector` is never constructed
+   --> crates/tracera-server/src/product/detectors.rs:102:12
+    |
+102 | pub struct FreshnessDetector {
+    |            ^^^^^^^^^^^^^^^^^
+
+warning: associated items `new` and `detect` are never used
+   --> crates/tracera-server/src/product/detectors.rs:109:12
+    |
+107 | impl FreshnessDetector {
+    | ---------------------- associated items in this implementation
+108 |     /// Create a new freshness detector with the given threshold.
+109 |     pub fn new(max_age_secs: i64) -> Self {
+    |            ^^^
+...
+114 |     pub fn detect(&self, observations: &[Observation]) -> Vec<DetectorFinding> {
+    |            ^^^^^^
+
+warning: struct `CoverageDetector` is never constructed
+   --> crates/tracera-server/src/product/detectors.rs:154:12
+    |
+154 | pub struct CoverageDetector;
+    |            ^^^^^^^^^^^^^^^^
+
+warning: associated items `new` and `detect` are never used
+   --> crates/tracera-server/src/product/detectors.rs:164:12
+    |
+162 | impl CoverageDetector {
+    | --------------------- associated items in this implementation
+163 |     /// Create a new coverage detector.
+164 |     pub fn new() -> Self {
+    |            ^^^
+...
+169 |     pub fn detect(
+    |            ^^^^^^
+
+warning: struct `ContradictionDetector` is never constructed
+   --> crates/tracera-server/src/product/detectors.rs:217:12
+    |
+217 | pub struct ContradictionDetector;
+    |            ^^^^^^^^^^^^^^^^^^^^^
+
+warning: associated items `new` and `detect` are never used
+   --> crates/tracera-server/src/product/detectors.rs:227:12
+    |
+225 | impl ContradictionDetector {
+    | -------------------------- associated items in this implementation
+226 |     /// Create a new contradiction detector.
+227 |     pub fn new() -> Self {
+    |            ^^^
+...
+232 |     pub fn detect(&self, observations: &[Observation]) -> Vec<DetectorFinding> {
+    |            ^^^^^^
+
+warning: struct `ProductDetectorSuite` is never constructed
+   --> crates/tracera-server/src/product/detectors.rs:285:12
+    |
+285 | pub struct ProductDetectorSuite {
+    |            ^^^^^^^^^^^^^^^^^^^^
+
+warning: associated items `new` and `run` are never used
+   --> crates/tracera-server/src/product/detectors.rs:293:12
+    |
+291 | impl ProductDetectorSuite {
+    | ------------------------- associated items in this implementation
+292 |     /// Create a suite with all three detectors.
+293 |     pub fn new(freshness_max_age_secs: i64) -> Self {
+    |            ^^^
+...
+302 |     pub fn run(&self, intents: &[AcceptedIntent], observations: &[Observation]) -> DetectorResult {
+    |            ^^^
+
+warning: struct `TraversalBudget` is never constructed
+  --> crates/tracera-server/src/product/traversal.rs:32:12
+   |
+32 | pub struct TraversalBudget {
+   |            ^^^^^^^^^^^^^^^
+
+warning: struct `TraversalNode` is never constructed
+  --> crates/tracera-server/src/product/traversal.rs:58:12
+   |
+58 | pub struct TraversalNode {
+   |            ^^^^^^^^^^^^^
+
+warning: struct `TraversalResult` is never constructed
+  --> crates/tracera-server/src/product/traversal.rs:71:12
+   |
+71 | pub struct TraversalResult {
+   |            ^^^^^^^^^^^^^^^
+
+warning: struct `GraphTraversal` is never constructed
+   --> crates/tracera-server/src/product/traversal.rs:110:12
+    |
+110 | pub struct GraphTraversal {
+    |            ^^^^^^^^^^^^^^
+
+warning: associated items `new`, `with_node_info`, and `traverse` are never used
+   --> crates/tracera-server/src/product/traversal.rs:122:12
+    |
+117 | impl GraphTraversal {
+    | ------------------- associated items in this implementation
+...
+122 |     pub fn new(adjacency: HashMap<String, Vec<(String, String)>>, budget: TraversalBudget) -> Self {
+    |            ^^^
+...
+134 |     pub fn with_node_info(
+    |            ^^^^^^^^^^^^^^
+...
+153 |     pub fn traverse(&mut self, start_id: &str) -> TraversalResult {
+    |            ^^^^^^^^
+
+warning: function `build_adjacency` is never used
+   --> crates/tracera-server/src/product/traversal.rs:258:8
+    |
+258 | pub fn build_adjacency(
+    |        ^^^^^^^^^^^^^^^
+
+warning: struct `ProductObservationBatch` is never constructed
+ --> crates/tracera-server/src/product/persistence.rs:6:12
+  |
+6 | pub struct ProductObservationBatch {
+  |            ^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: struct `ProductObservationModel` is never constructed
+  --> crates/tracera-server/src/product/persistence.rs:14:12
+   |
+14 | pub struct ProductObservationModel {
+   |            ^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: struct `ProductIngestReceipt` is never constructed
+  --> crates/tracera-server/src/product/persistence.rs:21:12
+   |
+21 | pub struct ProductIngestReceipt {
+   |            ^^^^^^^^^^^^^^^^^^^^
+
+warning: function `ingest` is never used
+ --> crates/tracera-server/src/sqlite_store/product_observations.rs:3:14
+  |
+3 | pub async fn ingest(_: &SqlitePool, _: ProductObservationBatch) -> StoreResult<ProductIngestReceipt> { Err(StoreError::Database("not ...
+  |              ^^^^^^
+
+warning: function `read` is never used
+ --> crates/tracera-server/src/sqlite_store/product_observations.rs:4:14
+  |
+4 | pub async fn read(_: &SqlitePool, _: String, _: u64) -> StoreResult<Option<ProductObservationModel>> { Ok(None) }
+  |              ^^^^
+
+warning: methods `ingest_product_observations` and `product_observations` are never used
+   --> crates/tracera-server/src/store.rs:239:8
+    |
+238 | pub trait Store: Send + Sync {
+    |           ----- methods in this trait
+239 |     fn ingest_product_observations(&self, batch: crate::product::persistence::ProductObservationBatch)
+    |        ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+240 |         -> BoxFuture<'_, StoreResult<crate::product::persistence::ProductIngestReceipt>>;
+241 |     fn product_observations(&self, product_id: String, baseline: u64)
+    |        ^^^^^^^^^^^^^^^^^^^^
+
+warning: `tracera-server` (test "product_persistence") generated 1 warning
+warning: `tracera-server` (bin "tracera-server") generated 44 warnings (1 duplicate) (run `cargo fix --bin "tracera-server" -p tracera-server` to apply 8 suggestions)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.83s
+     Running tests/product_persistence.rs (target/debug/deps/product_persistence-bf2fcb783583377c)
+
+running 2 tests
+test invalid_batch_and_conflicting_replay_are_atomic ... FAILED
+test observations_survive_restart_and_exact_replay ... FAILED
+
+failures:
+
+---- invalid_batch_and_conflicting_replay_are_atomic stdout ----
+
+thread 'invalid_batch_and_conflicting_replay_are_atomic' (8636998) panicked at crates/tracera-server/tests/product_persistence.rs:42:60:
+called `Result::unwrap()` on an `Err` value: Database("not implemented")
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+---- observations_survive_restart_and_exact_replay stdout ----
+
+thread 'observations_survive_restart_and_exact_replay' (8636999) panicked at crates/tracera-server/tests/product_persistence.rs:23:69:
+called `Result::unwrap()` on an `Err` value: Database("not implemented")
+
+
+failures:
+    invalid_batch_and_conflicting_replay_are_atomic
+    observations_survive_restart_and_exact_replay
+
+test result: FAILED. 0 passed; 2 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+error: test failed, to rerun pass `-p tracera-server --test product_persistence`
