@@ -1,0 +1,97 @@
+{
+  "classification": "Real Helios producer execution over a controlled subject invoking actual isolated Tracera engineering runtime qualification; not production activity",
+  "compute_placement": "local cached executable; no build; private SQLite/owned loopback process",
+  "source_repo": "/Users/kooshapari/CodeProjects/Phenotype/repos/helios-cli",
+  "source_sha": "f36e13e650dfc322e2e541d3e9b152638aeccd47",
+  "source_dirty": "?? demos/\n",
+  "subject_sha": "bf3bf82c57caa6376824fc5d5003d11382fb9174",
+  "input_hashes": {
+    "checks.py": "2974766a8fa8a917aabdcdf15913a54ab6fde6be0abd785e6f382de06b86c13b",
+    "package.json": "6c2d201263c190dca354665d9b416591ece75ed1a075f7b69878f13b254edb94",
+    ".gitignore": "91b80230cfc9e1cec326c85c26cdb334b4699404003f1b76d80c64b6f53daf83"
+  },
+  "probe_sha256": "c566014343bf60babf732cb7208fa75ee106c9822af9d7f9f0b4d75088df74c8",
+  "binary_sha256": "6be5a8d8c29091ccd46a192b27467f6f78626a5d5262f6c6dc19882f249c08c9",
+  "executable": "/opt/homebrew/opt/python@3.12/bin/python3.12",
+  "command": [
+    "/opt/homebrew/opt/python@3.12/bin/python3.12",
+    "/Users/kooshapari/CodeProjects/Phenotype/repos/helios-cli/harness/scripts/run-harness.py",
+    "run",
+    "--repo",
+    "/var/folders/wl/z8733y815nzg28yy0_1_lh7w0000gn/T/helios-engineering-20261017-9qllilr9/controlled-subject",
+    "--profile",
+    "strict-full",
+    "--out",
+    "benchmark.json",
+    "--max-parallel",
+    "1",
+    "--timeout",
+    "90",
+    "--budget",
+    "120"
+  ],
+  "cwd": "/var/folders/wl/z8733y815nzg28yy0_1_lh7w0000gn/T/helios-engineering-20261017-9qllilr9",
+  "started_at": "2026-10-17T20:31:48.338174+00:00",
+  "finished_at": "2026-10-17T20:31:49.538529+00:00",
+  "producer_exit_code": 0,
+  "output_sha256": "f2331dc179f9c6408d9f70ff769e2002685f6fbb9226e0fe76d3a1e1042bf810",
+  "identity": {
+    "run_id": "run_c8c89bb86856fbcf39d03f0f02f40f6a185e10d49394279854c30c9d5259bc1b",
+    "session_id": "ses_33ea316426839d9d4ae65b8fc16e677fbf7e8f4a933de061088bbbc73f11f2e2",
+    "attempt_id": "att_91b499ec44d7f61f24b2920d5a7b0b305bd02359f9229b3f77cdf3a920713457",
+    "tenant_id": "phenotype"
+  },
+  "replay_hash": "07f04a3fd87557d3c039e3dd4680af620eac3fb6ca7d6c1647022e0b0bec7de5",
+  "signature": {
+    "status": "unsigned",
+    "algorithm": "none",
+    "reason": "signing_authority_not_configured"
+  },
+  "result_code": "PASS",
+  "integrity": "PASS",
+  "runs": [
+    {
+      "run_id": "taskrun_3c3260ce685ef782ab84bb140acd3c87fe085fd2069beb6dc94fe86b9e09ae5b",
+      "task_id": "task_23669814bc207e54ac889c9e6f47a39314b75db318611ef6ba9bd2163a41ec6a",
+      "command": "/opt/homebrew/opt/python@3.12/bin/python3.12 checks.py lint",
+      "status": "passed",
+      "returncode": 0,
+      "duration_ms": 46
+    },
+    {
+      "run_id": "taskrun_339b2ff378ff5179c1457ea0b1f9aa9a49afd0caff041485b27c225f04dad6c1",
+      "task_id": "task_77e2f3741f1327b3b6acc0a10e557d131eea9cee55a202e43ea4a4aeba09b80a",
+      "command": "/opt/homebrew/opt/python@3.12/bin/python3.12 /tmp/tracera-runtime-resume-evidence-20261017/helios_runtime_probe.py",
+      "status": "passed",
+      "returncode": 0,
+      "duration_ms": 820
+    },
+    {
+      "run_id": "taskrun_5347418f3d8360f73684cc5ae95c25d5ee9dcf08c2e6a3f1c2755fca78a57028",
+      "task_id": "task_963238bcbe73ac3bfbf25f836b3d55c44c8922b093d378804779cb1746ea19ae",
+      "command": "/opt/homebrew/opt/python@3.12/bin/python3.12 checks.py build",
+      "status": "passed",
+      "returncode": 0,
+      "duration_ms": 136
+    }
+  ],
+  "limitations": [
+    "Unsigned; hardcoded tenant not ownership",
+    "Controlled subject; engineering observation mapping manually assigned",
+    "Build-labeled step verifies cached executable hash/permission; no rebuild"
+  ],
+  "artifact_hashes": {
+    "producer.stdout.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "benchmark.json": "f2331dc179f9c6408d9f70ff769e2002685f6fbb9226e0fe76d3a1e1042bf810",
+    "producer.stderr.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "controlled-subject/checks.py": "2974766a8fa8a917aabdcdf15913a54ab6fde6be0abd785e6f382de06b86c13b",
+    "controlled-subject/.gitignore": "91b80230cfc9e1cec326c85c26cdb334b4699404003f1b76d80c64b6f53daf83",
+    "controlled-subject/package.json": "6c2d201263c190dca354665d9b416591ece75ed1a075f7b69878f13b254edb94",
+    "controlled-subject/.helios-harness/281b0a6fbc47.stderr.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "controlled-subject/.helios-harness/6f6a0a977007.stdout.log": "188ef8dcb753e00f91d75cc1440a633c5f0555da187ddd99be1ca859a63d5db9",
+    "controlled-subject/.helios-harness/db79575cd5ce.stdout.log": "258a7ed833a96469b9b4f42082d41ae38262947572e0f1f6fdd5ca1579a56da7",
+    "controlled-subject/.helios-harness/281b0a6fbc47.stdout.log": "f67ac2b72fe155864390abceb3c0b071a7b62d541742c6baa867402f6da4817d",
+    "controlled-subject/.helios-harness/db79575cd5ce.stderr.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "controlled-subject/.helios-harness/6f6a0a977007.stderr.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  }
+}

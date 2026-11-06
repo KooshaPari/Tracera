@@ -52,5 +52,9 @@ norecursedirs = ["crates", ".*", "build", "dist"]
 # (ci-agents.yml `lint-py`). Checking it from the repo root resolves imports in
 # an environment that only installs this package, so its third-party test
 # dependencies (for example `respx`) are reported as missing.
-exclude = ["^crates/"]
-
+#
+# The evidence corpus holds captured observation artifacts, not importable
+# source. Observation directories can repeat a module basename, which mypy
+# rejects as a duplicate module. Their integrity is enforced by
+# scripts/verify_evidence_hashes.py rather than by type checking.
+exclude = ["^crates/", "^docs/state/"]
