@@ -591,6 +591,7 @@ mod tests {
             source: ObservationSource {
                 collector: "test".to_string(),
                 version: "0.1.0".to_string(),
+                causality: None,
                 artifact_ref: None,
             },
             recorded_at: ts(recorded_at),
@@ -764,6 +765,7 @@ mod tests {
             source: ObservationSource {
                 collector: "test".to_string(),
                 version: "0.1.0".to_string(),
+                causality: None,
                 artifact_ref: None,
             },
             recorded_at: DateTime::from_timestamp(1_000, 0).unwrap(),

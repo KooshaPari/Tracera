@@ -14,6 +14,7 @@ use std::pin::Pin;
 #[derive(Debug)]
 pub enum StoreError {
     Database(String),
+    Conflict(String),
     // MCP adapters use this through the library; the server binary also
     // compiles this module independently and does not construct this variant.
     #[allow(dead_code)]
@@ -24,6 +25,7 @@ impl std::fmt::Display for StoreError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             StoreError::Database(msg) => write!(f, "database error: {msg}"),
+            StoreError::Conflict(msg) => write!(f, "conflict: {msg}"),
             StoreError::UnsupportedOperation(operation) => {
                 write!(f, "unsupported store operation: {operation}")
             }
@@ -236,6 +238,16 @@ pub struct Problem {
 pub type BoxFuture<'a, T> = Pin<Box<dyn Future<Output = T> + Send + 'a>>;
 
 pub trait Store: Send + Sync {
+    fn ingest_product_observations(
+        &self,
+        batch: crate::product::persistence::ProductObservationBatch,
+    ) -> BoxFuture<'_, StoreResult<crate::product::persistence::ProductIngestReceipt>>;
+    fn product_observations(
+        &self,
+        product_id: String,
+        baseline: u64,
+    ) -> BoxFuture<'_, StoreResult<Option<crate::product::persistence::ProductObservationModel>>>;
+
     /// Literal title substring search. Backends without this capability fail closed.
     fn search_items(
         &self,

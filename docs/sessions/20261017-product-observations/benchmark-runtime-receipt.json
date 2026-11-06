@@ -1,0 +1,124 @@
+{
+  "binary_sha256": "011f017e2b8d56ef3fc14ad7aa503580392c23fde53bc17b93ab67d2bbba898b",
+  "first": [
+    200,
+    {
+      "accepted": 1,
+      "replayed": false
+    }
+  ],
+  "before": [
+    200,
+    {
+      "product_id": "q1-runtime",
+      "baseline": 1,
+      "intents": [
+        {
+          "id": "durable-read",
+          "kind": "Capability",
+          "title": "Evidence persists",
+          "description": "Read evidence after restart",
+          "status": "Accepted",
+          "baseline": 1
+        }
+      ],
+      "observations": [
+        {
+          "id": "phenotype:run_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa:att_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "product_id": "q1-runtime",
+          "baseline": 1,
+          "kind": "TestResult",
+          "result": "Passed",
+          "source": {
+            "causality": {
+              "tenant_id": "phenotype",
+              "run_id": "run_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+              "session_id": "ses_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+              "attempt_id": "att_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+              "replay_hash": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+              "envelope_sha256": "e51d6856a2a1bac8f498290ebea84cddc8238bd5cbeb9bfc3b8713aaa8389646"
+            },
+            "collector": "helios-benchmark-envelope",
+            "version": "1.0.0",
+            "artifact_ref": "urn:helios:run:run_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+          },
+          "recorded_at": "2026-10-15T00:00:00Z",
+          "capability_id": "durable-read"
+        }
+      ]
+    }
+  ],
+  "after": [
+    200,
+    {
+      "product_id": "q1-runtime",
+      "baseline": 1,
+      "intents": [
+        {
+          "id": "durable-read",
+          "kind": "Capability",
+          "title": "Evidence persists",
+          "description": "Read evidence after restart",
+          "status": "Accepted",
+          "baseline": 1
+        }
+      ],
+      "observations": [
+        {
+          "id": "phenotype:run_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa:att_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "product_id": "q1-runtime",
+          "baseline": 1,
+          "kind": "TestResult",
+          "result": "Passed",
+          "source": {
+            "causality": {
+              "tenant_id": "phenotype",
+              "run_id": "run_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+              "session_id": "ses_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+              "attempt_id": "att_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+              "replay_hash": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+              "envelope_sha256": "e51d6856a2a1bac8f498290ebea84cddc8238bd5cbeb9bfc3b8713aaa8389646"
+            },
+            "collector": "helios-benchmark-envelope",
+            "version": "1.0.0",
+            "artifact_ref": "urn:helios:run:run_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+          },
+          "recorded_at": "2026-10-15T00:00:00Z",
+          "capability_id": "durable-read"
+        }
+      ]
+    }
+  ],
+  "replay": [
+    200,
+    {
+      "accepted": 0,
+      "replayed": true
+    }
+  ],
+  "findings": [
+    200,
+    {
+      "findings": [
+        {
+          "kind": "Freshness",
+          "product_id": "q1-runtime",
+          "capability_id": "durable-read",
+          "message": "Observation 'phenotype:run_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa:att_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa' is 209250 seconds old (max: 86400s). The result may no longer be current.",
+          "evidence": [
+            "phenotype:run_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa:att_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+          ],
+          "detector_version": "1.1.0",
+          "detected_at": "2026-10-17T10:07:30.029670Z",
+          "severity": "Medium"
+        }
+      ],
+      "products_scanned": 1,
+      "capabilities_scanned": 1,
+      "detector_version": "1.1.0",
+      "ran_at": "2026-10-17T10:07:30.029789Z"
+    }
+  ],
+  "restart_exact_equality": true,
+  "candidate_stopped": true
+}

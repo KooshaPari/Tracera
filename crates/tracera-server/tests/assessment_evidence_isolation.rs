@@ -37,6 +37,7 @@ fn observation_at(
         source: ObservationSource {
             collector: "issue-1098-regression".to_string(),
             version: "1".to_string(),
+            causality: None,
             artifact_ref: None,
         },
         recorded_at: Utc::now(),
