@@ -1,4 +1,4 @@
-import { ApiError } from "@/api/client-errors";
+import { describeFailure } from "@/api/availability";
 
 export function NotImplemented() {
   return (
@@ -10,11 +10,12 @@ export function NotImplemented() {
 }
 
 export function Unavailable({ error }: { error?: unknown }) {
-  if (error instanceof ApiError && error.status === 501) return <NotImplemented />;
+  const state = describeFailure(error);
+  if (state.kind === "not_implemented") return <NotImplemented />;
   return (
-    <div role="alert">
-      <h2>Service unavailable</h2>
-      <p>Please try again later.</p>
+    <div role="alert" data-availability={state.kind}>
+      <h2>{state.title}</h2>
+      <p>{state.detail}</p>
     </div>
   );
 }
