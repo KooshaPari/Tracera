@@ -18,6 +18,7 @@ from __future__ import annotations
 
 import json
 import os
+import uuid
 from typing import Any
 from urllib import error as urllib_error
 from urllib import parse, request
@@ -140,6 +141,7 @@ class Tracera:
         *,
         json_body: Any | None = None,
         params: dict[str, Any] | None = None,
+        extra_headers: dict[str, str] | None = None,
     ) -> Any:
         url = _join(self.config.base_url, path)
         if params:
@@ -152,6 +154,8 @@ class Tracera:
             headers["Content-Type"] = "application/json"
         if self.config.token:
             headers["Authorization"] = f"Bearer {self.config.token}"
+        if extra_headers:
+            headers.update(extra_headers)
 
         req = request.Request(url=url, data=data, method=method, headers=headers)
         try:
@@ -181,8 +185,42 @@ class Tracera:
         return self._request("POST", "/ingest/jira", json_body=payload)
 
     def ingest_agileplus(self, payload: dict[str, Any]) -> Any:
-        """POST an AgilePlus payload to ``/ingest/agileplus``."""
+        """POST to the legacy ``/ingest/agileplus`` alias.
+
+        That path no longer ingests: AgCord payloads are redirected to
+        ``/ingest/agcord`` (prefer :meth:`ingest_agcord`), and a SPEC-009 body is
+        refused with ``400 agileplus_wrong_path`` (use
+        :meth:`ingest_agileplus_governance`).
+        """
         return self._request("POST", "/ingest/agileplus", json_body=payload)
+
+    def ingest_agcord(self, payload: dict[str, Any]) -> Any:
+        """POST an AgCord payload (``items[]``) to ``/ingest/agcord``."""
+        return self._request("POST", "/ingest/agcord", json_body=payload)
+
+    def ingest_agileplus_governance(
+        self,
+        payload: dict[str, Any],
+        *,
+        token: str | None = None,
+        idempotency_key: str | None = None,
+    ) -> Any:
+        """POST a SPEC-009 governance envelope to ``/api/v1/ingest/agileplus``.
+
+        ``X-AgilePlus-Token`` defaults to ``TRACERA_AGILEPLUS_TOKEN`` and
+        ``X-Idempotency-Key`` to a fresh UUID v4.
+        """
+        token = token or os.environ.get("TRACERA_AGILEPLUS_TOKEN", "")
+        key = idempotency_key or str(uuid.uuid4())
+        return self._request(
+            "POST",
+            "/api/v1/ingest/agileplus",
+            json_body=payload,
+            extra_headers={
+                "X-AgilePlus-Token": token,
+                "X-Idempotency-Key": key,
+            },
+        )
 
     # ---- query --------------------------------------------------------------
 
@@ -357,6 +395,7 @@ class AsyncTracera:
         *,
         json_body: Any | None = None,
         params: dict[str, Any] | None = None,
+        extra_headers: dict[str, str] | None = None,
     ) -> Any:
         try:
             resp = await self._client.request(
@@ -364,6 +403,7 @@ class AsyncTracera:
                 path,
                 json=json_body,
                 params=params or None,
+                headers=extra_headers or None,
             )
         except httpx.HTTPError as exc:
             raise TraceraError(f"connection error for {method} {path}: {exc}") from exc
@@ -388,7 +428,32 @@ class AsyncTracera:
         return await self._request("POST", "/ingest/jira", json_body=payload)
 
     async def ingest_agileplus(self, payload: dict[str, Any]) -> Any:
+        """Legacy alias; see :meth:`Tracera.ingest_agileplus`."""
         return await self._request("POST", "/ingest/agileplus", json_body=payload)
+
+    async def ingest_agcord(self, payload: dict[str, Any]) -> Any:
+        """POST an AgCord payload (``items[]``) to ``/ingest/agcord``."""
+        return await self._request("POST", "/ingest/agcord", json_body=payload)
+
+    async def ingest_agileplus_governance(
+        self,
+        payload: dict[str, Any],
+        *,
+        token: str | None = None,
+        idempotency_key: str | None = None,
+    ) -> Any:
+        """POST a SPEC-009 governance envelope to ``/api/v1/ingest/agileplus``."""
+        token = token or os.environ.get("TRACERA_AGILEPLUS_TOKEN", "")
+        key = idempotency_key or str(uuid.uuid4())
+        return await self._request(
+            "POST",
+            "/api/v1/ingest/agileplus",
+            json_body=payload,
+            extra_headers={
+                "X-AgilePlus-Token": token,
+                "X-Idempotency-Key": key,
+            },
+        )
 
     # ---- query --------------------------------------------------------------
 

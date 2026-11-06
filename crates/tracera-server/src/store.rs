@@ -43,6 +43,41 @@ impl From<sqlx::Error> for StoreError {
 
 pub type StoreResult<T> = Result<T, StoreError>;
 
+// ---------------------------------------------------------------------------
+// AgilePlus governance ingestion provenance (SPEC-009)
+// ---------------------------------------------------------------------------
+
+/// A consumed AgilePlus idempotency key.
+///
+/// `body_fingerprint` is the fingerprint of the body that consumed the key, so
+/// a replay with different content is detectable as a conflict rather than
+/// silently treated as the same request.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct AgilePlusIngestKey {
+    pub idempotency_key: String,
+    pub body_fingerprint: String,
+    pub ingestion_id: String,
+}
+
+/// The last accepted AgilePlus revision for one governance entity.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct AgilePlusRevision {
+    pub agileplus_id: String,
+    pub entity_type: String,
+    pub revision: i64,
+    pub node_id: String,
+}
+
+/// A complete AgilePlus ingestion receipt: the consumed key plus every
+/// revision the ingestion advanced.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct AgilePlusIngestRecord {
+    pub idempotency_key: String,
+    pub body_fingerprint: String,
+    pub ingestion_id: String,
+    pub revisions: Vec<AgilePlusRevision>,
+}
+
 pub const DEFAULT_PAGE_SIZE: u32 = 50;
 pub const MAX_PAGE_SIZE: u32 = 500;
 
@@ -464,6 +499,41 @@ pub trait Store: Send + Sync {
         id: String,
         direction: String,
     ) -> BoxFuture<'_, StoreResult<Vec<Value>>>;
+
+    // -----------------------------------------------------------------------
+    // AgilePlus governance ingestion (SPEC-009)
+    // -----------------------------------------------------------------------
+
+    /// Look up a consumed AgilePlus idempotency key.
+    ///
+    /// Backends without this capability fail closed rather than reporting an
+    /// unused key, which would allow duplicate governed ingestion.
+    fn get_agileplus_ingest_key(
+        &self,
+        _idempotency_key: String,
+    ) -> BoxFuture<'_, StoreResult<Option<AgilePlusIngestKey>>> {
+        Box::pin(async { Err(StoreError::UnsupportedOperation("get_agileplus_ingest_key")) })
+    }
+
+    /// Atomically consume an idempotency key and advance entity revisions.
+    ///
+    /// A duplicate key must fail (unique-constraint error) rather than
+    /// overwrite the earlier receipt.
+    fn record_agileplus_ingest(
+        &self,
+        _record: AgilePlusIngestRecord,
+        _now: DateTime<Utc>,
+    ) -> BoxFuture<'_, StoreResult<()>> {
+        Box::pin(async { Err(StoreError::UnsupportedOperation("record_agileplus_ingest")) })
+    }
+
+    /// Last accepted revision for one AgilePlus entity id.
+    fn get_agileplus_revision(
+        &self,
+        _agileplus_id: String,
+    ) -> BoxFuture<'_, StoreResult<Option<i64>>> {
+        Box::pin(async { Err(StoreError::UnsupportedOperation("get_agileplus_revision")) })
+    }
 }
 
 #[cfg(test)]

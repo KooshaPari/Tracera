@@ -1,20 +1,24 @@
 name: ingest-agileplus
-endpoint: /ingest/agileplus
+endpoint: /api/v1/ingest/agileplus
 base_url: http://127.0.0.1:8080
+# SPEC-009 governed ingestion. The endpoint is fail-closed: an unauthenticated
+# call is rejected, and the legacy AgCord path never returns a 200 that could be
+# read as AgilePlus acceptance (see tests/e2e/contract/ingest-agcord.e2e.yml).
 tests:
-  happy_path:
+  missing_token_rejected:
     method: POST
-    body: { "payload": {} }
+    body: { "source": "agileplus", "version": "2026-08-30", "entities": [] }
     expect:
-      status: 200
+      status: 401
       has_body: true
-  empty_input:
-    method: POST
-    body: {}
-    expect:
-      status: 200
   malformed_json:
     method: POST
     body: "not json"
+    expect:
+      status: 401
+  agileplus_payload_on_legacy_path_rejected:
+    method: POST
+    endpoint: /ingest/agileplus
+    body: { "source": "agileplus", "version": "2026-08-30", "entities": [] }
     expect:
       status: 400

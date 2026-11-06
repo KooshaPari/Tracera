@@ -26,11 +26,11 @@ type DesiredState struct {
 
 // Status is the report a node sends back after attempting convergence.
 type Status struct {
-	NodeID     string               `json:"node_id"`
-	Generation int                  `json:"generation"`
+	NodeID     string `json:"node_id"`
+	Generation int    `json:"generation"`
 	// Per-service result: "ok", "failed:<reason>", or "pending".
-	Services   map[string]string    `json:"services"`
-	UpdatedAt  time.Time            `json:"updated_at"`
+	Services  map[string]string `json:"services"`
+	UpdatedAt time.Time         `json:"updated_at"`
 }
 
 // EnrollRequest is sent on first contact to claim a node identity.
