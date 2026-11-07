@@ -59,7 +59,7 @@ attaches a Service Auth policy to the Access app, and stores
 `CF_ACCESS_CLIENT_ID` / `CF_ACCESS_CLIENT_SECRET` in repo secrets.
 
 ```bash
-gh secret set CLOUDFLARE_API_TOKEN --repo <REDACTED>/Tracera --body "<new_cf_token>"
+gh secret set CLOUDFLARE_API_TOKEN --repo KooshaPari/Tracera --body "<new_cf_token>"
 ```
 
 ### 2. `INFISICAL_TOKEN` (GitHub repo secret)
@@ -83,7 +83,7 @@ Two ways to fix:
 3. Set both `INFISICAL_CLIENT_ID` and add `INFISICAL_CLIENT_SECRET`
 
 ```bash
-gh secret set INFISICAL_TOKEN --repo <REDACTED>/Tracera --body "stk_..."
+gh secret set INFISICAL_TOKEN --repo KooshaPari/Tracera --body "stk_..."
 ```
 
 ### 3. `VERCEL_TOKEN` (GitHub repo secret)
@@ -93,7 +93,7 @@ service. Vercel uses `vercel_…` tokens. Create one at
 <https://vercel.com/account/tokens> and set:
 
 ```bash
-gh secret set VERCEL_TOKEN --repo <REDACTED>/Tracera --body "vercel_..."
+gh secret set VERCEL_TOKEN --repo KooshaPari/Tracera --body "vercel_..."
 ```
 
 ## Backend (self-hosted)
@@ -122,15 +122,15 @@ After replacing the tokens above:
 
 ```bash
 # 1. Unblock Cloudflare Access for prod smoke + CI
-gh workflow run "Setup Cloudflare Access (tracera.pheno.studio)" --repo <REDACTED>/Tracera --ref main \
+gh workflow run "Setup Cloudflare Access (tracera.pheno.studio)" --repo KooshaPari/Tracera --ref main \
   -f operator_email=you@example.com
 
 # 2. Trigger deploys (no force needed - on main they run automatically)
-gh workflow run "Deploy Cloudflare Worker (tracera-edge)" --repo <REDACTED>/Tracera --ref main
-gh workflow run "Deploy Tracera to Vercel"            --repo <REDACTED>/Tracera --ref main
+gh workflow run "Deploy Cloudflare Worker (tracera-edge)" --repo KooshaPari/Tracera --ref main
+gh workflow run "Deploy Tracera to Vercel"            --repo KooshaPari/Tracera --ref main
 
 # 2. Watch
-gh run list --repo <REDACTED>/Tracera --workflow "Deploy Cloudflare Worker (tracera-edge)" --limit 3
+gh run list --repo KooshaPari/Tracera --workflow "Deploy Cloudflare Worker (tracera-edge)" --limit 3
 
 # 3. Verify live
 # api.pheno.studio is NOT Tracera: it serves AgilePlus, so a 200 there says

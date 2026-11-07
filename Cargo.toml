@@ -8,7 +8,7 @@ rust-version = "1.82"
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/KooshaPari/Tracera"
 description = "Tracera - Traceability and impact analysis for Phenotype"
-authors = ["<REDACTED>"]
+authors = ["Koosha Pari"]
 
 [workspace.dependencies]
 base64 = "0.23"

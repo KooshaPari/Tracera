@@ -7,7 +7,7 @@ Multi-view requirements traceability and project management system for AI agents
 ### One-liner (Windows PowerShell)
 
 ```powershell
-irm https://raw.githubusercontent.com/<REDACTED>/Tracera/main/install.ps1 | iex
+irm https://raw.githubusercontent.com/KooshaPari/Tracera/main/install.ps1 | iex
 ```
 
 ### Chocolatey
@@ -43,7 +43,7 @@ tracera status               # Check status
 ## Uninstall
 
 ```powershell
-irm https://raw.githubusercontent.com/<REDACTED>/Tracera/main/uninstall.ps1 | iex
+irm https://raw.githubusercontent.com/KooshaPari/Tracera/main/uninstall.ps1 | iex
 ```
 
 ## Links

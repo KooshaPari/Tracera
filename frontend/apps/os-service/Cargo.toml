@@ -2,7 +2,7 @@
 name = "tracera-os-service"
 version = "0.1.0"
 description = "Cross-platform OS service for Tracera: manages backend + tray lifecycle and exposes a local HTTP control plane on 127.0.0.1:7799."
-authors = ["<REDACTED>"]
+authors = ["Koosha Pari"]
 license = "MIT OR Apache-2.0"
 edition = "2021"
 rust-version = "1.82"

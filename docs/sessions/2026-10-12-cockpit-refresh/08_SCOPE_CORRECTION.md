@@ -77,7 +77,7 @@ paperclip status in `02_CURRENT_STATE.md`).
 
 **Caution on `job-cockpit`:** its 4 uncommitted files are a `<REDACTED>` sanitization pass,
 not feature work. Committing them would be **destructive**, not cosmetic — the plist `Label`
-itself would change, and the wrapper's exec path would point at `/Users/<REDACTED>/bin/...`,
+itself would change, and the wrapper's exec path would point at `/Users/kooshapari/bin/...`,
 so the service could not start. Do not commit those files. This is the third repo in the
 same sanitization family (with HeliosLab and phenotype-registry) and is consistently a
 local, uncommitted share-prep pass.
