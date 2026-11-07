@@ -1,0 +1,17 @@
+{
+  "product_id": "fixture-todo",
+  "graph_revision": "fixture-baseline-1",
+  "proposal_id": "fixture-add-create-task-validation",
+  "feature_id": 1,
+  "governance_contract_id": 1,
+  "governance_version": 1,
+  "accepted_candidates": [
+    {
+      "wp_id": 1,
+      "assignment_id": "fixture-assignment-1",
+      "attempt_id": "fixture-attempt-1",
+      "evaluation_id": "fixture-independent-evaluation-1",
+      "candidate_ref": "git:1111111111111111111111111111111111111111"
+    }
+  ]
+}
