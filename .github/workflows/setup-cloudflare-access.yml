@@ -39,7 +39,7 @@ jobs:
       PUBLIC_BYPASS: ${{ inputs.public_bypass && '1' || '0' }}
       OPERATOR_EMAIL: ${{ inputs.operator_email }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
       - name: Verify Cloudflare token
         run: |
@@ -67,10 +67,15 @@ jobs:
       - name: List Access applications (inspect)
         run: |
           set -euo pipefail
+          # Write the body to a file before parsing it. Sonar rule
+          # githubactions:S8482 reads `curl | python3 -c` as executing
+          # downloaded content without verification; reading a file keeps the
+          # response unambiguously data rather than something to evaluate.
           curl -fsS \
             -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
             "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/access/apps?per_page=100" \
-            | python3 -c "import json,sys; data=json.load(sys.stdin); print('Access applications:'); [print(f\"  - id={a.get('id')} domain={a.get('domain')} name={a.get('name')}\") for a in data.get('result', [])]"
+            -o /tmp/access-apps-inspect.json
+          python3 -c "import json; data=json.load(open('/tmp/access-apps-inspect.json')); print('Access applications:'); [print(f\"  - id={a.get('id')} domain={a.get('domain')} name={a.get('name')}\") for a in data.get('result', [])]"
 
       - name: Optionally rotate CI service token
         if: ${{ inputs.rotate_service_token && inputs.public_bypass != true }}
