@@ -2,7 +2,7 @@
 
 - **Status**: Accepted
 - **Date**: 2026-08-21
-- **Authors**: <REDACTED> (audit performed against `HEAD` of `Tracera`, branch `feat/install-scripts`, SHA `8a22353ed`)
+- **Authors**: Koosha Pari (audit performed against `HEAD` of `Tracera`, branch `feat/install-scripts`, SHA `8a22353ed`)
 - **Supersedes**: none
 - **Related**:
   - [`docs/FEATURE_INVENTORY.md`](../../../docs/FEATURE_INVENTORY.md) — migration safety oracle

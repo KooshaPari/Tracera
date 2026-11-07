@@ -76,7 +76,7 @@
 - **phenotype.studio** - Main product dashboard (Vercel)
 - **phenotype.space** - Public documentation and community
 - **pheno.shop** - Marketplace for templates/plugins
-- **<REDACTED>.com** - Personal blog/portfolio
+- **kooshapari.com** - Personal blog/portfolio
 
 ### API Endpoints
 

@@ -19,7 +19,7 @@ choco install tracera
 ### WinGet
 
 ```powershell
-winget install <REDACTED>.Tracera
+winget install KooshaPari.Tracera
 ```
 
 ### From Source

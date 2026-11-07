@@ -9,7 +9,7 @@
 
 | #    | Item                   | Where to Get                   | Status          |
 | ---- | ---------------------- | ------------------------------ | --------------- |
-| 0.1  | **GitHub account**     | github.com                     | ✅ (<REDACTED>) |
+| 0.1  | **GitHub account**     | github.com                     | ✅ (KooshaPari) |
 | 0.2  | **Vercel account**     | vercel.com (free tier)         | ✅              |
 | 0.3  | **Cloudflare account** | cloudflare.com (free tier)     | ☐               |
 | 0.4  | **cloudflared**        | cloudflare.com/products/tunnel | ☐               |
