@@ -127,10 +127,6 @@ async function runAllTests() {
   // Generate markdown report
   await generateMarkdownReport(summary);
 
-  if (criticalFailed === 0) {
-  } else {
-  }
-
   // Exit with error if critical tests failed
   process.exit(criticalFailed > 0 ? 1 : 0);
 }
