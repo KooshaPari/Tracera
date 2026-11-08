@@ -359,7 +359,8 @@ async fn cmd_doctor(
     let client = reqwest::Client::builder()
         .timeout(std::time::Duration::from_secs(3))
         .build()?;
-    let mut healthy = false;
+    let mut health_ok = false;
+    let mut ready_ok = false;
     let mut detail = serde_json::Map::new();
     for path in ["/health", "/ready"] {
         let url = format!("{}{}", layout.local_url, path);
@@ -371,8 +372,20 @@ async fn cmd_doctor(
                     path.trim_start_matches('/').into(),
                     serde_json::json!({ "status": status.as_u16(), "body": body }),
                 );
-                if status.is_success() {
-                    healthy = true;
+                if path == "/health" && status.is_success() {
+                    let gateway_reports_unavailable = serde_json::from_str::<serde_json::Value>(&body)
+                        .ok()
+                        .as_ref()
+                        .and_then(|v| v.get("backend"))
+                        .and_then(|b| b.as_str())
+                        .map(|backend| backend != "available")
+                        .unwrap_or(false);
+                    if !gateway_reports_unavailable {
+                        health_ok = true;
+                    }
+                }
+                if path == "/ready" && status.is_success() {
+                    ready_ok = true;
                 }
             }
             Err(e) => {
@@ -383,6 +396,7 @@ async fn cmd_doctor(
             }
         }
     }
+    let healthy = health_ok && ready_ok;
     report.insert("endpoints".into(), serde_json::Value::Object(detail));
     report.insert("healthy".into(), serde_json::Value::Bool(healthy));
 
