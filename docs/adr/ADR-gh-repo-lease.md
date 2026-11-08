@@ -24,7 +24,7 @@ Adopt a proven **claim primitive** (from AgilePlus traceability/triage layer) ad
    - `EpochToken`: Monotonic clock (Unix timestamp) for fencing against stale claimants
 
 2. **Core Operations**:
-   - **Acquire**: Chat claims `KooshaPari/Repo` atomically; fails if already held
+   - **Acquire**: Chat claims `<REDACTED>/Repo` atomically; fails if already held
    - **Heartbeat**: Periodic renewal; rejects if epoch mismatch (prevents split-brain)
    - **Release**: Voluntary return; TTL-based auto-reap for crashed chats
    - **Transfer**: Failover from dead chat to live one (fencing prevents race)
@@ -80,7 +80,7 @@ type LeaseStore interface {
 
 **CLI Commands**:
 ```
-phenodag claim KooshaPari/Repo --agent <chat-id> --ttl 3600 --reason "pr/phase4"
+phenodag claim <REDACTED>/Repo --agent <chat-id> --ttl 3600 --reason "pr/phase4"
 phenodag heartbeat --claim-id <id> --agent <chat-id> --epoch <token>
 phenodag release --claim-id <id> --agent <chat-id>
 phenodag reap-expired [--dry-run]

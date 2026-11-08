@@ -7,7 +7,7 @@
 // TTL, heartbeat, reap_expired, transfer) and integrates with dagctl's remoteclaim
 // coordination (flock/github/sqlite/store). Adds gh-cli bridge for cross-chat visibility.
 //
-// Use: claim KooshaPari/Repo --agent <chat-id> --ttl 3600 --reason "pr/phase4"
+// Use: claim <REDACTED>/Repo --agent <chat-id> --ttl 3600 --reason "pr/phase4"
 //      heartbeat --claim-id <id> --agent <chat-id> --epoch <token>
 //      release --claim-id <id> --agent <chat-id>
 //      reap-expired [--dry-run]

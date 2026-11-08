@@ -4,7 +4,7 @@
 - **Side-DAG:** `sd-dagctl` (mcp-fleet-60 preset)
 - **Repos:**
   - phenodag — `C:/Users/koosh/dev/phenodag` (canonical; v0.3.0 on `main`)
-  - dagctl — `C:/Users/koosh/dev/dagctl` (remote: [KooshaPari/dagctl](https://github.com/KooshaPari/dagctl), v3.3.0, **not archived**)
+  - dagctl — `C:/Users/koosh/dev/dagctl` (remote: [<REDACTED>/dagctl](https://github.com/KooshaPari/dagctl), v3.3.0, **not archived**)
 - **ADR:** [ADR-dag-superset-merge.md](./adr/ADR-dag-superset-merge.md) (Accepted)
 
 ## sd-dagctl pool task status

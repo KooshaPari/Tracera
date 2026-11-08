@@ -1,6 +1,6 @@
 # phenodag — dagctl Absorption Migration (v3.3.1)
 
-This document records the completed migration of [`KooshaPari/dagctl`](https://github.com/KooshaPari/dagctl) → [`KooshaPari/phenodag`](https://github.com/KooshaPari/phenodag) per kilo audit #144 (verdict: `DELETE_AFTER_PATCHES` → `ARCHIVED`) and the in-repo `ADR-dag-superset-merge.md` (Accepted).
+This document records the completed migration of [`<REDACTED>/dagctl`](https://github.com/KooshaPari/dagctl) → [`<REDACTED>/phenodag`](https://github.com/KooshaPari/phenodag) per kilo audit #144 (verdict: `DELETE_AFTER_PATCHES` → `ARCHIVED`) and the in-repo `ADR-dag-superset-merge.md` (Accepted).
 
 ## Status: ✅ ABSORPTION COMPLETE (2026-06-18)
 
@@ -10,8 +10,8 @@ This document records the completed migration of [`KooshaPari/dagctl`](https://g
 | 2. Content merge into `phenodag.go` (65,994 B) | DONE (prior waves) | file size reflects merged v3 surface |
 | 3. v3.3.1 final tag patch applied (VERSION file) | DONE this PR | `VERSION` → `v3.3.1` |
 | 4. `CHANGELOG.md` v3.3.1 entry | DONE this PR | this file |
-| 5. `KooshaPari/dagctl` archive (read-only marker) | DONE (prior session, 2026-06-17 22:44) | `gh api repos/KooshaPari/dagctl` → `archived: true` |
-| 6. `KooshaPari/dagctl` delete | **BLOCKED** — `gh` token lacks `delete_repo` scope | see "Manual delete commands" below |
+| 5. `<REDACTED>/dagctl` archive (read-only marker) | DONE (prior session, 2026-06-17 22:44) | `gh api repos/<REDACTED>/dagctl` → `archived: true` |
+| 6. `<REDACTED>/dagctl` delete | **BLOCKED** — `gh` token lacks `delete_repo` scope | see "Manual delete commands" below |
 
 ## Files merged
 
@@ -33,8 +33,8 @@ This document records the completed migration of [`KooshaPari/dagctl`](https://g
 
 ## Source repos
 
-- `KooshaPari/dagctl` — **ARCHIVED** (read-only); 62 KB, default branch `main`
-- `KooshaPari/phenodag` — **ACTIVE**; 266 KB, default branch `main`, v0.3.0 → v3.3.1 absorption complete
+- `<REDACTED>/dagctl` — **ARCHIVED** (read-only); 62 KB, default branch `main`
+- `<REDACTED>/phenodag` — **ACTIVE**; 266 KB, default branch `main`, v0.3.0 → v3.3.1 absorption complete
 
 ## Manual delete commands (post-archive)
 
@@ -42,18 +42,18 @@ The active `gh` token has scopes `'gist', 'read:org', 'repo', 'workflow'` — **
 
 ```bash
 # Via UI: Settings → Danger Zone → "Delete this repository"
-# Repository: KooshaPari/dagctl (62 KB, archived 2026-06-17)
+# Repository: <REDACTED>/dagctl (62 KB, archived 2026-06-17)
 
 # Via gh CLI with delete_repo scope:
 # gh auth refresh -h github.com -s delete_repo
-# gh repo delete KooshaPari/dagctl --yes
+# gh repo delete <REDACTED>/dagctl --yes
 ```
 
 90-day GitHub retention applies to the soft-delete tombstone.
 
 ## Related
 
-- `KooshaPari/phenotype-registry` PR #151 — store dagctl v3.3.1 final tag patch
-- `KooshaPari/phenotype-registry` PR #144 — kooshapari-absorption audit doc
-- `findings/2026-06-17-L5-104-dmouse92-to-kooshapari.md` — broader dmouse92 → kooshapari migration matrix
+- `<REDACTED>/phenotype-registry` PR #151 — store dagctl v3.3.1 final tag patch
+- `<REDACTED>/phenotype-registry` PR #144 — <REDACTED>-absorption audit doc
+- `findings/2026-06-17-L5-104-dmouse92-to-<REDACTED>.md` — broader dmouse92 → <REDACTED> migration matrix
 - `findings/30-pillar-2026-06-16.md` — dagctl architecture pillar (L5-L8)

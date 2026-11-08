@@ -1,8 +1,8 @@
 # forge-runner-scripts absorption
 
 **Date:** 2026-06-18
-**Source:** `KooshaPari/forge-runner-scripts` (33 files, 5,597 LOC)
-**Target:** `KooshaPari/phenodag` (canonical dispatch substrate per ADR-013)
+**Source:** `<REDACTED>/forge-runner-scripts` (33 files, 5,597 LOC)
+**Target:** `<REDACTED>/phenodag` (canonical dispatch substrate per ADR-013)
 **L5 ID:** L5-113
 **Audit:** `findings/2026-06-18-L5-113-forge-runner-scripts-absorption-audit.md`
 

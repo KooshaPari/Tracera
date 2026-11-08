@@ -30,7 +30,7 @@ func TestConcurrentClaim_OnlyOneWins(t *testing.T) {
 
 	// Chat A and Chat B race to claim the same repo
 	chatA, chatB := "chat-a", "chat-b"
-	resource := "KooshaPari/Repo"
+	resource := "<REDACTED>/Repo"
 
 	leaseA := &Lease{
 		Kind:       LeaseKindRepo,
@@ -84,7 +84,7 @@ func TestHeartbeat_OnlyOwnerCanRenew(t *testing.T) {
 	// Chat A acquires lease
 	lease := &Lease{
 		Kind:       LeaseKindRepo,
-		Resource:   "KooshaPari/Repo",
+		Resource:   "<REDACTED>/Repo",
 		ChatID:     chatA,
 		TTLSeconds: 3600,
 		Reason:     LeaseReason{Kind: "manual", Value: "test"},
@@ -118,7 +118,7 @@ func TestReapExpired_TTLExpiryReturnsLease(t *testing.T) {
 	// Acquire lease with very short TTL
 	lease := &Lease{
 		Kind:       LeaseKindRepo,
-		Resource:   "KooshaPari/Repo",
+		Resource:   "<REDACTED>/Repo",
 		ChatID:     "chat-a",
 		TTLSeconds: 1, // 1 second TTL
 		Reason:     LeaseReason{Kind: "wip_run", Value: "test-run"},
@@ -166,7 +166,7 @@ func TestEpochFencing_StaleClaimantRejected(t *testing.T) {
 	// Chat A acquires lease
 	lease := &Lease{
 		Kind:       LeaseKindRepo,
-		Resource:   "KooshaPari/Repo",
+		Resource:   "<REDACTED>/Repo",
 		ChatID:     "chat-a",
 		TTLSeconds: 3600,
 		Reason:     LeaseReason{Kind: "manual", Value: "test"},

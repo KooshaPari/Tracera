@@ -208,8 +208,8 @@ func TestGitHubTransportMock(t *testing.T) {
 }
 
 func TestParseOwnerRepo(t *testing.T) {
-	owner, name, err := ParseOwnerRepo("KooshaPari/phenodag")
-	if err != nil || owner != "KooshaPari" || name != "phenodag" {
+	owner, name, err := ParseOwnerRepo("<REDACTED>/phenodag")
+	if err != nil || owner != "<REDACTED>" || name != "phenodag" {
 		t.Fatalf("got %s/%s err=%v", owner, name, err)
 	}
 	_, _, err = ParseOwnerRepo("invalid")
