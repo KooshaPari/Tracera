@@ -2,10 +2,11 @@
 
 Recovered verbatim from `/Users/kooshapari/CodeProjects/Tracera/tracera-w6-export-import-RESULT.md`,
 an untracked file in the stale duplicate clone of `KooshaPari/Tracera`. The duplicate's
-working tree held `HEAD` at `2c871ff0ea` (the direct parent of the upstream commit that
-introduced this work), so the receipt was never committed anywhere and existed in no
-other checkout. It is preserved here because its content is not reproduced in the merged
-pull request body.
+working tree held `HEAD` at `2c871ff0ea`, the direct parent of upstream commit `e0ae7d295`
+(`fix(server): enforce honest W8 route contracts (#1144)`) and the base the W6 branch was
+started from. It is not the parent of the W6 merge commit `b41045a12`, whose parent is
+`fb6dd4ba`. The receipt was never committed anywhere and existed in no other checkout. It
+is preserved here because its content is not reproduced in the merged pull request body.
 
 The implementation this receipt describes is upstream pull request
 <https://github.com/KooshaPari/Tracera/pull/1148>, merged as commit `b41045a12`

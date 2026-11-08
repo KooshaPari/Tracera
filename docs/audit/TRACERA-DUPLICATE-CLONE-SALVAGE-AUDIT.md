@@ -126,11 +126,11 @@ was salvaged because it was the one residue the instruction named directly.
 ## Other stale refs in the duplicate
 
 The duplicate's `origin/main` was itself stale until fetched. Local branches that have no
-`origin/` counterpart are old points on upstream history rather than unmerged work: each
-is 26 to 27 commits behind `origin/main`. Spot checks at file-content level found their
-changes already upstream, for example `docs/operations/items-store.md` on
-`fix/items-store-prettier` is byte-identical to upstream and upstream passes
-`prettier --check` on it. No unique source work was found on them.
+`origin/` counterpart are each 26 to 27 commits behind `origin/main`. Spot checks at
+file-content level found inspected changes already upstream, for example
+`docs/operations/items-store.md` on `fix/items-store-prettier` is byte-identical to upstream
+and upstream passes `prettier --check` on it. No unique source work was found, but these
+checks do not establish that the branches contain no unmerged work.
 
 ## Method notes
 
