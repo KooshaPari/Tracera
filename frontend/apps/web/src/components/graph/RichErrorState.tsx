@@ -10,6 +10,7 @@ import {
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
+import { copyToClipboard } from "@/utils/helpers";
 
 interface ErrorDetails {
   message: string;
@@ -43,7 +44,10 @@ export const EnhancedErrorState = memo(function EnhancedErrorState({
           }
         : error;
 
-  const handleCopyError = () => {};
+  const handleCopyError = () => {
+    const { message, stack } = errorDetails;
+    void copyToClipboard(stack ? `${message}\n\n${stack}` : message);
+  };
 
   if (variant === "inline") {
     return (
