@@ -1,5 +1,6 @@
 mod agileplus;
 mod evidence;
+mod ingest;
 mod items;
 mod problems;
 mod product_observations;
@@ -15,8 +16,8 @@ use serde_json::Value;
 use sqlx::{Row, SqlitePool};
 
 use crate::store::{
-    BoxFuture, EvidenceItem, ListParams, Problem, ProjectSummary, Sprint, Store, StoreError,
-    StoreResult, Story, TeamRow, TraceLink,
+    BoxFuture, EvidenceItem, IngestOutcome, IngestRecord, ListParams, Problem, ProjectSummary,
+    Sprint, Store, StoreError, StoreResult, Story, TeamRow, TraceLink,
 };
 
 #[derive(Clone)]
@@ -172,6 +173,14 @@ impl Store for SqliteStore {
             source,
             now,
         )
+    }
+
+    fn persist_ingest_batch(
+        &self,
+        records: Vec<IngestRecord>,
+        now: DateTime<Utc>,
+    ) -> BoxFuture<'_, StoreResult<IngestOutcome>> {
+        ingest::persist_ingest_batch(&self.pool, records, now)
     }
 
     fn list_trace_links_for_artifact(

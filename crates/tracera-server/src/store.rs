@@ -224,6 +224,71 @@ pub struct TraceLink {
     pub updated_at: DateTime<Utc>,
 }
 
+// ---------------------------------------------------------------------------
+// Ingest batch (atomic, idempotent write-set)
+// ---------------------------------------------------------------------------
+
+/// Evidence row owned by one ingest record.
+///
+/// The `id` is deterministic (`ev-{source}-{external_id}`), which is what
+/// makes replaying the same upstream event idempotent.
+#[derive(Debug, Clone)]
+pub struct IngestEvidence {
+    pub id: String,
+    pub kind: String,
+    pub url: String,
+    pub metadata: Value,
+}
+
+/// Trace-link row owned by one ingest record.
+///
+/// `id` is deterministic (`tl-{story_id}-{target_id}`) and the schema also
+/// carries a unique constraint on `(source_id, target_id, relationship)`, so
+/// neither a replayed batch nor a legacy row with a random id can create a
+/// duplicate edge.
+#[derive(Debug, Clone)]
+pub struct IngestTraceLink {
+    pub id: String,
+    pub target_id: String,
+    pub relationship: String,
+    pub confidence: f64,
+    pub source: String,
+}
+
+/// One upstream issue and everything ingest wants to persist for it.
+///
+/// `story_id` is the idempotency key for the whole record: it is derived from
+/// the source's stable external id (`story-{external_id}`), so the same event
+/// always maps to the same primary key.
+#[derive(Debug, Clone)]
+pub struct IngestRecord {
+    pub story_id: String,
+    pub title: String,
+    pub description: String,
+    pub status: String,
+    pub evidence: Option<IngestEvidence>,
+    pub trace_links: Vec<IngestTraceLink>,
+}
+
+/// Per-row accounting returned by [`Store::persist_ingest_batch`].
+///
+/// Duplicate behaviour is explicit:
+/// - a new id is *created*;
+/// - an existing story whose title/description/status changed is *updated*;
+/// - identical rows are *unchanged*;
+/// - existing trace links are never modified, only *created* once.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
+pub struct IngestOutcome {
+    pub stories_created: usize,
+    pub stories_updated: usize,
+    pub stories_unchanged: usize,
+    pub evidence_created: usize,
+    pub evidence_updated: usize,
+    pub evidence_unchanged: usize,
+    pub trace_links_created: usize,
+    pub trace_links_unchanged: usize,
+}
+
 /// ITIL Problem-management domain record.
 ///
 /// Recovered from the Python `src/tracertm/models/problem.py` model
@@ -365,6 +430,22 @@ pub trait Store: Send + Sync {
         source: String,
         now: DateTime<Utc>,
     ) -> BoxFuture<'_, StoreResult<TraceLink>>;
+
+    /// Atomically apply an ingest batch.
+    ///
+    /// Every story, evidence row, and trace link in `records` is written inside
+    /// a single database transaction. If any write fails, the transaction is
+    /// rolled back and `Err` is returned: no partial state is ever visible.
+    ///
+    /// The operation is idempotent. Primary keys are deterministic (see
+    /// [`IngestRecord`]), stories are upserted on mutable fields, evidence
+    /// metadata is refreshed in place, and trace links are inserted at most
+    /// once. Replaying the same batch therefore duplicates nothing.
+    fn persist_ingest_batch(
+        &self,
+        records: Vec<IngestRecord>,
+        now: DateTime<Utc>,
+    ) -> BoxFuture<'_, StoreResult<IngestOutcome>>;
 
     /// List every persisted link incident to an artifact.
     ///
