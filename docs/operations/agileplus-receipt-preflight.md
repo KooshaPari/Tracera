@@ -9,7 +9,7 @@ is always false. No production route or existing receipt schema is changed.
 Run the independent fixture controls:
 
 ```text
-python scripts/test-agileplus-receipt.py
+python tests/test_agileplus_receipt.py
 ```
 
 Check a real receipt using a separately acquired digest and independently frozen

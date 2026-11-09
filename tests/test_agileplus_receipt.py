@@ -59,6 +59,24 @@ class ReceiptBoundary(unittest.TestCase):
                 receipt[key] = value
                 self.check(receipt)
 
+    def test_timestamp_requires_explicit_utc_rfc3339(self):
+        for value in (
+            "2026-10-26T00:00:00-00:00",
+            "2026-W44-1T00:00:00Z",
+            "20261026T000000Z",
+            "2026-10-26T00:00:00+01:00",
+            "2026-02-30T00:00:00Z",
+        ):
+            with self.subTest(value=value), self.assertRaises(ValueError):
+                receipt = copy.deepcopy(self.receipt)
+                receipt["committed_at"] = value
+                self.check(receipt)
+        for value in ("2026-10-26T00:00:00Z", "2026-10-26T00:00:00.123456789+00:00"):
+            with self.subTest(value=value):
+                receipt = copy.deepcopy(self.receipt)
+                receipt["committed_at"] = value
+                self.assertFalse(self.check(receipt)["product_reconciled"])
+
     def test_stale_or_wrong_candidate_identity_rejected(self):
         changes = {
             "wp_id": 2,

@@ -7,7 +7,7 @@ import argparse
 import hashlib
 import json
 import re
-from datetime import datetime, timedelta
+from datetime import datetime
 from pathlib import Path
 
 RECEIPT_FIELDS = {
@@ -142,13 +142,18 @@ def verify(raw: bytes, expected: object, receipt_sha256: str) -> dict:
         "invalid_audit_ids",
     )
     require(len(set(audit_ids)) == len(audit_ids), "duplicate_audit_ids")
+    require(
+        re.fullmatch(
+            r"[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}"
+            r"(?:\.[0-9]{1,9})?(?:Z|\+00:00)",
+            receipt["committed_at"],
+        ) is not None,
+        "invalid_committed_at",
+    )
     try:
-        committed_at = datetime.fromisoformat(
-            receipt["committed_at"].replace("Z", "+00:00")
-        )
+        datetime.fromisoformat(receipt["committed_at"][:19])
     except ValueError as error:
         raise ValueError("invalid_committed_at") from error
-    require(committed_at.utcoffset() == timedelta(0), "committed_at_must_be_utc")
     require(
         candidates(receipt["accepted_candidates"], True)
         == candidates(expected["accepted_candidates"], False),
