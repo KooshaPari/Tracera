@@ -15,11 +15,12 @@ use std::time::Duration;
 use tokio::time::timeout;
 
 use crate::store::{
-    BoxFuture, EvidenceItem, ListParams, Problem, ProjectSummary, Sprint, Store, StoreError,
-    StoreResult, Story, TeamRow, TraceLink,
+    BoxFuture, EvidenceItem, IngestOutcome, IngestRecord, ListParams, Problem, ProjectSummary,
+    Sprint, Store, StoreError, StoreResult, Story, TeamRow, TraceLink,
 };
 
 mod evidence;
+mod ingest;
 mod problems;
 mod projects;
 mod sprints;
@@ -162,6 +163,14 @@ impl Store for PgStore {
             source,
             now,
         ))
+    }
+
+    fn persist_ingest_batch(
+        &self,
+        records: Vec<IngestRecord>,
+        now: DateTime<Utc>,
+    ) -> BoxFuture<'_, StoreResult<IngestOutcome>> {
+        Box::pin(ingest::persist_ingest_batch(&self.pool, records, now))
     }
 
     fn list_trace_links_for_artifact(

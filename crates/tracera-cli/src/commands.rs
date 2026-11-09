@@ -373,13 +373,14 @@ async fn cmd_doctor(
                     serde_json::json!({ "status": status.as_u16(), "body": body }),
                 );
                 if path == "/health" && status.is_success() {
-                    let gateway_reports_unavailable = serde_json::from_str::<serde_json::Value>(&body)
-                        .ok()
-                        .as_ref()
-                        .and_then(|v| v.get("backend"))
-                        .and_then(|b| b.as_str())
-                        .map(|backend| backend != "available")
-                        .unwrap_or(false);
+                    let gateway_reports_unavailable =
+                        serde_json::from_str::<serde_json::Value>(&body)
+                            .ok()
+                            .as_ref()
+                            .and_then(|v| v.get("backend"))
+                            .and_then(|b| b.as_str())
+                            .map(|backend| backend != "available")
+                            .unwrap_or(false);
                     if !gateway_reports_unavailable {
                         health_ok = true;
                     }

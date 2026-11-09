@@ -141,7 +141,8 @@ mod demo {
     use serde_json::Value;
     use tracera_server::item::{Item, ItemFilter, ItemPage};
     use tracera_server::store::{
-        BoxFuture, EvidenceItem, ListParams, Problem, Store, StoreError, StoreResult,
+        BoxFuture, EvidenceItem, IngestOutcome, IngestRecord, ListParams, Problem, Store,
+        StoreError, StoreResult,
     };
 
     /// Compile-time check: `DemoStore` only exists for the demo path.
@@ -258,6 +259,17 @@ mod demo {
             _src: String,
             _now: DateTime<Utc>,
         ) -> BoxFuture<'_, StoreResult<tracera_server::store::TraceLink>> {
+            Box::pin(async {
+                Err(StoreError::Database(
+                    "DemoStore is read-only; configure TRACERA_DB_URL for writes".into(),
+                ))
+            })
+        }
+        fn persist_ingest_batch(
+            &self,
+            _records: Vec<IngestRecord>,
+            _now: DateTime<Utc>,
+        ) -> BoxFuture<'_, StoreResult<IngestOutcome>> {
             Box::pin(async {
                 Err(StoreError::Database(
                     "DemoStore is read-only; configure TRACERA_DB_URL for writes".into(),

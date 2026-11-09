@@ -42,7 +42,7 @@ pub(crate) struct AgcordIngestRequest {
     pub(crate) items: Vec<Value>,
 }
 
-#[derive(Serialize)]
+#[derive(Debug, Serialize)]
 pub(crate) struct BulkIngestionResult {
     pub(crate) total_processed: usize,
     pub(crate) requirements_created: usize,
