@@ -147,7 +147,8 @@ def verify(raw: bytes, expected: object, receipt_sha256: str) -> dict:
             r"[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}"
             r"(?:\.[0-9]{1,9})?(?:Z|\+00:00)",
             receipt["committed_at"],
-        ) is not None,
+        )
+        is not None,
         "invalid_committed_at",
     )
     try:

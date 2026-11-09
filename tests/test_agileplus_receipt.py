@@ -119,6 +119,32 @@ class ReceiptBoundary(unittest.TestCase):
             with self.subTest(raw=raw), self.assertRaises(ValueError):
                 LOAD(raw)
 
+    def test_expected_schema_and_worktree_path_rejected(self):
+        expected = copy.deepcopy(self.expected)
+        expected["extra"] = "unexpected"
+        with self.assertRaisesRegex(ValueError, "invalid_expected_fields"):
+            self.check(expected=expected)
+        expected = copy.deepcopy(self.expected)
+        expected["accepted_candidates"][0]["worktree_path"] = "unexpected"
+        with self.assertRaisesRegex(ValueError, "invalid_candidate_fields"):
+            self.check(expected=expected)
+        for value in ("", " ", 1, []):
+            with (
+                self.subTest(value=value),
+                self.assertRaisesRegex(ValueError, "invalid_worktree_path"),
+            ):
+                receipt = copy.deepcopy(self.receipt)
+                receipt["accepted_candidates"][0]["worktree_path"] = value
+                self.check(receipt)
+
+    def test_digest_syntax_rejected_before_digest_comparison(self):
+        for digest in ("", "0" * 63, "g" * 64, "A" * 64):
+            with (
+                self.subTest(digest=digest),
+                self.assertRaisesRegex(ValueError, "invalid_digest"),
+            ):
+                VERIFY(self.raw, self.expected, digest)
+
     def test_missing_producer_graph_binding_stays_unverified(self):
         expected = copy.deepcopy(self.expected)
         expected["graph_revision"] = "newer-baseline-not-in-native-receipt"
