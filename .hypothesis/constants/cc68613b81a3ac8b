@@ -1,4 +1,0 @@
-# file: /Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/services/documentation_service.py
-# hypothesis_version: 6.148.7
-
-['## Endpoints\n\n', '**Parameters:**\n\n', '**Response:**\n\n', '1.0.0', '200', '3.0.0', 'Success', 'TraceRTM API', 'components', 'description', 'info', 'method', 'methods', 'name', 'openapi', 'parameters', 'path', 'paths', 'registered_at', 'request', 'response', 'response_schema', 'responses', 'schema', 'schemas', 'summary', 'title', 'total_endpoints', 'total_examples', 'total_schemas', 'type', 'unknown', 'version']

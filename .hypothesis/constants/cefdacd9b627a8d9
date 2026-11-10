@@ -1,4 +1,0 @@
-# file: /Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/services/export_service.py
-# hypothesis_version: 6.148.7
-
-['Description', 'ID', 'Source', 'Status', 'Title', 'Type', 'Unknown', 'View', 'X', 'created_at', 'description', 'id', 'isoformat', 'items', 'links', 'name', 'project', 'source_id', 'status', 'target_id', 'title', 'type', 'version', 'view']

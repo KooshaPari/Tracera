@@ -1,4 +1,0 @@
-# file: /Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/models/graph_node.py
-# hypothesis_version: 6.151.4
-
-[255, 'CASCADE', 'extend_existing', 'graph_id', 'graph_nodes', 'graphs.id', 'idx_graph_nodes_item', 'item_id', 'items.id', 'project_id', 'projects.id']

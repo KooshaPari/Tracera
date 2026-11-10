@@ -1,4 +1,0 @@
-# file: /Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/models/workflow_schedule.py
-# hypothesis_version: 6.151.4
-
-[200, 255, 'CASCADE', 'active', 'created_at', 'cron', 'project_id', 'projects.id', 'status', 'workflow_schedules']

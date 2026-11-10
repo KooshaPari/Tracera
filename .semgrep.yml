@@ -1,4 +1,0 @@
-# Semgrep project config. Pre-commit runs: semgrep --config=p/security-audit (community preset).
-# To add project rules, run: semgrep --config=p/security-audit --config=.semgrep.yml
-# See: https://semgrep.dev/docs/writing-rules/rule-syntax/
-rules: []

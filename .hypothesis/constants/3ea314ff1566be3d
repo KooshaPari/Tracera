@@ -1,4 +1,0 @@
-# file: /Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/models/process.py
-# hypothesis_version: 6.151.4
-
-[100, 255, 500, 'CASCADE', 'SET NULL', 'active', 'archived', 'category', 'compliance', 'deprecated', 'development', 'draft', 'extend_existing', 'idx_processes_owner', 'integration', 'is_active_version', 'management', 'metadata', 'operational', 'other', 'owner', 'pending', 'process_executions', 'process_id', 'process_metadata', 'processes', 'processes.id', 'project_id', 'projects.id', 'retired', 'status', 'support', 'version_id_col']

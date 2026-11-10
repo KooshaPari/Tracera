@@ -1,4 +1,0 @@
-# file: /Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/services/chaos_mode_service.py
-# hypothesis_version: 6.148.7
-
-[100, '#', '- ', 'Item not found', 'cancelled', 'complete', 'completed', 'days_inactive', 'dependencies', 'description', 'direct_impact', 'error', 'error_count', 'errors', 'event_id', 'feature', 'health_score', 'id', 'impact_items', 'in_progress', 'item', 'item_count', 'item_id', 'item_ids', 'item_mass_updated', 'item_title', 'items', 'items_affected', 'items_count', 'link_count', 'links', 'links_count', 'name', 'note', 'project', 'project_id', 'reason', 'scope_crash', 'snapshot', 'snapshot_created', 'snapshot_id', 'source', 'status', 'story', 'system', 'target', 'task', 'timestamp', 'title', 'todo', 'total_impact', 'total_items', 'total_links', 'transitive_impact', 'type', 'updated_at', 'updated_count', 'updated_items', 'updates', 'view', 'zombie_count', 'zombie_percentage', 'zombies']

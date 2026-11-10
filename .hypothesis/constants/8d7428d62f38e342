@@ -1,4 +1,0 @@
-# file: /Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/cli/commands/watch.py
-# hypothesis_version: 6.148.7
-
-[0.1, 1.0, 10.0, 100, 500, 5000, '%Y-%m-%d %H:%M:%S', '--auto-sync', '--debounce', '--path', '--refresh', '-d', '-p', '-r', 'Events Pending', 'Events Processed', 'Last Event', 'Metric', 'Never', 'Status', 'Value', '__main__', 'changes_by_type', 'cyan', 'events_pending', 'events_processed', 'green', 'is_running', 'last_event_time', '🔴 Stopped', '🟢 Running']

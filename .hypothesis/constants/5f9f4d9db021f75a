@@ -1,4 +1,0 @@
-# file: /Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/services/traceability_matrix_service.py
-# hypothesis_version: 6.148.7
-
-[100, ',', '</table>', '</tr>', '<td></td>', '<th>Source</th>', '<tr>', 'Source', 'id', 'title', 'type', 'uncovered_sources', 'uncovered_targets', 'view']

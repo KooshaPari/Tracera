@@ -1,4 +1,0 @@
-# file: /Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/models/workflow_run.py
-# hypothesis_version: 6.151.4
-
-[200, 255, 'CASCADE', 'SET NULL', 'created_at', 'external_run_id', 'graphs.id', 'project_id', 'projects.id', 'queued', 'status', 'workflow_runs']

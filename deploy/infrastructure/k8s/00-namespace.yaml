@@ -1,9 +1,0 @@
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: tracertm
-  labels:
-    name: tracertm
-    environment: production
-    app.kubernetes.io/name: tracertm
-    app.kubernetes.io/managed-by: kubectl

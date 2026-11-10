@@ -1,4 +1,0 @@
-# file: /Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/models/codex_agent.py
-# hypothesis_version: 6.151.4
-
-['CASCADE', 'SET NULL', 'execution_id', 'executions.id', 'extend_existing', 'pending', 'project_id', 'projects.id', 'status', 'task_type']

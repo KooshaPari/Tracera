@@ -1,4 +1,0 @@
-# file: /Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/tui/widgets/sync_status.py
-# hypothesis_version: 6.148.7
-
-[3600, 86400, ' | ', '#conflict-info', '#connection-status', '#sync-info', 'Never synced', '[cyan]⟳[/]', '[dim]Offline[/]', '[green]●[/]', '[yellow]●[/]', 'conflict', 'conflict-info', 'connection-status', 'error', 'just now', 'offline', 'online', 's', 'status-line', 'sync-info', 'syncing']

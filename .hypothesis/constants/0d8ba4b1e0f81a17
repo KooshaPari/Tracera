@@ -1,4 +1,0 @@
-# file: /Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/api/sync_client.py
-# hypothesis_version: 6.148.7
-
-[0.1, 1.0, 2.0, 30.0, 60.0, 401, 409, 429, '/', '/api/health', '/api/sync/changes', '/api/sync/resolve', '/api/sync/status', '/api/sync/upload', '60', 'ApiClient', 'ApiConfig', 'Authorization', 'Conflict', 'Content-Type', 'GET', 'POST', 'Retry-After', 'SyncStatus', 'UploadResult', 'User-Agent', 'api_max_retries', 'api_timeout', 'api_token', 'api_url', 'application/json', 'applied', 'changes', 'client_id', 'conflict_id', 'conflicts', 'conflicts_pending', 'create', 'data', 'delete', 'entity_id', 'entity_type', 'errors', 'healthy', 'last_sync', 'last_write_wins', 'local_data', 'local_version', 'local_wins', 'manual', 'merged_data', 'online', 'operation', 'pending_changes', 'project_id', 'remote_data', 'remote_version', 'remote_wins', 'resolution', 'resolved', 'server_time', 'since', 'status', 'timestamp', 'update', 'version']

@@ -1,4 +1,0 @@
-# file: /Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/logging_config.py
-# hypothesis_version: 6.148.7
-
-['30 days', '500 MB', '7 days', 'DEBUG', 'ERROR', 'INFO', 'logger', 'logs', 'tracertm.json', 'tracertm.log', 'tracertm_errors.log', 'zip', '{message}']

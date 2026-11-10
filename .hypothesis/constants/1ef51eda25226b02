@@ -1,4 +1,0 @@
-# file: /Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/services/agent_metrics_service.py
-# hypothesis_version: 6.148.7
-
-[100, 3600, 'agent_id', 'agent_name', 'avg_response_time_ms', 'by_status', 'conflict_detected', 'conflict_rate', 'conflicts', 'metrics', 'operations_per_hour', 'response_time_ms', 'since', 'success_rate', 'time_range_hours', 'total_items', 'total_operations']

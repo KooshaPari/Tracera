@@ -1,4 +1,0 @@
-# file: /Users/kooshapari/temp-PRODVERCEL/485/kush/trace/src/tracertm/models/blockchain.py
-# hypothesis_version: 6.151.4
-
-[100, 255, 512, 'Baseline', 'BaselineItem', 'CASCADE', 'MerkleProofCache', 'VersionBlock', 'VersionBlock | None', 'all, delete-orphan', 'baseline', 'baseline_id', 'baseline_items', 'baselines', 'baselines.id', 'embedding_model', 'item_id', 'items', 'merkle_proofs', 'proofs', 'spec_embeddings', 'spec_id', 'spec_type', 'uq_baseline_item', 'uq_merkle_proof', 'uq_spec_embedding', 'uq_spec_version', 'version_blocks', 'version_chains', 'version_number']
