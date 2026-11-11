@@ -30,10 +30,16 @@ mod tests {
             })
             .cloned()
             .collect();
-        assert_eq!(duplicate_up_version(&Migrator::with_migrations(migrations.clone())), None);
+        assert_eq!(
+            duplicate_up_version(&Migrator::with_migrations(migrations.clone())),
+            None
+        );
         let duplicate = migrations[0].clone();
         let version = duplicate.version;
         migrations.push(duplicate);
-        assert_eq!(duplicate_up_version(&Migrator::with_migrations(migrations)), Some(version));
+        assert_eq!(
+            duplicate_up_version(&Migrator::with_migrations(migrations)),
+            Some(version)
+        );
     }
 }
