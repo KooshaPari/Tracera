@@ -44,9 +44,9 @@
     "@testing-library/user-event": "^14.6.1",
     "@types/react": "^19.0.1",
     "@vitejs/plugin-react": "^4.5.2",
-    "@vitest/coverage-v8": "^4.0.14",
+    "@vitest/coverage-v8": "4.1.12",
     "typescript": "npm:@typescript/native-preview@7.0.0-dev.20251201.1",
-    "vitest": "^4.0.14"
+    "vitest": "4.1.12"
   },
   "peerDependencies": {
     "react": "^19.2.0",
