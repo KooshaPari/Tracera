@@ -88,6 +88,8 @@
     "@types/rbush": "^4.0.0",
     "@typescript-eslint/eslint-plugin": "^8.24.1",
     "@vitejs/plugin-react-swc": "^4.2.2",
+    "@vitest/browser-playwright": "4.1.12",
+    "@vitest/ui": "4.1.12",
     "browserslist": "^4.28.8",
     "eslint-plugin-boundaries": "5.0.1",
     "eslint-plugin-check-file": "2.1.0",
@@ -108,8 +110,6 @@
     "type-coverage": "^2.29.7",
     "typescript": "5.9.3",
     "vite-plugin-checker": "^0.12.0",
-    "@vitest/browser-playwright": "4.1.12",
-    "@vitest/ui": "4.1.12",
     "vitest-mock-extended": "^3.1.0",
     "yaml": "^2.7.0"
   },
