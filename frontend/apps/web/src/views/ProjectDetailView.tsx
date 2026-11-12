@@ -1,3 +1,4 @@
+import { projectStatsFor } from "@/lib/dashboard-summary";
 import { useDashboardSummary } from "@/hooks/useDashboardSummary";
 import type { LucideIcon } from "lucide-react";
 
@@ -241,7 +242,7 @@ const useProjectDetailData = (projectId: string | undefined) => {
 
   return {
     items: itemsQuery.data?.items ?? EMPTY_ITEMS,
-    itemsTotal: summaryQuery.data?.perProject[safeProjectId]?.totalCount ?? 0,
+    itemsTotal: projectStatsFor(summaryQuery.data?.perProject, safeProjectId)?.totalCount ?? 0,
     linksTotal: linksQuery.data?.total,
     loading:
       projectQuery.isLoading ||
@@ -250,7 +251,7 @@ const useProjectDetailData = (projectId: string | undefined) => {
       summaryQuery.isLoading,
     project: projectQuery.data ?? null,
     projectError: projectQuery.error ?? summaryQuery.error,
-    summaryStats: summaryQuery.data?.perProject[safeProjectId],
+    summaryStats: projectStatsFor(summaryQuery.data?.perProject, safeProjectId),
   };
 };
 

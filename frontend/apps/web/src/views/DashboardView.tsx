@@ -37,6 +37,7 @@ import { toast } from "sonner";
 import type { DashboardProjectStats } from "@/hooks/useDashboardSummary";
 
 import { useDashboardSummary } from "@/hooks/useDashboardSummary";
+import { aggregateDashboardCounts, projectStatsFor } from "@/lib/dashboard-summary";
 import { getProjectDisplayName } from "@/lib/project-name-utils";
 import { cn } from "@/lib/utils";
 import {
@@ -111,17 +112,6 @@ export function DashboardView({ systemStatus }: DashboardViewProps) {
     [summaryData],
   );
 
-  const projectItemCounts: Record<string, number> = useMemo(() => {
-    if (!summaryData?.perProject) {
-      return {};
-    }
-    const counts: Record<string, number> = {};
-    for (const [id, stats] of Object.entries(summaryData.perProject)) {
-      counts[id] = stats.totalCount;
-    }
-    return counts;
-  }, [summaryData]);
-
   // Set default pinned project
   useEffect(() => {
     if (projectsArray.length > 0 && !pinnedProjectId) {
@@ -132,43 +122,32 @@ export function DashboardView({ systemStatus }: DashboardViewProps) {
     }
   }, [projectsArray, pinnedProjectId]);
 
-  const statusData = useMemo(() => {
-    const counts: Record<string, number> = {};
-    for (const stats of Object.values(dashboardStats)) {
-      for (const [status, count] of Object.entries(stats.statusCounts)) {
-        counts[status] = (counts[status] ?? 0) + count;
-      }
-    }
-    return Object.entries(counts).map(([name, value]) => ({ name, value }));
-  }, [dashboardStats]);
-
-  const typeData = useMemo(() => {
-    const counts: Record<string, number> = {};
-    for (const stats of Object.values(dashboardStats)) {
-      for (const [type, count] of Object.entries(stats.typeCounts)) {
-        counts[type] = (counts[type] ?? 0) + count;
-      }
-    }
-    return Object.entries(counts).map(([name, value]) => ({ name, value }));
-  }, [dashboardStats]);
+  const statusData = useMemo(
+    () => aggregateDashboardCounts(dashboardStats, "statusCounts"),
+    [dashboardStats],
+  );
+  const typeData = useMemo(
+    () => aggregateDashboardCounts(dashboardStats, "typeCounts"),
+    [dashboardStats],
+  );
 
   const COLORS = ["#3b82f6", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6", "#ec4899"];
 
   const projectsWithStats = useMemo(
     () =>
       projectsArray.map((project) => {
-        const stats = dashboardStats[project.id];
+        const stats = projectStatsFor(dashboardStats, project.id);
         const total = stats?.totalCount ?? 0;
         const completed = stats?.completedCount ?? 0;
         const progress = total > 0 ? (completed / total) * 100 : 0;
         return {
           ...project,
           displayName: getProjectDisplayName(project),
-          itemCount: projectItemCounts[project.id] ?? total,
+          itemCount: total,
           progress,
         };
       }),
-    [projectsArray, dashboardStats, projectItemCounts],
+    [projectsArray, dashboardStats],
   );
 
   const pinnedProject = useMemo(
@@ -180,7 +159,7 @@ export function DashboardView({ systemStatus }: DashboardViewProps) {
     if (!pinnedProject) {
       return [];
     }
-    const typeCounts = dashboardStats[pinnedProject.id]?.typeCounts ?? {};
+    const typeCounts = projectStatsFor(dashboardStats, pinnedProject.id)?.typeCounts ?? {};
     const types = ["requirement", "feature", "test", "task", "bug"];
     const maxCount = Math.max(...types.map((t) => typeCounts[t] ?? 0), 10);
     return types.map((type) => ({

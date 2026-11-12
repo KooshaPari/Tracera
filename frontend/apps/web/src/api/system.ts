@@ -39,13 +39,27 @@ export interface DashboardSummary {
 const isRecordObject = (value: unknown): value is Record<string, unknown> =>
   Object.prototype.toString.call(value) === "[object Object]";
 
+const isCount = (value: unknown): value is number =>
+  typeof value === "number" && Number.isSafeInteger(value) && value >= 0;
+
+const isCountMap = (value: unknown): value is Record<string, number> =>
+  isRecordObject(value) && Object.values(value).every(isCount);
+
+const isProjectStats = (value: unknown): value is DashboardProjectStats =>
+  isRecordObject(value) &&
+  isCount(value["totalCount"]) &&
+  isCount(value["completedCount"]) &&
+  isCountMap(value["statusCounts"]) &&
+  isCountMap(value["typeCounts"]);
+
 const isDashboardSummary = (value: unknown): value is DashboardSummary =>
   isRecordObject(value) &&
   isRecordObject(value["perProject"]) &&
-  isRecordObject(value["statusDistribution"]) &&
-  isRecordObject(value["typeDistribution"]) &&
-  typeof value["projectCount"] === "number" &&
-  typeof value["totalItemCount"] === "number";
+  Object.values(value["perProject"]).every(isProjectStats) &&
+  isCountMap(value["statusDistribution"]) &&
+  isCountMap(value["typeDistribution"]) &&
+  isCount(value["projectCount"]) &&
+  isCount(value["totalItemCount"]);
 
 export const fetchDashboardSummary = async (signal?: AbortSignal): Promise<DashboardSummary> => {
   const res = await fetch(`${API_BASE_URL}/api/v1/dashboard/summary`, {
