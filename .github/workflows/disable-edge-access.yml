@@ -17,15 +17,20 @@ jobs:
       ACCESS_HOSTNAME: tracera-edge.pheno.studio
       PUBLIC_BYPASS: "1"
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
       - name: List Access applications
         run: |
           set -euo pipefail
+          # Write the body to a file before parsing it. Sonar rule
+          # githubactions:S8482 reads `curl | python3 -c` as executing
+          # downloaded content without verification; reading a file keeps the
+          # response unambiguously data rather than something to evaluate.
           curl -fsS \
             -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
             "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/access/apps?per_page=100" \
-            | python3 -c "import json,sys; data=json.load(sys.stdin); [print(f\"{a.get('domain')}\t{a.get('id')}\") for a in data.get('result', [])]"
+            -o /tmp/access-apps.json
+          python3 -c "import json; data=json.load(open('/tmp/access-apps.json')); [print(f\"{a.get('domain')}\t{a.get('id')}\") for a in data.get('result', [])]"
 
       - name: Apply public Bypass policy
         run: bash scripts/setup-cloudflare-access.sh

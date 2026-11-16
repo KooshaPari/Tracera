@@ -36,7 +36,31 @@ jobs:
 
       - name: Install OSSF Scorecard CLI
         run: |
-          curl -sSfL https://raw.githubusercontent.com/ossf/scorecard/main/install.sh | sh -s -- -b /usr/local/bin
+          set -euo pipefail
+          # Previously: `curl -sSfL .../ossf/scorecard/main/install.sh | sh -s -- -b /usr/local/bin`.
+          # That piped a download straight into a shell (Sonar githubactions:S8482),
+          # and the URL now 404s -- there is no install.sh at that path on `main`
+          # or on any tag -- so the pipeline silently succeeded while installing
+          # nothing, because with a pipe the exit status is `sh`'s.
+          # Install the published release binary and check it against the
+          # release's own checksum file before extracting it.
+          SCORECARD_VERSION="5.6.0"
+          cd /tmp
+          # Keep the scheme literal and pin the protocol in curl: Sonar
+          # githubactions:S6506 cannot see https:// through a variable, and
+          # --proto / --proto-redir deny a redirect to plain http, which is
+          # what the rule is actually about.
+          curl -fsSL --proto '=https' --proto-redir '=https' \
+            -o "scorecard_${SCORECARD_VERSION}_linux_amd64.tar.gz" \
+            "https://github.com/ossf/scorecard/releases/download/v${SCORECARD_VERSION}/scorecard_${SCORECARD_VERSION}_linux_amd64.tar.gz"
+          curl -fsSL --proto '=https' --proto-redir '=https' \
+            -o scorecard_checksums.txt \
+            "https://github.com/ossf/scorecard/releases/download/v${SCORECARD_VERSION}/scorecard_checksums.txt"
+          grep "scorecard_${SCORECARD_VERSION}_linux_amd64.tar.gz" scorecard_checksums.txt \
+            | sha256sum --check -
+          tar -xzf "scorecard_${SCORECARD_VERSION}_linux_amd64.tar.gz" scorecard
+          install -m 0755 scorecard /usr/local/bin/scorecard
+          scorecard version
 
       - name: Cache cargo
         uses: actions/cache@v4

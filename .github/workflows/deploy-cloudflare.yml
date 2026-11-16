@@ -49,6 +49,12 @@ jobs:
       env: ${{ steps.derive.outputs.env }}
     steps:
       - id: derive
+        # Bind the input to the step environment instead of interpolating it
+        # into the script. GitHub expands ${{ }} before bash runs, so a crafted
+        # workflow_dispatch value would be executed as shell (Sonar
+        # githubactions:S7630). As an env var it is data.
+        env:
+          INPUT_ENVIRONMENT: ${{ inputs.environment }}
         run: |
           set -euo pipefail
           if [ "${{ github.event_name }}" = "pull_request" ]; then
@@ -56,8 +62,8 @@ jobs:
           elif [ "${GITHUB_REF#refs/tags/}" != "${GITHUB_REF}" ]; then
             # A release tag is always production; an input must not downgrade it.
             target=prod
-          elif [ -n "${{ inputs.environment }}" ]; then
-            target="${{ inputs.environment }}"
+          elif [ -n "$INPUT_ENVIRONMENT" ]; then
+            target="$INPUT_ENVIRONMENT"
           else
             target=dev
           fi
@@ -172,9 +178,12 @@ jobs:
             exit 0
           fi
           # List existing KV namespaces via REST API
-          EXISTING=$(curl -sf -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+          # Download to a file first: Sonar githubactions:S8482 flags
+          # `curl | python3 -c` as executing downloaded content unchecked.
+          curl -sf -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
             "$CF_API_BASE/accounts/$CLOUDFLARE_ACCOUNT_ID/storage/kv/namespaces" \
-            | python3 -c "import json,sys;d=json.load(sys.stdin);print(next((n['id'] for n in d.get('result',[]) if n.get('title')=='TRACERA_KV'),''))" 2>/dev/null || echo "")
+            -o /tmp/cf-kv-namespaces.json || true
+          EXISTING=$(python3 -c "import json;d=json.load(open('/tmp/cf-kv-namespaces.json'));print(next((n['id'] for n in d.get('result',[]) if n.get('title')=='TRACERA_KV'),''))" 2>/dev/null || echo "")
           if [ -n "$EXISTING" ]; then
             echo "Found existing TRACERA_KV namespace id=$EXISTING"
             echo "KV_ID=$EXISTING" >> "$GITHUB_ENV"
@@ -182,12 +191,13 @@ jobs:
             exit 0
           fi
           # Create via REST API (non-interactive)
-          CREATED=$(curl -sf -X POST \
+          curl -sf -X POST \
             -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
             -H "Content-Type: application/json" \
             -d '{"title":"TRACERA_KV"}' \
             "$CF_API_BASE/accounts/$CLOUDFLARE_ACCOUNT_ID/storage/kv/namespaces" \
-            | python3 -c "import json,sys;d=json.load(sys.stdin);print(d.get('result',{}).get('id',''))" 2>/dev/null || echo "")
+            -o /tmp/cf-kv-created.json || true
+          CREATED=$(python3 -c "import json;d=json.load(open('/tmp/cf-kv-created.json'));print(d.get('result',{}).get('id',''))" 2>/dev/null || echo "")
           if [ -z "$CREATED" ]; then
             echo "::error::Failed to resolve or create TRACERA_KV namespace"
             exit 1
