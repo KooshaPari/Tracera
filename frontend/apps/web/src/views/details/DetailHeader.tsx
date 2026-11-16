@@ -9,6 +9,7 @@ import { ArrowLeft, ExternalLink, MoreVertical, Trash2 } from "lucide-react";
 import type { TypedItem } from "@tracertm/types";
 
 import { cn } from "@/lib/utils";
+import { copyToClipboard } from "@/utils/helpers";
 import {
   Badge,
   Button,
@@ -49,9 +50,17 @@ function viewHeadingLabel(view: string | undefined): string {
   return view.charAt(0).toUpperCase() + view.slice(1).toLowerCase();
 }
 
-function handleShare() {
-  const _shareUrl = `${globalThis.location.origin}${globalThis.location.pathname}`;
-  undefined;
+function handleShare(): void {
+  const shareUrl = `${globalThis.location.origin}${globalThis.location.pathname}`;
+
+  if (typeof navigator.share === "function") {
+    void navigator.share({ url: shareUrl }).catch(() => {
+      // The user dismissed the share sheet, or sharing is not permitted here.
+    });
+    return;
+  }
+
+  void copyToClipboard(shareUrl);
 }
 
 export function DetailHeader({ item, actions = [], onBack }: DetailHeaderProps) {
