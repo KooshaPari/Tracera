@@ -13,6 +13,7 @@ mod not_implemented;
 mod observability;
 mod observation_store;
 mod pg_store;
+mod postgres_migration_guard;
 use tracera_server::product;
 #[cfg(feature = "phenodag-queue")]
 mod queue;
@@ -230,46 +231,54 @@ async fn main() {
         std::process::exit(1);
     });
 
-    let (store, backend): (Arc<dyn Store>, &'static str) =
-        if database_url.starts_with("postgres://") || database_url.starts_with("postgresql://") {
-            info!("Backend: Postgres (server tier)");
-            let pool = db::connect_postgres(&database_url)
-                .await
-                .unwrap_or_else(|e| {
-                    eprintln!("FATAL: Cannot connect to Postgres: {e}");
-                    std::process::exit(1);
-                });
-            sqlx::migrate!("./migrations-postgres")
-                .run(&pool)
-                .await
-                .unwrap_or_else(|e| {
-                    eprintln!("FATAL: Postgres migration failed: {e}");
-                    std::process::exit(1);
-                });
-            info!("Postgres migrations applied successfully");
-            (Arc::new(pg_store::PgStore::new(pool)), "postgres")
-        } else if database_url.starts_with("sqlite://")
-            || database_url.starts_with("sqlite:")
-            || database_url.ends_with(".db")
+    let (store, backend): (Arc<dyn Store>, &'static str) = if database_url
+        .starts_with("postgres://")
+        || database_url.starts_with("postgresql://")
+    {
+        info!("Backend: Postgres (server tier)");
+        if let Some(version) =
+            postgres_migration_guard::duplicate_up_version(&postgres_migration_guard::MIGRATOR)
         {
-            info!("Backend: SQLite (on-device tier)");
-            let pool = db::connect_sqlite(&database_url).await.unwrap_or_else(|e| {
-                eprintln!("FATAL: Cannot open SQLite: {e}");
+            eprintln!("FATAL: Duplicate Postgres migration version {version}; refusing to connect");
+            std::process::exit(1);
+        }
+        let pool = db::connect_postgres(&database_url)
+            .await
+            .unwrap_or_else(|e| {
+                eprintln!("FATAL: Cannot connect to Postgres: {e}");
                 std::process::exit(1);
             });
-            sqlx::migrate!("./migrations-sqlite")
-                .run(&pool)
-                .await
-                .unwrap_or_else(|e| {
-                    eprintln!("FATAL: SQLite migration failed: {e}");
-                    std::process::exit(1);
-                });
-            info!("SQLite migrations applied successfully");
-            (Arc::new(sqlite_store::SqliteStore::new(pool)), "sqlite")
-        } else {
-            eprintln!("FATAL: Unrecognised DATABASE_URL scheme.");
+        postgres_migration_guard::MIGRATOR
+            .run(&pool)
+            .await
+            .unwrap_or_else(|e| {
+                eprintln!("FATAL: Postgres migration failed: {e}");
+                std::process::exit(1);
+            });
+        info!("Postgres migrations applied successfully");
+        (Arc::new(pg_store::PgStore::new(pool)), "postgres")
+    } else if database_url.starts_with("sqlite://")
+        || database_url.starts_with("sqlite:")
+        || database_url.ends_with(".db")
+    {
+        info!("Backend: SQLite (on-device tier)");
+        let pool = db::connect_sqlite(&database_url).await.unwrap_or_else(|e| {
+            eprintln!("FATAL: Cannot open SQLite: {e}");
             std::process::exit(1);
-        };
+        });
+        sqlx::migrate!("./migrations-sqlite")
+            .run(&pool)
+            .await
+            .unwrap_or_else(|e| {
+                eprintln!("FATAL: SQLite migration failed: {e}");
+                std::process::exit(1);
+            });
+        info!("SQLite migrations applied successfully");
+        (Arc::new(sqlite_store::SqliteStore::new(pool)), "sqlite")
+    } else {
+        eprintln!("FATAL: Unrecognised DATABASE_URL scheme.");
+        std::process::exit(1);
+    };
 
     let frontend_dist = env::var("TRACERA_FRONTEND_DIST")
         .map(PathBuf::from)
