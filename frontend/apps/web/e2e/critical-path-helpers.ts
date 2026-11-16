@@ -379,11 +379,7 @@ export async function clearSearchAndFilters(page: Page): Promise<boolean> {
  */
 
 export async function expectPageUrl(page: Page, urlPattern: RegExp | string) {
-  if (typeof urlPattern === "string") {
-    await expect(page).toHaveURL(urlPattern);
-  } else {
-    await expect(page).toHaveURL(urlPattern);
-  }
+  await expect(page).toHaveURL(urlPattern);
 }
 
 export async function expectElementVisible(page: Page, selector: string, timeout = 5000) {

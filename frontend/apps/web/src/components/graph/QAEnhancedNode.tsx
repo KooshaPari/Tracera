@@ -479,7 +479,6 @@ function DemoTab({ data }: { data: QAEnhancedNodeData }) {
 
   if (previewUrl) {
     const isVideo = previewUrl.endsWith(".webm") || previewUrl.endsWith(".mp4");
-    const isGif = previewUrl.endsWith(".gif");
 
     return (
       <div className="space-y-4">
@@ -489,8 +488,6 @@ function DemoTab({ data }: { data: QAEnhancedNodeData }) {
             <video src={previewUrl} controls className="h-full w-full" aria-label="Preview">
               <track kind="captions" />
             </video>
-          ) : isGif ? (
-            <img src={previewUrl} alt={data.label} className="h-full w-full object-contain" />
           ) : (
             <img src={previewUrl} alt={data.label} className="h-full w-full object-contain" />
           )}
