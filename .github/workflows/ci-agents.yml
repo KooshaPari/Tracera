@@ -321,11 +321,11 @@ jobs:
         working-directory: frontend
         run: bun install --frozen-lockfile
       - name: vitest
-        working-directory: frontend
+        working-directory: frontend/apps/web
         # No --reporter here: the web package's test script already selects one,
         # and this used to override it with `basic`, which vitest 4 removed
         # ("Failed to load custom Reporter from basic").
-        run: bun --cwd apps/web run test --silent
+        run: bun run test --silent
       - name: contract tests
         working-directory: frontend
         run: node --test scripts/test-api-base.mjs

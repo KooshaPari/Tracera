@@ -48,10 +48,11 @@ jobs:
       - name: Install cargo-mutants
         run: cargo install cargo-mutants
 
-      - name: Run mutants (baseline — changed files only)
+      - name: Run mutants (baseline enabled)
         if: github.event.inputs.baseline != 'false'
         run: |
-          cargo mutants --baseline \
+          set -euo pipefail
+          cargo mutants --baseline=run \
             --timeout 120 \
             --test-timeout 60 \
             --jobs 2 \
@@ -61,6 +62,7 @@ jobs:
       - name: Run mutants (full sweep)
         if: github.event.inputs.baseline == 'false'
         run: |
+          set -euo pipefail
           cargo mutants \
             --timeout 120 \
             --test-timeout 60 \
