@@ -1,9 +1,55 @@
-import pathlib,tempfile,subprocess,os,json,stat,sys
-SCRIPT=pathlib.Path(__file__).resolve().with_name('setup-cloudflare-access.sh')
-CASES=['missing-id','null-id','empty-id','wrong-id','malformed','success-false','bad-client','bad-secret','newline','post-fail','write-fail','fsync-fail','inode','symlink','fifo','delete-transport','delete-api','valid','reuse','ci-refuse','null-result','list-result','null-client','empty-client','null-secret','empty-secret','unsafe-id','existing-output','ancestor-fifo','bypass-name-only','bypass-everyone','bypass-other-name','bypass-require','bypass-exclude','bypass-not-bypass']
+import os
+import pathlib
+import stat
+import subprocess
+import sys
+import tempfile
+
+SCRIPT = pathlib.Path(__file__).resolve().with_name("setup-cloudflare-access.sh")
+CASES = [
+    "missing-id",
+    "null-id",
+    "empty-id",
+    "wrong-id",
+    "malformed",
+    "success-false",
+    "bad-client",
+    "bad-secret",
+    "newline",
+    "post-fail",
+    "write-fail",
+    "fsync-fail",
+    "inode",
+    "symlink",
+    "fifo",
+    "delete-transport",
+    "delete-api",
+    "valid",
+    "reuse",
+    "ci-refuse",
+    "null-result",
+    "list-result",
+    "null-client",
+    "empty-client",
+    "null-secret",
+    "empty-secret",
+    "unsafe-id",
+    "existing-output",
+    "ancestor-fifo",
+    "bypass-name-only",
+    "bypass-everyone",
+    "bypass-other-name",
+    "bypass-require",
+    "bypass-exclude",
+    "bypass-not-bypass",
+]
 with tempfile.TemporaryDirectory() as d:
- root=pathlib.Path(d);root.chmod(0o700);bin=root/'bin';bin.mkdir()
- mock=bin/'curl';mock.write_text('''#!/usr/bin/env python3
+    root = pathlib.Path(d)
+    root.chmod(0o700)
+    bin = root / "bin"
+    bin.mkdir()
+    mock = bin / "curl"
+    mock.write_text("""#!/usr/bin/env python3
 import os,sys,json,pathlib
 args=sys.argv[1:];u=args[-1];case=os.environ['CASE'];out=pathlib.Path(os.environ['OUT']);method='DELETE' if 'DELETE' in args else 'POST' if 'POST' in args else 'GET'
 with open(os.environ['LOG'],'a') as f:f.write(method+' '+u+'\\n')
@@ -49,37 +95,102 @@ elif '/policies?' in u:
  if case=='bypass-not-bypass':p['decision']='allow'
  print(json.dumps({'result':[p] if case.startswith('bypass-') else []}))
 else:print('{"success":true}')
-''');mock.write_text(mock.read_text().replace('#!/usr/bin/env python3', '#!'+sys.executable));mock.chmod(0o755)
- py=bin/'python3';py.write_text('''#!/usr/bin/env python3
+""")
+    mock.write_text(
+        mock.read_text().replace("#!/usr/bin/env python3", "#!" + sys.executable)
+    )
+    mock.chmod(0o755)
+    py = bin / "python3"
+    py.write_text("""#!/usr/bin/env python3
 import os,sys
 real=os.environ['REAL_PY'];args=sys.argv[1:]
 if len(args)>1 and args[0]=='-c' and 'os.ftruncate(fd, 0)' in args[1] and os.environ['CASE'] in ['write-fail','fsync-fail']:
  fn='write' if os.environ['CASE']=='write-fail' else 'fsync'
  args[1]='import os\\ndef fail(*a,**k): raise OSError("injected")\\nos.'+fn+'=fail\\n'+args[1]
 os.execv(real,[real]+args)
-''');py.write_text(py.read_text().replace('#!/usr/bin/env python3', '#!'+sys.executable));py.chmod(0o755)
- for case in CASES:
-  p=root/case;p.mkdir(mode=0o700);out=p/'token';log=root/(case+'.calls');env={**os.environ,'PATH':str(bin)+':'+os.environ['PATH'],'REAL_PY':sys.executable,'CASE':case,'OUT':str(out),'LOG':str(log),'TOKEN_OUTPUT_FILE':str(out),'CLOUDFLARE_API_TOKEN':'mock','CLOUDFLARE_ACCOUNT_ID':'mock'}
-  if case=='ci-refuse':env.pop('TOKEN_OUTPUT_FILE')
-  if case.startswith('bypass-'):env['PUBLIC_BYPASS']='1'
-  if case=='existing-output':out.write_text('FOREIGN')
-  r=subprocess.run(['bash','--',str(SCRIPT)],env=env,capture_output=True,text=True,timeout=10);calls=log.read_text();text=r.stdout+r.stderr;assert 'SENTINEL_SECRET_789' not in text,(case,text)
-  if case.startswith('bypass-'):
-   assert r.returncode==0,(case,text)
-   assert '/service_tokens' not in calls,case
-   assert calls.count('POST ')==int(case not in ['bypass-everyone','bypass-other-name']),(case,calls)
-  elif case in ['valid','reuse']:
-   assert r.returncode==0,(case,text)
-   if case=='valid':assert stat.S_IMODE(out.stat().st_mode)==0o600 and 'SENTINEL_SECRET_789' in out.read_text()
-   assert calls.count('POST ')==(2 if case=='valid' else 1)
-  else:
-   assert r.returncode!=0,(case,text);assert not any(l.startswith('POST ') and '/policies' in l for l in calls.splitlines()),case
-   if case in ['fifo','ancestor-fifo']:assert stat.S_ISFIFO(out.lstat().st_mode),case
-   elif case in ['inode','symlink','existing-output']:
-    assert out.read_text()=='FOREIGN',case
-    if case!='existing-output':assert (p/'foreign').read_text()=='FOREIGN'
-   else:assert not out.exists(),(case,text)
-   known=case in ['success-false','bad-client','bad-secret','newline','write-fail','fsync-fail','inode','symlink','fifo','ancestor-fifo','delete-transport','delete-api','null-client','empty-client','null-secret','empty-secret']
-   assert calls.count('DELETE ')==int(known),(case,calls)
-   if case in ['delete-transport','delete-api']:assert 'manually revoke token id=mock-id' in text
-  print('PASS',case)
+""")
+    py.write_text(
+        py.read_text().replace("#!/usr/bin/env python3", "#!" + sys.executable)
+    )
+    py.chmod(0o755)
+    for case in CASES:
+        p = root / case
+        p.mkdir(mode=0o700)
+        out = p / "token"
+        log = root / (case + ".calls")
+        env = {
+            **os.environ,
+            "PATH": str(bin) + ":" + os.environ["PATH"],
+            "REAL_PY": sys.executable,
+            "CASE": case,
+            "OUT": str(out),
+            "LOG": str(log),
+            "TOKEN_OUTPUT_FILE": str(out),
+            "CLOUDFLARE_API_TOKEN": "mock",
+            "CLOUDFLARE_ACCOUNT_ID": "mock",
+        }
+        if case == "ci-refuse":
+            env.pop("TOKEN_OUTPUT_FILE")
+        if case.startswith("bypass-"):
+            env["PUBLIC_BYPASS"] = "1"
+        if case == "existing-output":
+            out.write_text("FOREIGN")
+        r = subprocess.run(
+            ["bash", "--", str(SCRIPT)],
+            env=env,
+            capture_output=True,
+            text=True,
+            timeout=10,
+        )
+        calls = log.read_text()
+        text = r.stdout + r.stderr
+        assert "SENTINEL_SECRET_789" not in text, (case, text)
+        if case.startswith("bypass-"):
+            assert r.returncode == 0, (case, text)
+            assert "/service_tokens" not in calls, case
+            assert calls.count("POST ") == int(
+                case not in ["bypass-everyone", "bypass-other-name"]
+            ), (case, calls)
+        elif case in ["valid", "reuse"]:
+            assert r.returncode == 0, (case, text)
+            if case == "valid":
+                assert (
+                    stat.S_IMODE(out.stat().st_mode) == 0o600
+                    and "SENTINEL_SECRET_789" in out.read_text()
+                )
+            assert calls.count("POST ") == (2 if case == "valid" else 1)
+        else:
+            assert r.returncode != 0, (case, text)
+            assert not any(
+                line.startswith("POST ") and "/policies" in line for line in calls.splitlines()
+            ), case
+            if case in ["fifo", "ancestor-fifo"]:
+                assert stat.S_ISFIFO(out.lstat().st_mode), case
+            elif case in ["inode", "symlink", "existing-output"]:
+                assert out.read_text() == "FOREIGN", case
+                if case != "existing-output":
+                    assert (p / "foreign").read_text() == "FOREIGN"
+            else:
+                assert not out.exists(), (case, text)
+            known = case in [
+                "success-false",
+                "bad-client",
+                "bad-secret",
+                "newline",
+                "write-fail",
+                "fsync-fail",
+                "inode",
+                "symlink",
+                "fifo",
+                "ancestor-fifo",
+                "delete-transport",
+                "delete-api",
+                "null-client",
+                "empty-client",
+                "null-secret",
+                "empty-secret",
+            ]
+            assert calls.count("DELETE ") == int(known), (case, calls)
+            if case in ["delete-transport", "delete-api"]:
+                assert "manually revoke token id=mock-id" in text
+        print("PASS", case)

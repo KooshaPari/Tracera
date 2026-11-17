@@ -14,7 +14,7 @@ if TRACERA_PUBLIC_HOSTNAME=tracera.test "$gate" --mode public >/tmp/tracera-publ
   cat /tmp/tracera-public-security-gate.log >&2
   exit 1
 fi
-grep -q "active Caddy auth directive" /tmp/tracera-public-security-gate.log \
+grep -q "require one balanced HTTPS site with site-wide auth" /tmp/tracera-public-security-gate.log \
   || { cat /tmp/tracera-public-security-gate.log >&2; exit 1; }
 
 if "$gate" --mode public >/tmp/tracera-public-missing-host.log 2>&1; then
