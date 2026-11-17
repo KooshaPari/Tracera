@@ -11,6 +11,8 @@ ROOT = pathlib.Path(__file__).resolve().parent.parent
 spec = importlib.util.spec_from_file_location(
     "validator", ROOT / "scripts/verify-caddy-public.py"
 )
+if spec is None or spec.loader is None:
+    raise ImportError("cannot load the Caddy validator fixture")
 validator = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(validator)
 HOST = "tracera.pheno.studio"
