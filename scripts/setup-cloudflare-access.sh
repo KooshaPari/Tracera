@@ -98,7 +98,8 @@ name = sys.argv[1]
 for policy in json.load(sys.stdin).get("result", []):
     if policy.get("decision") != "bypass":
         continue
-    if policy.get("name") == name or any("everyone" in x for x in policy.get("include", [])):
+    if (any(x == {"everyone": {}} for x in policy.get("include", []))
+            and not policy.get("require") and not policy.get("exclude")):
         print("yes")
         break
 ' "$PUBLIC_BYPASS_NAME")
@@ -244,7 +245,7 @@ try:
     if not re.fullmatch(r"[A-Za-z0-9_-]+", r["id"]):
         raise ValueError("invalid token id")
     dst, expected = sys.argv[1:]
-    fd = os.open(dst, os.O_WRONLY | getattr(os, "O_NOFOLLOW", 0))
+    fd = os.open(dst, os.O_WRONLY | os.O_NONBLOCK | getattr(os, "O_NOFOLLOW", 0))
     try:
         st = os.fstat(fd)
         if not stat.S_ISREG(st.st_mode) or f"{st.st_dev}:{st.st_ino}" != expected:

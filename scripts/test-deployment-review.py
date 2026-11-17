@@ -38,6 +38,15 @@ class ReviewTests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 validator.check(text, HOST)
 
+    def test_restricted_auth_matchers_rejected(self):
+        for directive in ['basic_auth /admin/*', 'basic_auth @private', 'forward_auth /admin/* auth:9090', 'forward_auth @private auth:9090', 'jwt /admin/*']:
+            with self.assertRaises(ValueError, msg=directive):
+                validator.check((SITE % HOST).replace('basic_auth', directive), HOST)
+
+    def test_unqualified_auth_forms(self):
+        for directive in ['basic_auth bcrypt', 'basic_auth argon2id', 'forward_auth auth:9090', 'jwt']:
+            validator.check((SITE % HOST).replace('basic_auth', directive), HOST)
+
     def test_prod_order_and_no_post_exit_success(self):
         makefile = (ROOT / 'Makefile').read_text()
         a = makefile.index('task-prod:')

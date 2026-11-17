@@ -112,8 +112,10 @@ gh secret set VERCEL_TOKEN --repo KooshaPari/Tracera --body "vercel_..."
 
 The Rust API is not deployed by CI. It runs on the operator's machine and is
 exposed through a Cloudflare Tunnel. See `deploy/selfhost/README.md` for the
-runbook and required environment variables (`CF_TUNNEL_TOKEN`,
-`TRACERA_PUBLIC_HOSTNAME`, `TRACERA_AUTH_TOKEN`, and related settings).
+runbook and required environment variables (`TRACERA_PUBLIC_HOSTNAME`,
+`TRACERA_PUBLIC_BIND_MODE`, `TRACERA_AUTH_TOKEN`, and related settings). The shared
+ingress owner manages the connector credential separately; this Compose stack
+does not consume `CF_TUNNEL_TOKEN` or run cloudflared.
 
 CI still builds and publishes the container image (`build-push-image.yml`) to
 GHCR for manual pull on the operator box.
