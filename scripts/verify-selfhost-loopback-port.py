@@ -46,7 +46,9 @@ port_headers = [
     if indent(line) == 4 and line.strip() == "ports:"
 ]
 if len(port_headers) != 1:
-    die(f"expected exactly one ports block in tracera-server, found {len(port_headers)}")
+    die(
+        f"expected exactly one ports block in tracera-server, found {len(port_headers)}"
+    )
 
 ports_start = port_headers[0] + 1
 ports_end = len(service)

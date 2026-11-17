@@ -162,7 +162,8 @@ os.execv(real,[real]+args)
         else:
             assert r.returncode != 0, (case, text)
             assert not any(
-                line.startswith("POST ") and "/policies" in line for line in calls.splitlines()
+                line.startswith("POST ") and "/policies" in line
+                for line in calls.splitlines()
             ), case
             if case in ["fifo", "ancestor-fifo"]:
                 assert stat.S_ISFIFO(out.lstat().st_mode), case
