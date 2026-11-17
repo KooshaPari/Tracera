@@ -16,7 +16,7 @@ export class EnvManager {
   }
 
   private loadFromProcess(): void {
-    if (typeof process !== 'undefined' && process.env) {
+    if (typeof process !== "undefined" && process.env) {
       Object.entries(process.env).forEach(([key, value]) => {
         if (value !== undefined) {
           this.vars.set(key, String(value));
@@ -66,10 +66,10 @@ export class EnvManager {
       return defaultValue;
     }
 
-    return ['true', '1', 'yes', 'on'].includes(value.toLowerCase());
+    return ["true", "1", "yes", "on"].includes(value.toLowerCase());
   }
 
-  getArray(key: string, separator = ','): string[] {
+  getArray(key: string, separator = ","): string[] {
     const value = this.vars.get(key);
     if (!value) {
       return [];
@@ -102,7 +102,7 @@ export class EnvManager {
   validate(requiredVars: string[]): void {
     const missing = requiredVars.filter((key) => !this.vars.has(key));
     if (missing.length > 0) {
-      throw new Error(`Missing required environment variables: ${missing.join(', ')}`);
+      throw new Error(`Missing required environment variables: ${missing.join(", ")}`);
     }
   }
 

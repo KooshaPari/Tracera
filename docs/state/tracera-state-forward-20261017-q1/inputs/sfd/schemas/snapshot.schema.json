@@ -1,0 +1,112 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:phenotype:sfd:snapshot:1.0.0",
+  "title": "SFD supplemental snapshot; not a replacement for Master Assessment Kit",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": { "const": "1.0.0" },
+    "record_class": { "enum": ["TEMPLATE", "ILLUSTRATIVE", "OPERATIONAL"] },
+    "snapshot_id": { "type": "string", "minLength": 1 },
+    "previous_snapshot_id": { "type": ["string", "null"] },
+    "product_id": { "type": "string", "minLength": 1 },
+    "subject_id": { "type": "string", "minLength": 1 },
+    "baseline_id": { "type": "string", "minLength": 1 },
+    "as_of": { "type": "string", "format": "date-time" },
+    "evidence": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": { "type": "string", "minLength": 1 },
+          "kind": {
+            "enum": [
+              "ILLUSTRATIVE_SCENARIO",
+              "EXECUTED_PRODUCT",
+              "SOURCE_REPORT"
+            ]
+          },
+          "subject_id": { "type": "string", "minLength": 1 },
+          "observed_at": { "type": "string", "format": "date-time" },
+          "valid_until": {
+            "anyOf": [
+              { "type": "string", "format": "date-time" },
+              { "type": "null" }
+            ]
+          },
+          "locator": { "type": "string", "minLength": 1 },
+          "sha256": {
+            "anyOf": [
+              { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+              { "type": "null" }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "kind",
+          "subject_id",
+          "observed_at",
+          "valid_until",
+          "locator",
+          "sha256"
+        ]
+      }
+    },
+    "leaves": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": { "type": "string", "minLength": 1 },
+          "title": { "type": "string", "minLength": 1 },
+          "axis": { "enum": ["engineering", "usable", "assurance"] },
+          "weight": { "type": "number", "exclusiveMinimum": 0 },
+          "applicability": { "enum": ["APPLICABLE", "UNRESOLVED", "EXCLUDED"] },
+          "exclusion_authority": { "type": ["string", "null"] },
+          "status": {
+            "enum": ["PASS", "FAIL", "UNKNOWN", "STALE", "NOT_RUN", "BLOCKED"]
+          },
+          "review": { "enum": ["PROPOSED", "ACCEPTED", "REJECTED"] },
+          "critical": { "type": "boolean" },
+          "evidence_ids": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": { "type": "string", "minLength": 1 }
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "axis",
+          "weight",
+          "applicability",
+          "exclusion_authority",
+          "status",
+          "review",
+          "critical",
+          "evidence_ids"
+        ]
+      }
+    },
+    "limitations": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    }
+  },
+  "required": [
+    "schema_version",
+    "record_class",
+    "snapshot_id",
+    "previous_snapshot_id",
+    "product_id",
+    "subject_id",
+    "baseline_id",
+    "as_of",
+    "evidence",
+    "leaves",
+    "limitations"
+  ]
+}

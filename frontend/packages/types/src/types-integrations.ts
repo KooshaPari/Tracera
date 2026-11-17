@@ -1,14 +1,14 @@
 // Webhook Integration Types
 export type WebhookProvider =
-  | 'github_actions'
-  | 'gitlab_ci'
-  | 'jenkins'
-  | 'azure_devops'
-  | 'circleci'
-  | 'travis_ci'
-  | 'custom';
+  | "github_actions"
+  | "gitlab_ci"
+  | "jenkins"
+  | "azure_devops"
+  | "circleci"
+  | "travis_ci"
+  | "custom";
 
-export type WebhookStatus = 'active' | 'paused' | 'disabled';
+export type WebhookStatus = "active" | "paused" | "disabled";
 
 export interface WebhookIntegration {
   id: string;
@@ -73,24 +73,24 @@ export interface WebhookStats {
 }
 
 // External Integration Types
-export type IntegrationProvider = 'github' | 'github_projects' | 'linear';
+export type IntegrationProvider = "github" | "github_projects" | "linear";
 
-export type CredentialType = 'oauth' | 'pat' | 'api_key';
+export type CredentialType = "oauth" | "pat" | "api_key";
 
-export type CredentialStatus = 'active' | 'expired' | 'revoked' | 'invalid' | 'pending_reauth';
+export type CredentialStatus = "active" | "expired" | "revoked" | "invalid" | "pending_reauth";
 
-export type MappingDirection = 'pull' | 'push' | 'bidirectional';
+export type MappingDirection = "pull" | "push" | "bidirectional";
 
-export type MappingStatus = 'active' | 'paused' | 'error' | 'pending';
+export type MappingStatus = "active" | "paused" | "error" | "pending";
 
-export type SyncQueueStatus = 'pending' | 'processing' | 'completed' | 'failed' | 'cancelled';
+export type SyncQueueStatus = "pending" | "processing" | "completed" | "failed" | "cancelled";
 
 export type ConflictResolutionStrategy =
-  | 'local_wins'
-  | 'external_wins'
-  | 'manual'
-  | 'merge'
-  | 'skip';
+  | "local_wins"
+  | "external_wins"
+  | "manual"
+  | "merge"
+  | "skip";
 
 export interface IntegrationCredential {
   id: string;
@@ -205,7 +205,7 @@ export interface SyncConflict {
   externalValue?: unknown | undefined;
   localModifiedAt?: string | undefined;
   externalModifiedAt?: string | undefined;
-  status: 'pending' | 'resolved' | 'skipped';
+  status: "pending" | "resolved" | "skipped";
   resolution?: string | undefined;
   resolvedValue?: unknown | undefined;
   resolvedBy?: string | undefined;

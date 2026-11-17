@@ -1,0 +1,161 @@
+{
+  "observation_id": "tracera-obs-20261017-runtime-2f1d36dc",
+  "record_version": "1.0-owner-observation",
+  "record_type": "append-only-runtime-observation",
+  "contract": {
+    "repository": "KooshaPari/PhenoRegistry",
+    "sha": "05e163820f1a207f2f827a5485ce6ca04084107f",
+    "path": "handbook/specs/assessment/state-forward-docket-v1/CONTRACT.md",
+    "mapping": "Owner-held evidence appendage, not supplemental snapshot schema or reducer acceptance"
+  },
+  "previous_snapshot": "tracera-state-forward-20261017-q1",
+  "observed_start": "2026-10-17T19:56:05Z",
+  "observed_end": "2026-10-17T20:37:44Z",
+  "ingested_at": "2026-10-17T20:10:31.443750+00:00",
+  "subject": {
+    "repository": "KooshaPari/Tracera",
+    "source_sha": "2f1d36dc5264e0b36811036913ed9b47083ef968",
+    "dirty": "",
+    "binary_sha256": "6be5a8d8c29091ccd46a192b27467f6f78626a5d5262f6c6dc19882f249c08c9",
+    "backend": "isolated SQLite",
+    "deployment": "NOT_DEPLOYED",
+    "environment": "ProductName:\t\tmacOS\nProductVersion:\t\t27.0\nBuildVersion:\t\t26A5353q\n",
+    "evaluator": {
+      "python": "Python 3.9.6",
+      "rustc": "rustc 1.99.0-nightly (d0babd8b6 2026-07-15)",
+      "cargo": "cargo 1.99.0-nightly (59800466c 2026-07-07)"
+    },
+    "build_command": "SDKROOT=/Library/Developer/CommandLineTools/SDKs/MacOSX26.sdk MACOSX_DEPLOYMENT_TARGET=15.0 CC=/usr/bin/clang CXX=/usr/bin/clang++ cargo build --locked -p tracera-server --bin tracera-server --target-dir /tmp/tracera-runtime-resume-20261017/target -j 2",
+    "placement": "local cached APFS private target, j2"
+  },
+  "claims": [
+    {
+      "id": "runtime-auth-error-gates-current-2f1d36dc",
+      "authority_class": "execution_fact",
+      "method": "Owned local running process HTTP probes; five gate assertions",
+      "result": "PASS",
+      "evidence": [
+        "evidence/runtime-receipt.json"
+      ],
+      "review": "UNREVIEWED",
+      "acceptance": "NOT_ACCEPTED"
+    },
+    {
+      "id": "runtime-genuine-engineering-observation-current-2f1d36dc",
+      "authority_class": "execution_fact",
+      "method": "Generic mounted observation ingestion with actual runtime receipt hash; restart/replay/conflict/scope controls",
+      "result": "PASS",
+      "evidence": [
+        "evidence/engineering-journey-receipt.json",
+        "evidence/engineering-input.json"
+      ],
+      "review": "UNREVIEWED",
+      "acceptance": "NOT_ACCEPTED"
+    }
+  ],
+  "progress": {
+    "raw_implementation": "UNCHANGED",
+    "verified_engineering": "New exact-security-patched-subject runtime evidence; no accepted rollup credit assigned",
+    "complete_user_journeys": "UNCHANGED / NOT_ACCEPTED",
+    "real_user_validation": "NOT_OBSERVED",
+    "global_numerator": null,
+    "global_denominator": null,
+    "denominator_reason": "No full-product acceptance denominator was changed or scored by this observation"
+  },
+  "findings": [
+    200,
+    {
+      "findings": [],
+      "products_scanned": 1,
+      "capabilities_scanned": 1,
+      "detector_version": "1.1.0",
+      "ran_at": "2026-10-17T20:10:03.809916Z"
+    }
+  ],
+  "scope_limits": [
+    "Actual Tracera engineering observations plus actual Helios runner executions; substantive test invokes real runtime invariants on controlled subject, not user product acceptance",
+    "Product and capability manually assigned; source hash authenticates bytes only",
+    "Global caller-controlled local bearer does not prove external producer or tenant ownership",
+    "No genuine discrepancy invented; successful result can legitimately yield zero findings",
+    "No GUI, production, real-user validation, release or deployment proof",
+    "No existing locked snapshot/PDF replaced; prior PDF remains as-of prior input set"
+  ],
+  "freshness_rule": "Requalify on relevant source, dependency, runtime configuration, store or evaluator changes; documentation-only publication does not mutate tested binary",
+  "evidence": [
+    {
+      "path": "evidence/bridge-input.json",
+      "sha256": "984d4210e2cf624f0a65988381c83b4e17fb842e39a1f441114d2c3204e23024",
+      "bytes": 11312
+    },
+    {
+      "path": "evidence/bridge-journey-receipt.json",
+      "sha256": "081fb98e8b8cbf7102cb71c2b2a14d9c4c91c3820904410cee30698af191648e",
+      "bytes": 7973
+    },
+    {
+      "path": "evidence/build.log",
+      "sha256": "f8990a2898c74b06675886e454b15add261ea19fa36d94418bbfbc163e689c2b",
+      "bytes": 510
+    },
+    {
+      "path": "evidence/engineering-input.json",
+      "sha256": "b473297e8f2db0c14db42442bd7a47d135063c7efa13ad12cb0c88ce5ae37ae2",
+      "bytes": 1100
+    },
+    {
+      "path": "evidence/engineering-journey-receipt.json",
+      "sha256": "4c088ba325fb0f8bc4c9e677a8fbd8c163a739af50153fa4b1acb1b180f5fca0",
+      "bytes": 6002
+    },
+    {
+      "path": "evidence/helios-controlled-benchmark.json",
+      "sha256": "028f3e89d04788bad14e92d60cefb31051f5284ce7ea32b2a86c4c43acad8a1c",
+      "bytes": 10260
+    },
+    {
+      "path": "evidence/helios-producer-receipt.json",
+      "sha256": "7b7baf290233a0a880c1644a4240f533a323abadfcd2b3acfe59d3313f066148",
+      "bytes": 6493
+    },
+    {
+      "path": "evidence/helios-substantive-benchmark.json",
+      "sha256": "f2331dc179f9c6408d9f70ff769e2002685f6fbb9226e0fe76d3a1e1042bf810",
+      "bytes": 10185
+    },
+    {
+      "path": "evidence/helios-substantive-receipt.json",
+      "sha256": "2d5ab71c08bef448410159bc7a936bfd471bebdf4c7126027c29019a2e910fbb",
+      "bytes": 5148
+    },
+    {
+      "path": "evidence/runtime-receipt.json",
+      "sha256": "d44814b1a6351261d765bdbbd2a3e56cda737804c63b1a9ddfbeec9eb05ab0cf",
+      "bytes": 2130
+    },
+    {
+      "path": "evidence/substantive-bridge-input.json",
+      "sha256": "c942976ddb8978ceb358294837a3155078926320934e2cb2da3aa48a91c83a7c",
+      "bytes": 11248
+    },
+    {
+      "path": "evidence/substantive-bridge-journey-receipt.json",
+      "sha256": "d850a870e4899b90cb0cca6b34e61439059ea21a89afb0d528526202b832bffb",
+      "bytes": 7977
+    }
+  ],
+  "bridge": {
+    "producer_source_sha": "f36e13e650dfc322e2e541d3e9b152638aeccd47",
+    "controlled_subject_sha": "a86c86f8a8010cf6ef0bc3f61b7a743ba2727c14",
+    "receipt": "evidence/helios-producer-receipt.json",
+    "runtime": "evidence/bridge-journey-receipt.json",
+    "qualification": "Real producer script execution, three trivial print commands on deliberately controlled subject; bridge mechanics only",
+    "ownership": "Unsigned envelope; tenant attribution asserted, not authenticated",
+    "mapping": "Explicit manually assigned product/capability/baseline; run/session/attempt/replay identities preserved"
+  },
+  "substantive_bridge": {
+    "producer_source_sha": "f36e13e650dfc322e2e541d3e9b152638aeccd47",
+    "controlled_subject_sha": "bf3bf82c57caa6376824fc5d5003d11382fb9174",
+    "run_id": "run_c8c89bb86856fbcf39d03f0f02f40f6a185e10d49394279854c30c9d5259bc1b",
+    "summary": "The actual Helios runner invoked the real Tracera runtime invariant probe against exact source 2f1d36dc and binary 6be5a8d8. The test returned 0 in 820 ms after readiness/auth/CSRF/error, durable ingest/read, foreign-scope and immutable conflict controls, exact restart and replay assertions. Its new benchmark output was then consumed through Tracera mounted bridge with read/restart/replay/conflict controls. This is real producer/consumer engineering integration on a controlled subject; manual product assignment, unsigned producer identity and no user acceptance remain."
+  }
+}

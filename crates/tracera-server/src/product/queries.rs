@@ -471,6 +471,7 @@ mod tests {
                 source: ObservationSource {
                     collector: "cargo-test".to_string(),
                     version: "0.1.0".to_string(),
+                    causality: None,
                     artifact_ref: None,
                 },
                 recorded_at: ts(1000),
@@ -485,6 +486,7 @@ mod tests {
                 source: ObservationSource {
                     collector: "bench".to_string(),
                     version: "0.2.0".to_string(),
+                    causality: None,
                     artifact_ref: None,
                 },
                 recorded_at: ts(2000),
@@ -699,6 +701,7 @@ mod tests {
                 source: ObservationSource {
                     collector: "test".to_string(),
                     version: "0.1.0".to_string(),
+                    causality: None,
                     artifact_ref: None,
                 },
                 // Observed BEFORE the baseline was finalized.
@@ -714,6 +717,7 @@ mod tests {
                 source: ObservationSource {
                     collector: "test".to_string(),
                     version: "0.1.0".to_string(),
+                    causality: None,
                     artifact_ref: None,
                 },
                 // Observed AFTER the baseline was finalized.

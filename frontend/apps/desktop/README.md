@@ -1,12 +1,12 @@
 # Tracera Desktop
 
-A native desktop wrapper for the [Tracera](https://<REDACTED>.github.io/Tracera/)
+A native desktop wrapper for the [Tracera](https://kooshapari.github.io/Tracera/)
 web UI. Ships as a real installable app via **Electrobun** — the Phenotype org
 standard desktop shell.
 
 ## What this is
 
-The web app at `https://<REDACTED>.github.io/Tracera/` is a Vite-built
+The web app at `https://kooshapari.github.io/Tracera/` is a Vite-built
 React SPA. This Electrobun app wraps that SPA in a native WKWebView window
 with a system tray icon — giving you a real desktop application experience.
 
@@ -15,12 +15,12 @@ The desktop shell loads the canonical local rich-dashboard gateway at
 
 ## Stack
 
-| Layer | Technology |
-|-------|-----------|
-| Shell runtime | [Electrobun](https://electrobun.dev) ^1.18.1 |
-| Package manager | bun |
-| Main process | TypeScript (`src/index.ts`) |
-| No bundled webview | External URL loaded by WKWebView |
+| Layer              | Technology                                   |
+| ------------------ | -------------------------------------------- |
+| Shell runtime      | [Electrobun](https://electrobun.dev) ^1.18.1 |
+| Package manager    | bun                                          |
+| Main process       | TypeScript (`src/index.ts`)                  |
+| No bundled webview | External URL loaded by WKWebView             |
 
 ## Dev
 
@@ -52,11 +52,11 @@ bun test tests/e2e_desktop.test.ts
 
 ## Configuration
 
-| Env var | Purpose |
-|---------|---------|
-| `TRACERA_GATEWAY_URL` | Explicit gateway origin (canonical rich-dashboard mode). |
-| `TRACERA_URL` | Explicit target URL override (including hosted deployments). |
-| `TRACERA_DEV_URL` | Dev URL override (e.g. `http://localhost:5173`). |
+| Env var               | Purpose                                                      |
+| --------------------- | ------------------------------------------------------------ |
+| `TRACERA_GATEWAY_URL` | Explicit gateway origin (canonical rich-dashboard mode).     |
+| `TRACERA_URL`         | Explicit target URL override (including hosted deployments). |
+| `TRACERA_DEV_URL`     | Dev URL override (e.g. `http://localhost:5173`).             |
 
 URL precedence: `TRACERA_GATEWAY_URL` > `TRACERA_URL` > `TRACERA_HOSTED_URL` > `TRACERA_DEV_URL` > local default.
 

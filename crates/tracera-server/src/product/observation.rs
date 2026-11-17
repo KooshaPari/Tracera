@@ -59,12 +59,28 @@ pub enum ObservationResult {
 /// build log).
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub struct ObservationSource {
+    /// Original benchmark run/session identities, when supplied by that adapter.
+    /// This is provenance, never a product or capability identity.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub causality: Option<BenchmarkCausality>,
     /// Name of the collector (e.g. "cargo-test", "lighthouse-ci", "manual").
     pub collector: String,
     /// Semver of the collector that produced this observation.
     pub version: String,
     /// Optional reference to the source artifact.
     pub artifact_ref: Option<String>,
+}
+
+/// Typed causality preserved from the existing benchmark envelope contract.
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
+pub struct BenchmarkCausality {
+    pub tenant_id: String,
+    pub run_id: String,
+    pub session_id: String,
+    pub attempt_id: String,
+    pub replay_hash: String,
+    /// SHA-256 of canonical JSON for the complete submitted envelope.
+    pub envelope_sha256: String,
 }
 
 /// A single observation anchored to a product baseline.
@@ -107,6 +123,7 @@ mod tests {
             source: ObservationSource {
                 collector: "cargo-test".to_string(),
                 version: "0.1.0".to_string(),
+                causality: None,
                 artifact_ref: Some("https://ci.example.com/build/42".to_string()),
             },
             recorded_at: chrono::DateTime::parse_from_rfc3339("2026-09-17T12:00:00Z")
@@ -140,6 +157,7 @@ mod tests {
         let source = ObservationSource {
             collector: "manual".to_string(),
             version: "1.0.0".to_string(),
+            causality: None,
             artifact_ref: None,
         };
         let json = serde_json::to_string(&source).unwrap();

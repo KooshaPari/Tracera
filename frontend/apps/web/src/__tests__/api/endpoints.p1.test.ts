@@ -563,9 +563,10 @@ describe("API Endpoints - P1 Coverage", () => {
       ] as const)("should traverse %s direction%s", async (direction, depth) => {
         mockFetch.mockResolvedValueOnce(createMockResponse(mockGraphData));
 
-        const result = depth === undefined
-          ? await api.graph.traverse("item-1", direction)
-          : await api.graph.traverse("item-1", direction, depth);
+        const result =
+          depth === undefined
+            ? await api.graph.traverse("item-1", direction)
+            : await api.graph.traverse("item-1", direction, depth);
         expect(result).toBeDefined();
       });
     });

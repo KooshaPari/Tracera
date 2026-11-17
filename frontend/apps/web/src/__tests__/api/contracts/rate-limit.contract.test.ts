@@ -70,11 +70,14 @@ describe("rate-limit contract tests", () => {
       openApiFetchMock.request.mockResolvedValueOnce({
         data: undefined,
         error: { detail: "Too many requests", retry_after: retryAfterBody },
-        response: new Response(JSON.stringify({ detail: "Too many requests", retry_after: retryAfterBody }), {
-          headers: { "Content-Type": "application/json" },
-          status: 429,
-          statusText: "Too Many Requests",
-        }),
+        response: new Response(
+          JSON.stringify({ detail: "Too many requests", retry_after: retryAfterBody }),
+          {
+            headers: { "Content-Type": "application/json" },
+            status: 429,
+            statusText: "Too Many Requests",
+          },
+        ),
       });
 
       try {

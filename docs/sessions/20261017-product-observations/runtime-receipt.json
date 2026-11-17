@@ -1,0 +1,106 @@
+{
+  "binary_sha256": "47a7a5bba1eaff02264b6c338ee0d748312c83b8012cd3b1d4512f91656e0daf",
+  "first": [
+    200,
+    {
+      "accepted": 1,
+      "replayed": false
+    }
+  ],
+  "before": [
+    200,
+    {
+      "product_id": "q1-runtime",
+      "baseline": 1,
+      "intents": [
+        {
+          "id": "durable-read",
+          "kind": "Capability",
+          "title": "Evidence persists",
+          "description": "Read evidence after restart",
+          "status": "Accepted",
+          "baseline": 1
+        }
+      ],
+      "observations": [
+        {
+          "id": "runtime-check",
+          "product_id": "q1-runtime",
+          "baseline": 1,
+          "kind": "TestResult",
+          "result": "Failed",
+          "source": {
+            "collector": "q1-runtime",
+            "version": "1",
+            "artifact_ref": "file:runtime-assertion.txt"
+          },
+          "recorded_at": "2026-10-15T00:00:00Z",
+          "capability_id": "durable-read"
+        }
+      ]
+    }
+  ],
+  "after": [
+    200,
+    {
+      "product_id": "q1-runtime",
+      "baseline": 1,
+      "intents": [
+        {
+          "id": "durable-read",
+          "kind": "Capability",
+          "title": "Evidence persists",
+          "description": "Read evidence after restart",
+          "status": "Accepted",
+          "baseline": 1
+        }
+      ],
+      "observations": [
+        {
+          "id": "runtime-check",
+          "product_id": "q1-runtime",
+          "baseline": 1,
+          "kind": "TestResult",
+          "result": "Failed",
+          "source": {
+            "collector": "q1-runtime",
+            "version": "1",
+            "artifact_ref": "file:runtime-assertion.txt"
+          },
+          "recorded_at": "2026-10-15T00:00:00Z",
+          "capability_id": "durable-read"
+        }
+      ]
+    }
+  ],
+  "replay": [
+    200,
+    {
+      "accepted": 0,
+      "replayed": true
+    }
+  ],
+  "findings": [
+    200,
+    {
+      "findings": [
+        {
+          "kind": "Freshness",
+          "product_id": "q1-runtime",
+          "capability_id": "durable-read",
+          "message": "Observation 'runtime-check' is 206869 seconds old (max: 86400s). The result may no longer be current.",
+          "evidence": ["runtime-check"],
+          "detector_version": "1.1.0",
+          "detected_at": "2026-10-17T09:27:49.705085Z",
+          "severity": "High"
+        }
+      ],
+      "products_scanned": 1,
+      "capabilities_scanned": 1,
+      "detector_version": "1.1.0",
+      "ran_at": "2026-10-17T09:27:49.708578Z"
+    }
+  ],
+  "restart_exact_equality": true,
+  "candidate_stopped": true
+}

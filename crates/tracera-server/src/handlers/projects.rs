@@ -1,13 +1,5 @@
-use axum::http::StatusCode;
-
-pub(crate) async fn create_project_stub() -> StatusCode {
-    StatusCode::CREATED
-}
-
-pub(crate) async fn update_project_stub() -> StatusCode {
-    StatusCode::OK
-}
-
-pub(crate) async fn delete_project_stub() -> StatusCode {
-    StatusCode::NO_CONTENT
-}
+// Preserve the existing router names while routing every unsupported mutation
+// through the shared typed contract. No project write has been persisted here.
+pub(crate) use crate::not_implemented::not_implemented as create_project_stub;
+pub(crate) use crate::not_implemented::not_implemented as update_project_stub;
+pub(crate) use crate::not_implemented::not_implemented as delete_project_stub;

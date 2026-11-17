@@ -128,7 +128,12 @@ function buildItemSectionLines(item: DiffItem): string[] {
  * Push a single field-change block to lines.
  * Used when includeFieldChanges is enabled on Modified items.
  */
-function buildFieldChangeLines(change: { field: string; changeType: string; oldValue: unknown; newValue: unknown }): string[] {
+function buildFieldChangeLines(change: {
+  field: string;
+  changeType: string;
+  oldValue: unknown;
+  newValue: unknown;
+}): string[] {
   return [
     `**${change.field}** (${change.changeType})`,
     `- Old: \`${formatValue(change.oldValue)}\``,
@@ -350,17 +355,9 @@ function exportAsHTML(
       </div>
     </div>
 
-    ${
-      diff.added.length > 0
-        ? buildItemTableHTML("Added Items", diff.added)
-        : ""
-    }
+    ${diff.added.length > 0 ? buildItemTableHTML("Added Items", diff.added) : ""}
 
-    ${
-      diff.removed.length > 0
-        ? buildItemTableHTML("Removed Items", diff.removed)
-        : ""
-    }
+    ${diff.removed.length > 0 ? buildItemTableHTML("Removed Items", diff.removed) : ""}
 
     ${
       diff.modified.length > 0
@@ -438,7 +435,10 @@ function buildCSVRow(item: DiffItem, changeType: string, fieldCount: string): st
   ].join(",");
 }
 
-function buildCSVFieldChangeRow(item: DiffItem, change: { field: string; oldValue: unknown; newValue: unknown }): string {
+function buildCSVFieldChangeRow(
+  item: DiffItem,
+  change: { field: string; oldValue: unknown; newValue: unknown },
+): string {
   return [
     escapeCSVField(item.itemId),
     escapeCSVField(item.title),

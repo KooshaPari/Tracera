@@ -2,6 +2,7 @@ import { Outlet, useLocation, useMatches } from "@tanstack/react-router";
 import { useCallback, useEffect, useRef } from "react";
 
 import { ChatBubble } from "@/components/chat/ChatBubble";
+import { W9Unavailable } from "@/components/W9Unavailable";
 import { cn } from "@/lib/utils";
 
 import { Header } from "./Header";
@@ -174,13 +175,17 @@ export const Layout = function Layout() {
               "min-w-0 w-full max-w-full animate-in-fade-up",
             )}
           >
-            <Outlet />
+            <W9Unavailable path={path}>
+              <Outlet />
+            </W9Unavailable>
           </div>
         </main>
       </div>
       {/* Chat Sidebar - hidden on small screens to avoid horizontal overflow */}
       <div className="hidden xl:flex">
-        <ChatBubble />
+        <W9Unavailable path="/chat">
+          <ChatBubble />
+        </W9Unavailable>
       </div>
     </div>
   );

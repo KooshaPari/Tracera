@@ -1,7 +1,7 @@
 //! Mock AgCord server.
 //!
 //! Exposes a tiny subset of the AgCord REST surface so Tracera's
-//! `/ingest/agileplus` endpoint (which calls
+//! `/ingest/agcord` endpoint (which calls
 //! `tracera_server::ingest::fetch_agcord_agents` and
 //! `fetch_agcord_tasks`) can be exercised against deterministic seed data
 //! instead of a live AgCord deployment.

@@ -12,14 +12,27 @@ vi.mock("@/api/client", () => ({
     apiClient: {
       GET: vi.fn(),
     },
-    handleApiResponse: vi.fn(),
-    safeApiCall: vi.fn(),
   },
+}));
+
+vi.mock("@/api/availability", () => ({
+  requireAvailable: vi.fn(
+    async (promise: Promise<{ data?: unknown; error?: unknown; response: Response }>) => {
+      const { data, response } = await promise;
+      if (!response.ok)
+        throw new Error(response.status === 501 ? "Not implemented yet" : "Service unavailable");
+      if (data === undefined) throw new Error("Invalid response from service");
+      return data;
+    },
+  ),
+  invalidResponse: vi.fn(() => {
+    throw new Error("Invalid response from service");
+  }),
 }));
 
 import { client } from "@/api/client";
 
-const { apiClient, handleApiResponse, safeApiCall } = client;
+const { apiClient } = client;
 
 describe("Events API", () => {
   beforeEach(() => {
@@ -42,12 +55,6 @@ describe("Events API", () => {
         error: undefined,
         response: new Response(),
       });
-      vi.mocked(safeApiCall).mockResolvedValue({
-        data: mockEvents,
-        error: undefined,
-        response: new Response(),
-      });
-      vi.mocked(handleApiResponse).mockResolvedValue(mockEvents);
 
       const result = await fetchEvents();
       expect(result).toEqual(mockEvents);
@@ -57,18 +64,12 @@ describe("Events API", () => {
     });
 
     it("should fetch events with params", async () => {
-      const mockEvents = [];
+      const mockEvents: unknown[] = [];
       vi.mocked(apiClient.GET).mockResolvedValue({
         data: mockEvents,
         error: undefined,
         response: new Response(),
       });
-      vi.mocked(safeApiCall).mockResolvedValue({
-        data: mockEvents,
-        error: undefined,
-        response: new Response(),
-      });
-      vi.mocked(handleApiResponse).mockResolvedValue(mockEvents);
 
       const result = await fetchEvents({ limit: 10, offset: 0 });
       expect(result).toEqual(mockEvents);
@@ -77,13 +78,10 @@ describe("Events API", () => {
       });
     });
 
-    it("should return empty array on error", async () => {
+    it("should propagate error via requireAvailable", async () => {
       vi.mocked(apiClient.GET).mockRejectedValue(new Error("Network error"));
-      vi.mocked(safeApiCall).mockRejectedValue(new Error("Network error"));
-      vi.mocked(handleApiResponse).mockRejectedValue(new Error("Network error"));
 
-      const result = await fetchEvents();
-      expect(result).toEqual([]);
+      await expect(fetchEvents()).rejects.toThrow("Network error");
     });
   });
 
@@ -100,12 +98,6 @@ describe("Events API", () => {
         error: undefined,
         response: new Response(),
       });
-      vi.mocked(safeApiCall).mockResolvedValue({
-        data: mockEvent,
-        error: undefined,
-        response: new Response(),
-      });
-      vi.mocked(handleApiResponse).mockResolvedValue(mockEvent);
 
       const result = await fetchEvent("1");
       expect(result).toEqual(mockEvent);
@@ -114,13 +106,10 @@ describe("Events API", () => {
       });
     });
 
-    it("should return undefined on error", async () => {
+    it("should propagate error via requireAvailable", async () => {
       vi.mocked(apiClient.GET).mockRejectedValue(new Error("Not found"));
-      vi.mocked(safeApiCall).mockRejectedValue(new Error("Not found"));
-      vi.mocked(handleApiResponse).mockRejectedValue(new Error("Not found"));
 
-      const result = await fetchEvent("non-existent");
-      expect(result).toBeUndefined();
+      await expect(fetchEvent("non-existent")).rejects.toThrow("Not found");
     });
   });
 });

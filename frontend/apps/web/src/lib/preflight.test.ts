@@ -50,7 +50,12 @@ describe("frontend preflight", () => {
     const fetchMock = vi
       .fn()
       .mockResolvedValueOnce(new Response(null, { status: 404 }))
-      .mockResolvedValueOnce(new Response(null, { status: 200 }));
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ ...RUST_READY_RESPONSE, status: "ok" }), {
+          headers: { "content-type": "application/json" },
+          status: 200,
+        }),
+      );
     vi.stubGlobal("fetch", fetchMock);
 
     await expect(runFrontendPreflight()).resolves.toEqual({ errors: [], ok: true });
@@ -61,6 +66,45 @@ describe("frontend preflight", () => {
       "/ready",
       "/health",
     ]);
+  });
+
+  it("rejects a successful Access sign-in page", async () => {
+    const fetchMock = vi.fn(() =>
+      Promise.resolve(new Response("<html>Sign in</html>", { status: 200 })),
+    );
+    vi.stubGlobal("fetch", fetchMock);
+
+    const result = await runFrontendPreflight();
+
+    expect(result.ok).toBe(false);
+    expect(document.querySelector("[data-hint]")).toHaveTextContent("non-JSON");
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it("rejects a successful Vercel stub health envelope", async () => {
+    const fetchMock = vi.fn(() =>
+      Promise.resolve(new Response(JSON.stringify({ status: "ready" }), { status: 200 })),
+    );
+    vi.stubGlobal("fetch", fetchMock);
+
+    const result = await runFrontendPreflight();
+
+    expect(result.ok).toBe(false);
+    expect(document.querySelector("[data-hint]")).toHaveTextContent("Rust backend");
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it("does not mask failed datastore readiness with a healthy liveness route", async () => {
+    const fetchMock = vi.fn(() =>
+      Promise.resolve(new Response(JSON.stringify({ status: "not_ready" }), { status: 503 })),
+    );
+    vi.stubGlobal("fetch", fetchMock);
+
+    const result = await runFrontendPreflight();
+
+    expect(result.ok).toBe(false);
+    expect(result.errors[0]).toContain("HTTP 503");
+    expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 
   it("uses a failure color with WCAG AA contrast against the preflight card", async () => {

@@ -1,0 +1,6 @@
+flowchart LR
+ A[Actual producer] --> B[Explicit assignment]
+ B --> C[Authenticated local intake]
+ C --> D[Durable SQLite]
+ D --> E[Read and findings]
+ E --> F[Restart and replay]

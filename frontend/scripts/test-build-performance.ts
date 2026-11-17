@@ -4,10 +4,10 @@
  * Tests build times, output quality, and bundle sizes
  */
 
-import { spawn } from 'bun';
-import { existsSync, rmSync } from 'node:fs';
-import { readdir, stat } from 'node:fs/promises';
-import { join } from 'node:path';
+import { spawn } from "bun";
+import { existsSync, rmSync } from "node:fs";
+import { readdir, stat } from "node:fs/promises";
+import { join } from "node:path";
 
 interface BuildMetrics {
   app: string;
@@ -30,11 +30,11 @@ interface TestResults {
   };
 }
 
-const APPS = ['web', 'docs', 'storybook'];
+const APPS = ["web", "docs", "storybook"];
 const DIST_DIRS = {
-  docs: 'apps/docs/dist',
-  storybook: 'apps/storybook/storybook-static',
-  web: 'apps/web/dist',
+  docs: "apps/docs/dist",
+  storybook: "apps/storybook/storybook-static",
+  web: "apps/web/dist",
 };
 
 async function cleanDist(app: string): Promise<void> {
@@ -73,7 +73,7 @@ async function countChunks(dirPath: string): Promise<number> {
   }
 
   const files = await readdir(dirPath, { recursive: true });
-  return files.filter((f) => f.endsWith('.js') || f.endsWith('.css')).length;
+  return files.filter((f) => f.endsWith(".js") || f.endsWith(".css")).length;
 }
 
 async function buildApp(app: string): Promise<BuildMetrics> {
@@ -85,10 +85,10 @@ async function buildApp(app: string): Promise<BuildMetrics> {
     await cleanDist(app);
 
     const proc = spawn({
-      cmd: ['bun', 'run', 'build'],
+      cmd: ["bun", "run", "build"],
       cwd: `apps/${app}`,
-      stderr: 'pipe',
-      stdout: 'pipe',
+      stderr: "pipe",
+      stdout: "pipe",
     });
 
     const _output = await new Response(proc.stdout).text();
@@ -98,7 +98,7 @@ async function buildApp(app: string): Promise<BuildMetrics> {
     success = exitCode === 0;
 
     if (!success) {
-      errors.push(errorOutput || 'Build failed');
+      errors.push(errorOutput || "Build failed");
     } else {
     }
   } catch (error) {
@@ -150,13 +150,13 @@ async function runBuildTests(): Promise<TestResults> {
 
 function printResults(results: TestResults): void {
   for (const app of results.apps) {
-    const status = app.success ? '✅' : '❌';
+    const status = app.success ? "✅" : "❌";
 
     if (app.errors.length > 0) {
     }
   }
 
-  const webBuild = results.apps.find((a) => a.app === 'web');
+  const webBuild = results.apps.find((a) => a.app === "web");
   const webTime = webBuild ? webBuild.buildTime / 1000 : 0;
   const totalBuildTime = results.totalTime / 1000;
 }
@@ -166,7 +166,7 @@ const results = await runBuildTests();
 printResults(results);
 
 // Write results to file
-await Bun.write('build-performance-results.json', JSON.stringify(results, null, 2));
+await Bun.write("build-performance-results.json", JSON.stringify(results, null, 2));
 
 // Exit with error code if tests failed
 process.exit(results.overallSuccess ? 0 : 1);

@@ -2,7 +2,7 @@
 
 - **Status**: Accepted
 - **Date**: 2026-08-30
-- **Authors**: <REDACTED>
+- **Authors**: Koosha Pari
 - **Supersedes**: none
 - **Related**: `store.rs:136-151` (current `TraceLink`), `migrations/0005_create_trace_links.sql`, `FEATURE_INVENTORY.md:273-282` (graph endpoints)
 

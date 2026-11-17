@@ -23,9 +23,7 @@ try {
 const hostname = url.hostname.replace(/^\[|\]$/g, "").toLowerCase();
 const ipv6Loopback = (value) => {
   if (net.isIP(value) !== 6) return false;
-  const mappedIpv4 = value.includes(".")
-    ? value.slice(value.lastIndexOf(":") + 1)
-    : null;
+  const mappedIpv4 = value.includes(".") ? value.slice(value.lastIndexOf(":") + 1) : null;
   if (mappedIpv4 && net.isIP(mappedIpv4) === 4) {
     const octets = mappedIpv4.split(".").map(Number);
     const high = ((octets[0] << 8) | octets[1]).toString(16);
@@ -44,16 +42,11 @@ const ipv6Loopback = (value) => {
       : parts;
   if (expanded.length !== 8) return false;
   const words = expanded.map((part) => Number.parseInt(part || "0", 16));
-  const direct =
-    words.slice(0, 7).every((word) => word === 0) && words[7] === 1;
-  const mapped =
-    words.slice(0, 5).every((word) => word === 0) && words[5] === 0xffff;
+  const direct = words.slice(0, 7).every((word) => word === 0) && words[7] === 1;
+  const mapped = words.slice(0, 5).every((word) => word === 0) && words[5] === 0xffff;
   return direct || (mapped && words[6] === 0x7f00 && words[7] === 1);
 };
-const loopback =
-  hostname === "localhost" ||
-  hostname === "127.0.0.1" ||
-  ipv6Loopback(hostname);
+const loopback = hostname === "localhost" || hostname === "127.0.0.1" || ipv6Loopback(hostname);
 const privateIpv4 = (value) => {
   if (net.isIP(value) !== 4) return false;
   const octets = value.split(".").map(Number);
@@ -65,13 +58,9 @@ const privateIpv4 = (value) => {
     (octets[0] === 192 && octets[1] === 168)
   );
 };
-const privateNetwork =
-  loopback || privateIpv4(hostname) || hostname.endsWith(".local");
+const privateNetwork = loopback || privateIpv4(hostname) || hostname.endsWith(".local");
 
-assert.ok(
-  ["http:", "https:"].includes(url.protocol),
-  `unsupported API protocol: ${url.protocol}`,
-);
+assert.ok(["http:", "https:"].includes(url.protocol), `unsupported API protocol: ${url.protocol}`);
 if (url.protocol === "http:" && !loopback && !allowInsecure) {
   throw new Error(
     `refusing insecure non-loopback API base ${raw}; use an HTTPS ingress or set ` +
@@ -79,9 +68,7 @@ if (url.protocol === "http:" && !loopback && !allowInsecure) {
   );
 }
 if (production && (url.protocol !== "https:" || privateNetwork)) {
-  throw new Error(
-    `production Pages requires a public HTTPS API base, got ${raw}`,
-  );
+  throw new Error(`production Pages requires a public HTTPS API base, got ${raw}`);
 }
 
 console.log(`PASS API base policy (${url.protocol}//${url.host})`);

@@ -6,6 +6,7 @@ import type { SSEClient } from "@/lib/sse-client";
 import { createNotificationSSEClient } from "@/lib/sse-client";
 import { useAuthStore } from "@/stores/authStore";
 import { API_ORIGIN } from "@/config/api-origin";
+import { ApiError } from "@/api/client-errors";
 
 export interface Notification {
   id: string;
@@ -41,12 +42,13 @@ export function useNotifications() {
       const response = await fetch(`${API_URL}/api/v1/notifications`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      // 404 = notifications API not implemented yet; treat as empty list
-      if (response.status === 404) {
-        return [];
-      }
       if (!response.ok) {
-        throw new Error("Failed to fetch notifications");
+        throw new ApiError(
+          response.status,
+          response.status === 501
+            ? "Notifications not implemented yet"
+            : "Notifications unavailable",
+        );
       }
       return response.json() as Promise<Notification[]>;
     },
@@ -104,7 +106,7 @@ export function useNotifications() {
 
   // Setup SSE connection
   useEffect(() => {
-    if (!token) {
+    if (!token || !query.isSuccess) {
       // Cleanup existing connection if token is removed
       if (sseClientRef.current) {
         sseClientRef.current.close();
@@ -130,7 +132,7 @@ export function useNotifications() {
         sseClientRef.current = null;
       }
     };
-  }, [token, handleNotificationEvent]);
+  }, [token, query.isSuccess, handleNotificationEvent]);
 
   const markAsRead = useMutation({
     mutationFn: async (id: string) => {
@@ -179,16 +181,17 @@ export function useNotifications() {
     },
   });
 
-  const unreadCount = query.data?.filter((n) => !n.read_at).length ?? 0;
+  const unreadCount = query.data?.filter((n) => !n.read_at).length;
   const isConnected = sseClientRef.current?.isConnected() ?? false;
 
   return {
     deleteNotification,
+    error: query.error,
     isConnected,
     isLoading: query.isLoading,
     markAllRead,
     markAsRead,
-    notifications: query.data ?? [],
+    notifications: query.data,
     unreadCount,
   };
 }

@@ -1,0 +1,4 @@
+Scanning dir sidecar/go/go.mod
+Starting filesystem walk for root: /
+Scanned /private/tmp/tracera-q1-20261017/sidecar/go/go.mod file and found 1 package
+End status: 0 dirs visited, 1 inodes visited, 1 Extract calls, 588.708µs elapsed, 588µs wall time

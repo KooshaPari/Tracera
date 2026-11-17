@@ -47,19 +47,16 @@ type ReadinessPayload = { status?: string };
  * frontend can answer before migrations and dependent services are ready.
  * Keep this helper injectable so startup tests exercise the exact gate.
  */
-export async function probeBundleReady(
-  url: string,
-  fetchImpl: typeof fetch,
-): Promise<boolean> {
+export async function probeBundleReady(url: string, fetchImpl: typeof fetch): Promise<boolean> {
   const [health, ready] = await Promise.all([
     fetchImpl(`${url.replace(/\/$/, "")}/health`),
     fetchImpl(`${url.replace(/\/$/, "")}/ready`),
   ]);
   if (!health.ok || !ready.ok) return false;
-  const [healthBody, readyBody] = (await Promise.all([
-    health.json(),
-    ready.json(),
-  ])) as [ReadinessPayload, ReadinessPayload];
+  const [healthBody, readyBody] = (await Promise.all([health.json(), ready.json()])) as [
+    ReadinessPayload,
+    ReadinessPayload,
+  ];
   return healthBody.status === "ok" && readyBody.status === "ready";
 }
 
@@ -102,7 +99,10 @@ export async function startBundle(opts: BundleOptions = {}): Promise<() => Promi
   const sleep = opts.sleep ?? ((ms) => new Promise((r) => setTimeout(r, ms)));
   const fetchImpl = opts.fetchImpl ?? fetch;
   const cliPath = opts.cliPath ?? resolveBundleCli(import.meta.dir);
-  if (!cliPath) throw new Error("bundled tracera CLI not found — rebuild the .app or run `cargo build --release -p tracera-cli`");
+  if (!cliPath)
+    throw new Error(
+      "bundled tracera CLI not found — rebuild the .app or run `cargo build --release -p tracera-cli`",
+    );
 
   const env = { ...process.env };
   log("bundled CLI:", cliPath);
@@ -124,7 +124,9 @@ export async function startBundle(opts: BundleOptions = {}): Promise<() => Promi
     delayMs = Math.min(delayMs * 2, 2000);
   }
   if (!(await probeBundleReady(url, fetchImpl).catch(() => false))) {
-    throw new Error(`bundled stack did not pass /health and /ready within ${timeoutMs}ms at ${url}`);
+    throw new Error(
+      `bundled stack did not pass /health and /ready within ${timeoutMs}ms at ${url}`,
+    );
   }
 
   return async () => {

@@ -14,12 +14,21 @@ use std::pin::Pin;
 #[derive(Debug)]
 pub enum StoreError {
     Database(String),
+    Conflict(String),
+    // MCP adapters use this through the library; the server binary also
+    // compiles this module independently and does not construct this variant.
+    #[allow(dead_code)]
+    UnsupportedOperation(&'static str),
 }
 
 impl std::fmt::Display for StoreError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             StoreError::Database(msg) => write!(f, "database error: {msg}"),
+            StoreError::Conflict(msg) => write!(f, "conflict: {msg}"),
+            StoreError::UnsupportedOperation(operation) => {
+                write!(f, "unsupported store operation: {operation}")
+            }
         }
     }
 }
@@ -33,6 +42,41 @@ impl From<sqlx::Error> for StoreError {
 }
 
 pub type StoreResult<T> = Result<T, StoreError>;
+
+// ---------------------------------------------------------------------------
+// AgilePlus governance ingestion provenance (SPEC-009)
+// ---------------------------------------------------------------------------
+
+/// A consumed AgilePlus idempotency key.
+///
+/// `body_fingerprint` is the fingerprint of the body that consumed the key, so
+/// a replay with different content is detectable as a conflict rather than
+/// silently treated as the same request.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct AgilePlusIngestKey {
+    pub idempotency_key: String,
+    pub body_fingerprint: String,
+    pub ingestion_id: String,
+}
+
+/// The last accepted AgilePlus revision for one governance entity.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct AgilePlusRevision {
+    pub agileplus_id: String,
+    pub entity_type: String,
+    pub revision: i64,
+    pub node_id: String,
+}
+
+/// A complete AgilePlus ingestion receipt: the consumed key plus every
+/// revision the ingestion advanced.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct AgilePlusIngestRecord {
+    pub idempotency_key: String,
+    pub body_fingerprint: String,
+    pub ingestion_id: String,
+    pub revisions: Vec<AgilePlusRevision>,
+}
 
 pub const DEFAULT_PAGE_SIZE: u32 = 50;
 pub const MAX_PAGE_SIZE: u32 = 500;
@@ -180,6 +224,71 @@ pub struct TraceLink {
     pub updated_at: DateTime<Utc>,
 }
 
+// ---------------------------------------------------------------------------
+// Ingest batch (atomic, idempotent write-set)
+// ---------------------------------------------------------------------------
+
+/// Evidence row owned by one ingest record.
+///
+/// The `id` is deterministic (`ev-{source}-{external_id}`), which is what
+/// makes replaying the same upstream event idempotent.
+#[derive(Debug, Clone)]
+pub struct IngestEvidence {
+    pub id: String,
+    pub kind: String,
+    pub url: String,
+    pub metadata: Value,
+}
+
+/// Trace-link row owned by one ingest record.
+///
+/// `id` is deterministic (`tl-{story_id}-{target_id}`) and the schema also
+/// carries a unique constraint on `(source_id, target_id, relationship)`, so
+/// neither a replayed batch nor a legacy row with a random id can create a
+/// duplicate edge.
+#[derive(Debug, Clone)]
+pub struct IngestTraceLink {
+    pub id: String,
+    pub target_id: String,
+    pub relationship: String,
+    pub confidence: f64,
+    pub source: String,
+}
+
+/// One upstream issue and everything ingest wants to persist for it.
+///
+/// `story_id` is the idempotency key for the whole record: it is derived from
+/// the source's stable external id (`story-{external_id}`), so the same event
+/// always maps to the same primary key.
+#[derive(Debug, Clone)]
+pub struct IngestRecord {
+    pub story_id: String,
+    pub title: String,
+    pub description: String,
+    pub status: String,
+    pub evidence: Option<IngestEvidence>,
+    pub trace_links: Vec<IngestTraceLink>,
+}
+
+/// Per-row accounting returned by [`Store::persist_ingest_batch`].
+///
+/// Duplicate behaviour is explicit:
+/// - a new id is *created*;
+/// - an existing story whose title/description/status changed is *updated*;
+/// - identical rows are *unchanged*;
+/// - existing trace links are never modified, only *created* once.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
+pub struct IngestOutcome {
+    pub stories_created: usize,
+    pub stories_updated: usize,
+    pub stories_unchanged: usize,
+    pub evidence_created: usize,
+    pub evidence_updated: usize,
+    pub evidence_unchanged: usize,
+    pub trace_links_created: usize,
+    pub trace_links_unchanged: usize,
+}
+
 /// ITIL Problem-management domain record.
 ///
 /// Recovered from the Python `src/tracertm/models/problem.py` model
@@ -229,6 +338,37 @@ pub struct Problem {
 pub type BoxFuture<'a, T> = Pin<Box<dyn Future<Output = T> + Send + 'a>>;
 
 pub trait Store: Send + Sync {
+    fn ingest_product_observations(
+        &self,
+        batch: crate::product::persistence::ProductObservationBatch,
+    ) -> BoxFuture<'_, StoreResult<crate::product::persistence::ProductIngestReceipt>>;
+    fn product_observations(
+        &self,
+        product_id: String,
+        baseline: u64,
+    ) -> BoxFuture<'_, StoreResult<Option<crate::product::persistence::ProductObservationModel>>>;
+
+    /// Literal title substring search. Backends without this capability fail closed.
+    fn search_items(
+        &self,
+        _query: String,
+        _project_id: Option<String>,
+        _limit: i64,
+        _offset: i64,
+    ) -> BoxFuture<'_, StoreResult<crate::item::ItemPage>> {
+        Box::pin(async { Err(StoreError::UnsupportedOperation("search_items")) })
+    }
+
+    fn list_items(
+        &self,
+        filter: crate::item::ItemFilter,
+        limit: i64,
+        offset: i64,
+    ) -> BoxFuture<'_, StoreResult<crate::item::ItemPage>>;
+    fn get_item(&self, id: String) -> BoxFuture<'_, StoreResult<Option<crate::item::Item>>>;
+    // Wired to HTTP mutation routes in a later package; implemented by the sqlite/pg stores.
+    #[allow(dead_code)]
+    fn create_item(&self, item: crate::item::Item) -> BoxFuture<'_, StoreResult<()>>;
     // Evidence
     fn list_evidence(&self) -> BoxFuture<'_, StoreResult<Vec<EvidenceItem>>>;
     fn create_evidence(
@@ -291,6 +431,22 @@ pub trait Store: Send + Sync {
         now: DateTime<Utc>,
     ) -> BoxFuture<'_, StoreResult<TraceLink>>;
 
+    /// Atomically apply an ingest batch.
+    ///
+    /// Every story, evidence row, and trace link in `records` is written inside
+    /// a single database transaction. If any write fails, the transaction is
+    /// rolled back and `Err` is returned: no partial state is ever visible.
+    ///
+    /// The operation is idempotent. Primary keys are deterministic (see
+    /// [`IngestRecord`]), stories are upserted on mutable fields, evidence
+    /// metadata is refreshed in place, and trace links are inserted at most
+    /// once. Replaying the same batch therefore duplicates nothing.
+    fn persist_ingest_batch(
+        &self,
+        records: Vec<IngestRecord>,
+        now: DateTime<Utc>,
+    ) -> BoxFuture<'_, StoreResult<IngestOutcome>>;
+
     /// List every persisted link incident to an artifact.
     ///
     /// This is deliberately unpaged because it answers the complete local
@@ -312,6 +468,9 @@ pub trait Store: Send + Sync {
         -> BoxFuture<'_, StoreResult<Option<ProjectSummary>>>;
 
     // Metrics
+    // Retain this public repository operation for SDK callers. The HTTP org
+    // metrics route cannot infer coverage/gaps from it and now returns 501.
+    #[allow(dead_code)]
     fn count_evidence(&self) -> BoxFuture<'_, StoreResult<i64>>;
 
     /// Verify that the backing store can accept a minimal query.
@@ -421,6 +580,41 @@ pub trait Store: Send + Sync {
         id: String,
         direction: String,
     ) -> BoxFuture<'_, StoreResult<Vec<Value>>>;
+
+    // -----------------------------------------------------------------------
+    // AgilePlus governance ingestion (SPEC-009)
+    // -----------------------------------------------------------------------
+
+    /// Look up a consumed AgilePlus idempotency key.
+    ///
+    /// Backends without this capability fail closed rather than reporting an
+    /// unused key, which would allow duplicate governed ingestion.
+    fn get_agileplus_ingest_key(
+        &self,
+        _idempotency_key: String,
+    ) -> BoxFuture<'_, StoreResult<Option<AgilePlusIngestKey>>> {
+        Box::pin(async { Err(StoreError::UnsupportedOperation("get_agileplus_ingest_key")) })
+    }
+
+    /// Atomically consume an idempotency key and advance entity revisions.
+    ///
+    /// A duplicate key must fail (unique-constraint error) rather than
+    /// overwrite the earlier receipt.
+    fn record_agileplus_ingest(
+        &self,
+        _record: AgilePlusIngestRecord,
+        _now: DateTime<Utc>,
+    ) -> BoxFuture<'_, StoreResult<()>> {
+        Box::pin(async { Err(StoreError::UnsupportedOperation("record_agileplus_ingest")) })
+    }
+
+    /// Last accepted revision for one AgilePlus entity id.
+    fn get_agileplus_revision(
+        &self,
+        _agileplus_id: String,
+    ) -> BoxFuture<'_, StoreResult<Option<i64>>> {
+        Box::pin(async { Err(StoreError::UnsupportedOperation("get_agileplus_revision")) })
+    }
 }
 
 #[cfg(test)]

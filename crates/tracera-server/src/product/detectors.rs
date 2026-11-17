@@ -15,7 +15,7 @@
 
 use chrono::{DateTime, Utc};
 
-use super::identity::AcceptedIntent;
+use super::identity::{AcceptedIntent, IntentKind, IntentStatus, ProductId};
 use super::observation::{Observation, ObservationResult};
 
 // ---------------------------------------------------------------------------
@@ -29,7 +29,7 @@ pub struct DetectorVersion(pub String);
 impl DetectorVersion {
     /// Current version of all detectors.
     pub fn current() -> Self {
-        Self("1.0.0".to_string())
+        Self("1.1.0".to_string())
     }
 }
 
@@ -127,7 +127,7 @@ impl FreshnessDetector {
                 findings.push(DetectorFinding {
                     kind: FindingKind::Freshness,
                     product_id: obs.product_id.as_str().to_string(),
-                    capability_id: Some(obs.product_id.as_str().to_string()),
+                    capability_id: obs.capability_id.clone(),
                     message: format!(
                         "Observation '{}' is {} seconds old (max: {}s). \
                          The result may no longer be current.",
@@ -168,6 +168,7 @@ impl CoverageDetector {
     /// Find capabilities with no observations.
     pub fn detect(
         &self,
+        product_id: &ProductId,
         intents: &[AcceptedIntent],
         observations: &[Observation],
     ) -> Vec<DetectorFinding> {
@@ -175,27 +176,26 @@ impl CoverageDetector {
         let version = DetectorVersion::current();
         let mut findings = Vec::new();
 
-        // Collect all capability intent IDs
-        let capability_ids: Vec<&str> = intents
-            .iter()
-            .filter(|i| i.kind == super::identity::IntentKind::Capability)
-            .map(|i| i.id.as_str())
-            .collect();
-
-        for cap_id in &capability_ids {
-            let has_obs = observations
-                .iter()
-                .any(|o| o.product_id.as_str() == *cap_id);
+        for intent in intents.iter().filter(|intent| {
+            intent.kind == IntentKind::Capability && intent.status == IntentStatus::Accepted
+        }) {
+            let cap_id = &intent.id;
+            let has_obs = observations.iter().any(|obs| {
+                obs.product_id == *product_id
+                    && obs.capability_id.as_deref() == Some(cap_id.as_str())
+                    && obs.baseline == intent.baseline
+            });
             if !has_obs {
                 findings.push(DetectorFinding {
                     kind: FindingKind::Coverage,
-                    product_id: (*cap_id).to_string(),
-                    capability_id: Some(cap_id.to_string()),
+                    product_id: product_id.as_str().to_string(),
+                    capability_id: Some(cap_id.clone()),
                     message: format!(
-                        "Capability '{cap_id}' has no observations. \
-                         This is unknown status, not an absence of capability."
+                        "Capability '{cap_id}' has no observations at baseline {}. \
+                         This is unknown status, not an absence of capability.",
+                        intent.baseline.number()
                     ),
-                    evidence: vec![cap_id.to_string()],
+                    evidence: vec![cap_id.clone()],
                     detector_version: version.clone(),
                     detected_at: now,
                     severity: FindingSeverity::Medium,
@@ -234,15 +234,21 @@ impl ContradictionDetector {
         let version = DetectorVersion::current();
         let mut findings = Vec::new();
 
-        // Group by product_id + baseline
-        let mut groups: std::collections::HashMap<(String, u64), Vec<&Observation>> =
-            std::collections::HashMap::new();
+        // Independent sources may disagree; isolate product, capability and baseline.
+        let mut groups: std::collections::HashMap<
+            (String, Option<String>, u64),
+            Vec<&Observation>,
+        > = std::collections::HashMap::new();
         for obs in observations {
-            let key = (obs.product_id.as_str().to_string(), obs.baseline.0);
+            let key = (
+                obs.product_id.as_str().to_string(),
+                obs.capability_id.clone(),
+                obs.baseline.0,
+            );
             groups.entry(key).or_default().push(obs);
         }
 
-        for ((product_id, _baseline), group) in &groups {
+        for ((product_id, capability_id, baseline), group) in &groups {
             let has_passed = group.iter().any(|o| o.result == ObservationResult::Passed);
             let has_failed = group.iter().any(|o| o.result == ObservationResult::Failed);
 
@@ -259,10 +265,14 @@ impl ContradictionDetector {
                 findings.push(DetectorFinding {
                     kind: FindingKind::Contradiction,
                     product_id: product_id.clone(),
-                    capability_id: Some(product_id.clone()),
+                    capability_id: capability_id.clone(),
                     message: format!(
-                        "Capability '{product_id}' has both passing and failing \
-                         observations at the same baseline. Resolution is required."
+                        "Product '{product_id}', {}, has both passing and failing \
+                         observations at baseline {baseline}. Resolution is required.",
+                        capability_id
+                            .as_ref()
+                            .map(|id| format!("capability '{id}'"))
+                            .unwrap_or_else(|| "product-level observations".into())
                     ),
                     evidence,
                     detector_version: version.clone(),
@@ -299,10 +309,15 @@ impl ProductDetectorSuite {
     }
 
     /// Run all detectors and return combined results.
-    pub fn run(&self, intents: &[AcceptedIntent], observations: &[Observation]) -> DetectorResult {
+    pub fn run(
+        &self,
+        product_id: &ProductId,
+        intents: &[AcceptedIntent],
+        observations: &[Observation],
+    ) -> DetectorResult {
         let mut findings = Vec::new();
         findings.extend(self.freshness.detect(observations));
-        findings.extend(self.coverage.detect(intents, observations));
+        findings.extend(self.coverage.detect(product_id, intents, observations));
         findings.extend(self.contradiction.detect(observations));
 
         let products_scanned: std::collections::HashSet<&str> =
@@ -328,211 +343,5 @@ impl ProductDetectorSuite {
 // ---------------------------------------------------------------------------
 
 #[cfg(test)]
-mod tests {
-    use super::*;
-    use crate::product::identity::{BaselineRevision, IntentKind, IntentStatus, ProductId};
-    use crate::product::observation::{ObservationKind, ObservationSource};
-
-    fn ts(secs: i64) -> DateTime<Utc> {
-        DateTime::from_timestamp(secs, 0).unwrap()
-    }
-
-    fn make_obs(
-        id: &str,
-        product: &str,
-        result: ObservationResult,
-        recorded_at: i64,
-    ) -> Observation {
-        Observation {
-            id: id.to_string(),
-            product_id: ProductId::new(product),
-            baseline: BaselineRevision(1),
-            kind: ObservationKind::TestResult,
-            result,
-            source: ObservationSource {
-                collector: "test".to_string(),
-                version: "0.1.0".to_string(),
-                artifact_ref: None,
-            },
-            recorded_at: ts(recorded_at),
-            capability_id: None,
-        }
-    }
-
-    fn make_obs_at_baseline(
-        id: &str,
-        product: &str,
-        result: ObservationResult,
-        recorded_at: i64,
-        baseline: u64,
-    ) -> Observation {
-        Observation {
-            id: id.to_string(),
-            product_id: ProductId::new(product),
-            baseline: BaselineRevision(baseline),
-            kind: ObservationKind::TestResult,
-            result,
-            source: ObservationSource {
-                collector: "test".to_string(),
-                version: "0.1.0".to_string(),
-                artifact_ref: None,
-            },
-            recorded_at: ts(recorded_at),
-            capability_id: None,
-        }
-    }
-
-    fn make_intent(id: &str) -> AcceptedIntent {
-        AcceptedIntent {
-            id: id.to_string(),
-            kind: IntentKind::Capability,
-            title: format!("Title for {id}"),
-            description: String::new(),
-            status: IntentStatus::Accepted,
-            baseline: BaselineRevision(1),
-        }
-    }
-
-    // --- T07: Missing required proof is unknown ---
-
-    #[test]
-    fn t07_coverage_finds_unobserved_capability() {
-        let det = CoverageDetector::new();
-        let intents = vec![make_intent("cap-a"), make_intent("cap-b")];
-        let observations = vec![make_obs(
-            "o1",
-            "cap-a",
-            ObservationResult::Passed,
-            1_000_000,
-        )];
-        let findings = det.detect(&intents, &observations);
-        assert_eq!(findings.len(), 1);
-        assert_eq!(findings[0].kind, FindingKind::Coverage);
-        assert_eq!(findings[0].capability_id.as_deref(), Some("cap-b"));
-        assert!(findings[0].message.contains("unknown"));
-    }
-
-    // --- T08: Old artifact proof is stale ---
-
-    #[test]
-    fn t08_freshness_detects_old_observation() {
-        let det = FreshnessDetector::new(100);
-        let obs = vec![make_obs("o1", "cap-1", ObservationResult::Passed, 1_000)];
-        // Current time is ~1.7 billion, observation is at 1000s => billions of seconds old
-        let findings = det.detect(&obs);
-        assert_eq!(findings.len(), 1);
-        assert_eq!(findings[0].kind, FindingKind::Freshness);
-        assert_eq!(findings[0].severity, FindingSeverity::Medium);
-    }
-
-    // --- T09: Changed expectation (different baseline) no false contradiction ---
-
-    #[test]
-    fn t09_different_baseline_no_contradiction() {
-        let det = ContradictionDetector::new();
-        let obs = vec![
-            make_obs_at_baseline("o1", "cap-1", ObservationResult::Passed, 1_000_000, 1),
-            make_obs_at_baseline("o2", "cap-1", ObservationResult::Failed, 2_000_000, 2),
-        ];
-        let findings = det.detect(&obs);
-        assert_eq!(findings.len(), 0); // different baselines = different contracts
-    }
-
-    // --- T10: Expired result is not current ---
-
-    #[test]
-    fn t10_expired_result_freshness_finding() {
-        let det = FreshnessDetector::new(3600); // 1 hour
-        let obs = vec![make_obs("o1", "cap-1", ObservationResult::Passed, 1_000)];
-        let findings = det.detect(&obs);
-        assert_eq!(findings.len(), 1);
-        assert!(findings[0].message.contains("seconds old"));
-    }
-
-    // --- T12: Conflicting same-baseline results ---
-
-    #[test]
-    fn t12_same_baseline_contradiction() {
-        let det = ContradictionDetector::new();
-        let obs = vec![
-            make_obs_at_baseline("o1", "cap-1", ObservationResult::Passed, 1_000_000, 1),
-            make_obs_at_baseline("o2", "cap-1", ObservationResult::Failed, 1_000_000, 1),
-        ];
-        let findings = det.detect(&obs);
-        assert_eq!(findings.len(), 1);
-        assert_eq!(findings[0].kind, FindingKind::Contradiction);
-        assert_eq!(findings[0].severity, FindingSeverity::High);
-        assert_eq!(findings[0].evidence.len(), 2);
-    }
-
-    #[test]
-    fn no_findings_on_clean_data() {
-        let fresh_obs = Observation {
-            id: "o1".to_string(),
-            product_id: ProductId::new("cap-1"),
-            baseline: BaselineRevision(1),
-            kind: ObservationKind::TestResult,
-            result: ObservationResult::Passed,
-            source: ObservationSource {
-                collector: "test".to_string(),
-                version: "0.1.0".to_string(),
-                artifact_ref: None,
-            },
-            recorded_at: Utc::now(),
-            capability_id: None,
-        };
-        let fd = FreshnessDetector::new(86_400);
-        let cd = ContradictionDetector::new();
-        // Call contradiction first (borrows), then freshness (consumes via clone avoided)
-        let slice = [fresh_obs];
-        assert!(fd.detect(&slice).is_empty());
-        assert!(cd.detect(&slice).is_empty());
-    }
-
-    #[test]
-    fn freshness_high_for_failed_stale() {
-        let det = FreshnessDetector::new(100);
-        let obs = vec![make_obs("o1", "cap-1", ObservationResult::Failed, 1_000)];
-        let findings = det.detect(&obs);
-        assert_eq!(findings[0].severity, FindingSeverity::High);
-    }
-
-    #[test]
-    fn coverage_no_intents_no_findings() {
-        let det = CoverageDetector::new();
-        let findings = det.detect(&[], &[]);
-        assert!(findings.is_empty());
-    }
-
-    #[test]
-    fn detector_version_recorded() {
-        let det = FreshnessDetector::new(100);
-        let obs = vec![make_obs("o1", "cap-1", ObservationResult::Passed, 1_000)];
-        let findings = det.detect(&obs);
-        assert_eq!(findings[0].detector_version, DetectorVersion::current());
-    }
-
-    #[test]
-    fn suite_combined_results() {
-        let suite = ProductDetectorSuite::new(100);
-        let intents = vec![make_intent("cap-a"), make_intent("cap-b")];
-        let observations = vec![
-            make_obs("o1", "cap-a", ObservationResult::Passed, 1_000), // stale
-        ];
-        let result = suite.run(&intents, &observations);
-        // Should find: freshness (o1 is old) + coverage (cap-b has no obs)
-        assert!(result.findings.len() >= 2);
-        assert_eq!(result.detector_version, DetectorVersion::current());
-        assert_eq!(result.capabilities_scanned, 2);
-    }
-
-    #[test]
-    fn finding_serializable() {
-        let det = FreshnessDetector::new(100);
-        let obs = vec![make_obs("o1", "cap-1", ObservationResult::Passed, 1_000)];
-        let findings = det.detect(&obs);
-        let json = serde_json::to_string(&findings[0]).unwrap();
-        let roundtrip: DetectorFinding = serde_json::from_str(&json).unwrap();
-        assert_eq!(roundtrip.kind, FindingKind::Freshness);
-    }
-}
+#[path = "detectors_tests.rs"]
+mod tests;

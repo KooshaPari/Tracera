@@ -11,74 +11,74 @@
  * Follows atomic design + page architecture pattern
  */
 export type UIEntityType =
-  | 'site' // Root: entire application
-  | 'page' // Top-level route/view
-  | 'layout' // Page structure (header, sidebar, main, footer)
-  | 'section' // Major content area
-  | 'subsection' // Nested content grouping
-  | 'component' // Reusable UI component
-  | 'subcomponent' // Nested component
-  | 'element' // Atomic element (button, input, text)
-  | 'modal' // Overlay component
-  | 'popup' // Temporary overlay
-  | 'toast' // Notification
-  | 'drawer'; // Slide-in panel
+  | "site" // Root: entire application
+  | "page" // Top-level route/view
+  | "layout" // Page structure (header, sidebar, main, footer)
+  | "section" // Major content area
+  | "subsection" // Nested content grouping
+  | "component" // Reusable UI component
+  | "subcomponent" // Nested component
+  | "element" // Atomic element (button, input, text)
+  | "modal" // Overlay component
+  | "popup" // Temporary overlay
+  | "toast" // Notification
+  | "drawer"; // Slide-in panel
 
 /**
  * Product/Requirements Entity Types
  * Follows agile/product hierarchy
  */
 export type ProductEntityType =
-  | 'initiative' // Strategic goal
-  | 'epic' // Large feature
-  | 'feature' // Deliverable capability
-  | 'user_story' // User-facing requirement
-  | 'acceptance_criteria' // Story validation
-  | 'task' // Implementation unit
-  | 'subtask'; // Granular work item
+  | "initiative" // Strategic goal
+  | "epic" // Large feature
+  | "feature" // Deliverable capability
+  | "user_story" // User-facing requirement
+  | "acceptance_criteria" // Story validation
+  | "task" // Implementation unit
+  | "subtask"; // Granular work item
 
 /**
  * Technical/Code Entity Types
  */
 export type TechnicalEntityType =
-  | 'service' // Backend service/microservice
-  | 'module' // Code module/package
-  | 'class' // Class definition
-  | 'function' // Function/method
-  | 'api_endpoint' // REST/GraphQL endpoint
-  | 'database_table' // DB table/collection
-  | 'database_field' // Column/field
-  | 'config'; // Configuration
+  | "service" // Backend service/microservice
+  | "module" // Code module/package
+  | "class" // Class definition
+  | "function" // Function/method
+  | "api_endpoint" // REST/GraphQL endpoint
+  | "database_table" // DB table/collection
+  | "database_field" // Column/field
+  | "config"; // Configuration
 
 /**
  * Testing Entity Types
  */
 export type TestEntityType =
-  | 'test_suite' // Collection of tests
-  | 'test_case' // Individual test
-  | 'test_step' // Test action
-  | 'assertion' // Validation check
-  | 'fixture' // Test data setup
-  | 'mock'; // Mock/stub
+  | "test_suite" // Collection of tests
+  | "test_case" // Individual test
+  | "test_step" // Test action
+  | "assertion" // Validation check
+  | "fixture" // Test data setup
+  | "mock"; // Mock/stub
 
 /**
  * Design/UX Entity Types
  */
 export type DesignEntityType =
-  | 'wireframe' // Lo-fi design
-  | 'mockup' // Hi-fi design
-  | 'prototype' // Interactive design
-  | 'design_token' // Design system token
-  | 'style_guide'; // Style documentation
+  | "wireframe" // Lo-fi design
+  | "mockup" // Hi-fi design
+  | "prototype" // Interactive design
+  | "design_token" // Design system token
+  | "style_guide"; // Style documentation
 
 /**
  * Documentation Entity Types
  */
 export type DocEntityType =
-  | 'doc_root' // Documentation root
-  | 'doc_section' // Major section
-  | 'doc_page' // Single doc page
-  | 'doc_block'; // Content block
+  | "doc_root" // Documentation root
+  | "doc_section" // Major section
+  | "doc_page" // Single doc page
+  | "doc_block"; // Content block
 
 /**
  * All entity types combined
@@ -100,42 +100,42 @@ export type EntityType =
  */
 export const ENTITY_HIERARCHY: Record<EntityType, EntityType[]> = {
   // UI Hierarchy: site → page → layout → section → component → element
-  site: ['page'],
-  page: ['layout', 'section', 'component', 'modal', 'drawer'],
-  layout: ['section', 'component'],
-  section: ['subsection', 'component'],
-  subsection: ['component', 'subcomponent'],
-  component: ['subcomponent', 'element'],
-  subcomponent: ['element'],
+  site: ["page"],
+  page: ["layout", "section", "component", "modal", "drawer"],
+  layout: ["section", "component"],
+  section: ["subsection", "component"],
+  subsection: ["component", "subcomponent"],
+  component: ["subcomponent", "element"],
+  subcomponent: ["element"],
   element: [],
-  modal: ['section', 'component'],
-  popup: ['component', 'element'],
-  toast: ['element'],
-  drawer: ['section', 'component'],
+  modal: ["section", "component"],
+  popup: ["component", "element"],
+  toast: ["element"],
+  drawer: ["section", "component"],
 
   // Product Hierarchy: initiative → epic → feature → story → task
-  initiative: ['epic'],
-  epic: ['feature', 'user_story'],
-  feature: ['user_story', 'task'],
-  user_story: ['acceptance_criteria', 'task'],
+  initiative: ["epic"],
+  epic: ["feature", "user_story"],
+  feature: ["user_story", "task"],
+  user_story: ["acceptance_criteria", "task"],
   acceptance_criteria: [],
-  task: ['subtask'],
+  task: ["subtask"],
   subtask: [],
 
   // Technical Hierarchy
-  service: ['module', 'api_endpoint', 'database_table'],
-  module: ['class', 'function'],
-  class: ['function'],
+  service: ["module", "api_endpoint", "database_table"],
+  module: ["class", "function"],
+  class: ["function"],
   function: [],
   api_endpoint: [],
-  database_table: ['database_field'],
+  database_table: ["database_field"],
   database_field: [],
   config: [],
 
   // Test Hierarchy
-  test_suite: ['test_case'],
-  test_case: ['test_step', 'assertion'],
-  test_step: ['assertion'],
+  test_suite: ["test_case"],
+  test_case: ["test_step", "assertion"],
+  test_step: ["assertion"],
   assertion: [],
   fixture: [],
   mock: [],
@@ -148,9 +148,9 @@ export const ENTITY_HIERARCHY: Record<EntityType, EntityType[]> = {
   style_guide: [],
 
   // Doc Hierarchy
-  doc_root: ['doc_section'],
-  doc_section: ['doc_page'],
-  doc_page: ['doc_block'],
+  doc_root: ["doc_section"],
+  doc_section: ["doc_page"],
+  doc_page: ["doc_block"],
   doc_block: [],
 };
 
@@ -222,62 +222,62 @@ export const ENTITY_DEPTH_LEVELS: Record<EntityType, number> = {
  */
 export type EnhancedLinkType =
   // Hierarchical
-  | 'parent_of' // Direct parent-child
-  | 'contains' // Composition
-  | 'part_of' // Inverse of contains
+  | "parent_of" // Direct parent-child
+  | "contains" // Composition
+  | "part_of" // Inverse of contains
 
   // Traceability
-  | 'implements' // Code implements requirement
-  | 'tests' // Test validates requirement
-  | 'verifies' // Verification link
-  | 'satisfies' // Requirement satisfaction
-  | 'derives_from' // Derived requirement
-  | 'refines' // More detailed version
+  | "implements" // Code implements requirement
+  | "tests" // Test validates requirement
+  | "verifies" // Verification link
+  | "satisfies" // Requirement satisfaction
+  | "derives_from" // Derived requirement
+  | "refines" // More detailed version
 
   // Dependencies
-  | 'depends_on' // Hard dependency
-  | 'uses' // Soft dependency
-  | 'imports' // Code import
-  | 'calls' // Function call
-  | 'blocks' // Blocking relationship
+  | "depends_on" // Hard dependency
+  | "uses" // Soft dependency
+  | "imports" // Code import
+  | "calls" // Function call
+  | "blocks" // Blocking relationship
 
   // UI Flow
-  | 'navigates_to' // Page navigation
-  | 'triggers' // Action trigger
-  | 'opens' // Opens modal/drawer
-  | 'closes' // Closes overlay
-  | 'renders' // Component renders child
-  | 'includes' // Component inclusion
+  | "navigates_to" // Page navigation
+  | "triggers" // Action trigger
+  | "opens" // Opens modal/drawer
+  | "closes" // Closes overlay
+  | "renders" // Component renders child
+  | "includes" // Component inclusion
 
   // Semantic
-  | 'related_to' // General relation
-  | 'similar_to' // Similarity
-  | 'conflicts_with' // Conflict
-  | 'alternative_to' // Alternative option
-  | 'duplicates'; // Duplicate
+  | "related_to" // General relation
+  | "similar_to" // Similarity
+  | "conflicts_with" // Conflict
+  | "alternative_to" // Alternative option
+  | "duplicates"; // Duplicate
 
 /**
  * Link metadata per type
  */
 export interface LinkMetadata {
   // For navigates_to
-  trigger?: 'click' | 'hover' | 'programmatic' | 'redirect' | undefined;
+  trigger?: "click" | "hover" | "programmatic" | "redirect" | undefined;
 
   // For implements/tests
   coverage?: number | undefined; // 0-100%
 
   // For depends_on
-  dependency_type?: 'required' | 'optional' | 'conditional' | undefined;
+  dependency_type?: "required" | "optional" | "conditional" | undefined;
 
   // For UI connections
-  interaction?: 'click' | 'hover' | 'focus' | 'blur' | 'submit' | undefined;
+  interaction?: "click" | "hover" | "focus" | "blur" | "submit" | undefined;
 
   // For aggregation
   is_aggregated?: boolean | undefined;
   aggregation_count?: number | undefined;
 
   // Common
-  confidence?: 'high' | 'medium' | 'low' | undefined;
+  confidence?: "high" | "medium" | "low" | undefined;
   automated?: boolean | undefined;
 }
 
@@ -291,7 +291,7 @@ export interface LinkMetadata {
  */
 export interface AggregationNode {
   id: string;
-  type: 'aggregation';
+  type: "aggregation";
   label: string;
   description?: string | undefined;
 
@@ -302,7 +302,7 @@ export interface AggregationNode {
 
   // Aggregation criteria
   criteria: {
-    type: 'common_parent' | 'same_type' | 'shared_dependency' | 'custom';
+    type: "common_parent" | "same_type" | "shared_dependency" | "custom";
     pattern?: string | undefined; // Regex for custom matching
     threshold?: number | undefined; // Min items to aggregate
   };
@@ -320,14 +320,14 @@ export interface AggregationNode {
 /**
  * Entity expansion state for UI
  */
-export type EntityExpansionState = 'collapsed' | 'preview' | 'panel' | 'full_page';
+export type EntityExpansionState = "collapsed" | "preview" | "panel" | "full_page";
 
 /**
  * Edit capability for an entity
  */
 export interface EditCapability {
   canEdit: boolean;
-  editType: 'instant' | 'agent_required' | 'manual';
+  editType: "instant" | "agent_required" | "manual";
   editableFields: string[];
   agentType?: string | undefined; // Which agent handles edits
   automationId?: string | undefined; // Automation script ID
@@ -384,8 +384,8 @@ export interface HierarchicalEntity {
   description?: string | undefined;
 
   // Status
-  status: 'draft' | 'active' | 'deprecated' | 'archived';
-  priority?: 'low' | 'medium' | 'high' | 'critical' | undefined;
+  status: "draft" | "active" | "deprecated" | "archived";
+  priority?: "low" | "medium" | "high" | "critical" | undefined;
 
   // UI State
   expansionState: EntityExpansionState;
@@ -446,8 +446,8 @@ export interface HierarchicalLink {
   aggregationId?: string | undefined; // Points to AggregationNode
 
   // Validation
-  confidence: 'high' | 'medium' | 'low' | 'unknown';
-  validationStatus: 'validated' | 'pending' | 'failed' | 'not_required';
+  confidence: "high" | "medium" | "low" | "unknown";
+  validationStatus: "validated" | "pending" | "failed" | "not_required";
 
   // Timestamps
   createdAt: string;
@@ -463,7 +463,7 @@ export interface HierarchicalLink {
  */
 export interface NodeDisplayConfig {
   // Size variants
-  size: 'compact' | 'normal' | 'expanded' | 'full';
+  size: "compact" | "normal" | "expanded" | "full";
 
   // Content visibility
   showIcon: boolean;
@@ -483,7 +483,7 @@ export interface NodeDisplayConfig {
 
   // Preview area
   previewHeight?: number | undefined;
-  previewPosition?: 'top' | 'bottom' | 'inline' | undefined;
+  previewPosition?: "top" | "bottom" | "inline" | undefined;
 }
 
 /**
@@ -503,7 +503,7 @@ export const NODE_DISPLAY_CONFIGS: Record<EntityExpansionState, NodeDisplayConfi
     showPreview: false,
     showStatus: false,
     showType: false,
-    size: 'compact',
+    size: "compact",
   },
   full_page: {
     maxHeight: 800,
@@ -511,7 +511,7 @@ export const NODE_DISPLAY_CONFIGS: Record<EntityExpansionState, NodeDisplayConfi
     minHeight: 400,
     minWidth: 600,
     previewHeight: 300,
-    previewPosition: 'top',
+    previewPosition: "top",
     showActions: true,
     showChildCount: true,
     showDescription: true,
@@ -520,7 +520,7 @@ export const NODE_DISPLAY_CONFIGS: Record<EntityExpansionState, NodeDisplayConfi
     showPreview: true,
     showStatus: true,
     showType: true,
-    size: 'full',
+    size: "full",
   },
   panel: {
     maxHeight: 400,
@@ -528,7 +528,7 @@ export const NODE_DISPLAY_CONFIGS: Record<EntityExpansionState, NodeDisplayConfi
     minHeight: 240,
     minWidth: 320,
     previewHeight: 160,
-    previewPosition: 'top',
+    previewPosition: "top",
     showActions: true,
     showChildCount: true,
     showDescription: true,
@@ -537,7 +537,7 @@ export const NODE_DISPLAY_CONFIGS: Record<EntityExpansionState, NodeDisplayConfi
     showPreview: true,
     showStatus: true,
     showType: true,
-    size: 'expanded',
+    size: "expanded",
   },
   preview: {
     maxHeight: 200,
@@ -545,7 +545,7 @@ export const NODE_DISPLAY_CONFIGS: Record<EntityExpansionState, NodeDisplayConfi
     minHeight: 120,
     minWidth: 200,
     previewHeight: 80,
-    previewPosition: 'top',
+    previewPosition: "top",
     showActions: false,
     showChildCount: true,
     showDescription: true,
@@ -554,7 +554,7 @@ export const NODE_DISPLAY_CONFIGS: Record<EntityExpansionState, NodeDisplayConfi
     showPreview: true,
     showStatus: true,
     showType: true,
-    size: 'normal',
+    size: "normal",
   },
 };
 
@@ -564,52 +564,52 @@ export const NODE_DISPLAY_CONFIGS: Record<EntityExpansionState, NodeDisplayConfi
 
 export function isUIEntityType(type: EntityType): type is UIEntityType {
   return [
-    'site',
-    'page',
-    'layout',
-    'section',
-    'subsection',
-    'component',
-    'subcomponent',
-    'element',
-    'modal',
-    'popup',
-    'toast',
-    'drawer',
+    "site",
+    "page",
+    "layout",
+    "section",
+    "subsection",
+    "component",
+    "subcomponent",
+    "element",
+    "modal",
+    "popup",
+    "toast",
+    "drawer",
   ].includes(type);
 }
 
 export function isProductEntityType(type: EntityType): type is ProductEntityType {
   return [
-    'initiative',
-    'epic',
-    'feature',
-    'user_story',
-    'acceptance_criteria',
-    'task',
-    'subtask',
+    "initiative",
+    "epic",
+    "feature",
+    "user_story",
+    "acceptance_criteria",
+    "task",
+    "subtask",
   ].includes(type);
 }
 
 export function isTechnicalEntityType(type: EntityType): type is TechnicalEntityType {
   return [
-    'service',
-    'module',
-    'class',
-    'function',
-    'api_endpoint',
-    'database_table',
-    'database_field',
-    'config',
+    "service",
+    "module",
+    "class",
+    "function",
+    "api_endpoint",
+    "database_table",
+    "database_field",
+    "config",
   ].includes(type);
 }
 
 export function isTestEntityType(type: EntityType): type is TestEntityType {
-  return ['test_suite', 'test_case', 'test_step', 'assertion', 'fixture', 'mock'].includes(type);
+  return ["test_suite", "test_case", "test_step", "assertion", "fixture", "mock"].includes(type);
 }
 
 export function isDesignEntityType(type: EntityType): type is DesignEntityType {
-  return ['wireframe', 'mockup', 'prototype', 'design_token', 'style_guide'].includes(type);
+  return ["wireframe", "mockup", "prototype", "design_token", "style_guide"].includes(type);
 }
 
 // ============================================================================
@@ -656,21 +656,21 @@ export function getEntityDepth(entityType: EntityType): number {
  */
 export function getEntityPerspective(
   entityType: EntityType,
-): 'ui' | 'product' | 'technical' | 'test' | 'design' | 'doc' {
+): "ui" | "product" | "technical" | "test" | "design" | "doc" {
   if (isUIEntityType(entityType)) {
-    return 'ui';
+    return "ui";
   }
   if (isProductEntityType(entityType)) {
-    return 'product';
+    return "product";
   }
   if (isTechnicalEntityType(entityType)) {
-    return 'technical';
+    return "technical";
   }
   if (isTestEntityType(entityType)) {
-    return 'test';
+    return "test";
   }
   if (isDesignEntityType(entityType)) {
-    return 'design';
+    return "design";
   }
-  return 'doc';
+  return "doc";
 }

@@ -1,3 +1,4 @@
+import { persistedProjectCount } from "@/lib/project-count";
 import { useSearch } from "@tanstack/react-router";
 import { useCallback, useMemo, useState } from "react";
 
@@ -26,7 +27,6 @@ interface ProjectsListEntry {
 const EMPTY_STRING = "";
 const SEARCH_ACTION_KEY = "action";
 const SEARCH_ACTION_CREATE = "create";
-const DEFAULT_ITEM_COUNT = 0;
 const SORT_MULTIPLIER_ASC = 1;
 const SORT_MULTIPLIER_DESC = -1;
 const EPOCH_TIME = 0;
@@ -56,7 +56,7 @@ const getProjectCreatedAtTime = (createdAt: string | undefined): number => {
 };
 
 const buildEntries = (projects: Project[]): ProjectsListEntry[] =>
-  projects.map((project) => ({ itemCount: DEFAULT_ITEM_COUNT, project }));
+  projects.map((project) => ({ itemCount: persistedProjectCount(project), project }));
 
 const compareEntries = (
   first: ProjectsListEntry,

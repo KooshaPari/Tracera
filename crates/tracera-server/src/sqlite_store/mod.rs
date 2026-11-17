@@ -1,5 +1,9 @@
+mod agileplus;
 mod evidence;
+mod ingest;
+mod items;
 mod problems;
+mod product_observations;
 mod projects;
 mod sprints;
 mod stories;
@@ -12,8 +16,8 @@ use serde_json::Value;
 use sqlx::{Row, SqlitePool};
 
 use crate::store::{
-    BoxFuture, EvidenceItem, ListParams, Problem, ProjectSummary, Sprint, Store, StoreError,
-    StoreResult, Story, TeamRow, TraceLink,
+    BoxFuture, EvidenceItem, IngestOutcome, IngestRecord, ListParams, Problem, ProjectSummary,
+    Sprint, Store, StoreError, StoreResult, Story, TeamRow, TraceLink,
 };
 
 #[derive(Clone)]
@@ -52,6 +56,45 @@ pub(super) fn str_to_opt_ts(s: Option<String>) -> Option<DateTime<Utc>> {
 }
 
 impl Store for SqliteStore {
+    fn ingest_product_observations(
+        &self,
+        batch: crate::product::persistence::ProductObservationBatch,
+    ) -> BoxFuture<'_, StoreResult<crate::product::persistence::ProductIngestReceipt>> {
+        Box::pin(async move { product_observations::ingest(&self.pool, batch).await })
+    }
+    fn product_observations(
+        &self,
+        product_id: String,
+        baseline: u64,
+    ) -> BoxFuture<'_, StoreResult<Option<crate::product::persistence::ProductObservationModel>>>
+    {
+        Box::pin(async move { product_observations::read(&self.pool, product_id, baseline).await })
+    }
+
+    fn search_items(
+        &self,
+        query: String,
+        project_id: Option<String>,
+        limit: i64,
+        offset: i64,
+    ) -> BoxFuture<'_, StoreResult<crate::item::ItemPage>> {
+        Box::pin(items::search(&self.pool, query, project_id, limit, offset))
+    }
+
+    fn list_items(
+        &self,
+        filter: crate::item::ItemFilter,
+        limit: i64,
+        offset: i64,
+    ) -> BoxFuture<'_, StoreResult<crate::item::ItemPage>> {
+        Box::pin(items::list(&self.pool, filter, limit, offset))
+    }
+    fn get_item(&self, id: String) -> BoxFuture<'_, StoreResult<Option<crate::item::Item>>> {
+        Box::pin(items::get(&self.pool, id))
+    }
+    fn create_item(&self, item: crate::item::Item) -> BoxFuture<'_, StoreResult<()>> {
+        Box::pin(items::create(&self.pool, item))
+    }
     fn list_evidence(&self) -> BoxFuture<'_, StoreResult<Vec<EvidenceItem>>> {
         evidence::list_evidence(&self.pool)
     }
@@ -130,6 +173,14 @@ impl Store for SqliteStore {
             source,
             now,
         )
+    }
+
+    fn persist_ingest_batch(
+        &self,
+        records: Vec<IngestRecord>,
+        now: DateTime<Utc>,
+    ) -> BoxFuture<'_, StoreResult<IngestOutcome>> {
+        ingest::persist_ingest_batch(&self.pool, records, now)
     }
 
     fn list_trace_links_for_artifact(
@@ -316,5 +367,27 @@ impl Store for SqliteStore {
         direction: String,
     ) -> BoxFuture<'_, StoreResult<Vec<Value>>> {
         swee::get_swee_neighbors(&self.pool, id, direction)
+    }
+
+    fn get_agileplus_ingest_key(
+        &self,
+        idempotency_key: String,
+    ) -> BoxFuture<'_, StoreResult<Option<crate::store::AgilePlusIngestKey>>> {
+        agileplus::get_agileplus_ingest_key(&self.pool, idempotency_key)
+    }
+
+    fn record_agileplus_ingest(
+        &self,
+        record: crate::store::AgilePlusIngestRecord,
+        now: DateTime<Utc>,
+    ) -> BoxFuture<'_, StoreResult<()>> {
+        agileplus::record_agileplus_ingest(&self.pool, record, now)
+    }
+
+    fn get_agileplus_revision(
+        &self,
+        agileplus_id: String,
+    ) -> BoxFuture<'_, StoreResult<Option<i64>>> {
+        agileplus::get_agileplus_revision(&self.pool, agileplus_id)
     }
 }

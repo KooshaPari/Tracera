@@ -1,0 +1,17 @@
+{
+  "kind": "finding",
+  "schema_version": "1.0.0",
+  "id": "F-TR-01",
+  "record_status": "OPERATIONAL",
+  "title": "Critical testing gap in trace platform",
+  "description": "9 crates with 30K LOC but only 1 test file. For a trace/observability platform handling structured trace-links, this is a significant reliability risk.",
+  "severity": "HIGH",
+  "category": "TESTING",
+  "evidence_basis": "find . -name *test*.rs = 1 file; wc -l on .rs = 30,667",
+  "scope": "Rust workspace",
+  "owner": "Tracera maintainers",
+  "action_class": "INVESTIGATE",
+  "remediation": "Add unit tests for tracera-server (trace ingestion), tracera-mcp (tool interface), tracera-atlas (atlas operations).",
+  "dependencies": [],
+  "created_at": "2026-09-16T21:45:00-07:00"
+}

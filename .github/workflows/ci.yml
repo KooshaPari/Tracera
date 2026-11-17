@@ -24,8 +24,6 @@ on:
         default: ubuntu-latest
         options:
           - ubuntu-latest
-          - blacksmith-2vcpu-ubuntu-2204
-          - blacksmith-4vcpu-ubuntu-2204
 
 concurrency:
   group: ci-${{ github.ref }}
@@ -224,18 +222,20 @@ jobs:
       - uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff # v5
         with:
           go-version: "stable"
-      # golangci-lint v1.x binaries are built with go1.24 and refuse to lint
-      # modules that declare a newer Go (sidecar/go targets go 1.25.13).
-      # The v7 action supports golangci-lint v2; v2.4.0 is the first release
-      # whose official binary is built with go1.25, so pin it explicitly and
-      # run once per module.
+      # golangci-lint refuses to lint a module whose declared Go version is
+      # newer than the Go that built the linter itself ("the Go language
+      # version (go1.25) used to build golangci-lint is lower than the
+      # targeted Go version"). sidecar/go now targets go 1.26.10, so the
+      # pinned release must ship a binary built with go1.26 or newer:
+      # v2.15.0's official binary is built with go1.27.0. Pin it explicitly
+      # and run once per module.
       - uses: golangci/golangci-lint-action@9fae48acfc02a90574d7c304a1758ef9895495fa # v7
         with:
-          version: v2.4.0
+          version: v2.15.0
           working-directory: sidecar/go
       - uses: golangci/golangci-lint-action@9fae48acfc02a90574d7c304a1758ef9895495fa # v7
         with:
-          version: v2.4.0
+          version: v2.15.0
           working-directory: crates/tracera-go-cli
       - name: Vet sidecar/go
         working-directory: sidecar/go
@@ -277,12 +277,18 @@ jobs:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           persist-credentials: false
-      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+      - uses: oven-sh/setup-bun@f4d14e03ff726c06358e5557344e1da148b56cf7 # v1
         with:
-          node-version: "22"
-      - run: npm ci || true
-      - run: npx biome lint . || true
-      - run: npx biome format --check . || true
+          bun-version: latest
+      - name: Install frontend deps
+        run: bun install --frozen-lockfile --ignore-scripts
+        working-directory: frontend
+      - name: Lint frontend workspace
+        run: bun run lint
+        working-directory: frontend
+      - name: Check frontend formatting
+        run: bun run format:check
+        working-directory: frontend
 
   typescript-test:
     name: TS/JS Test
@@ -293,11 +299,15 @@ jobs:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           persist-credentials: false
-      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+      - uses: oven-sh/setup-bun@f4d14e03ff726c06358e5557344e1da148b56cf7 # v1
         with:
-          node-version: "22"
-      - run: npm ci || true
-      - run: npm test || true
+          bun-version: latest
+      - name: Install frontend deps
+        run: bun install --frozen-lockfile --ignore-scripts
+        working-directory: frontend
+      - name: Run frontend tests
+        run: bun run test
+        working-directory: frontend
 
   # ===========================================================================
   # STAGE 3: Security & quality gates (always run)

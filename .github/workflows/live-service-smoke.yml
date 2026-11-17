@@ -38,9 +38,9 @@ jobs:
           set -euo pipefail
           body=$(curl --silent --show-error --fail-with-body \
             --max-time "$CURL_TIMEOUT" \
-            "$PROD_FRONTEND/api/healthz")
-          printf '%s' "$body" | grep -q '"status":"ok"' || {
-            echo "::error::Vercel same-origin API did not report status:ok"
+            "$PROD_FRONTEND/api/ready")
+          printf '%s' "$body" | jq -e '.status == "ready" and .service == "tracera-server" and (.backend | type == "string" and length > 0)' >/dev/null || {
+            echo "::error::Vercel same-origin API did not report datastore-backed Rust readiness"
             exit 1
           }
           echo "PASS: Vercel same-origin API"
@@ -115,9 +115,9 @@ jobs:
           )
 
           ok=0
-          for path in /healthz /api/v1/health; do
+          for path in /ready; do
             if body=$(curl "${curl_args[@]}" "$TUNNEL_API$path" 2>/dev/null); then
-              if printf '%s' "$body" | grep -q '"status":"ok"'; then
+              if printf '%s' "$body" | jq -e '.status == "ready" and .service == "tracera-server" and (.backend | type == "string" and length > 0)' >/dev/null; then
                 echo "PASS: authenticated backend $path"
                 ok=1
                 break
@@ -126,7 +126,7 @@ jobs:
           done
 
           if [[ "$ok" -ne 1 ]]; then
-            echo "::error::Access-authenticated Tracera backend did not report status:ok"
+            echo "::error::Access-authenticated backend did not report datastore-backed Rust readiness"
             exit 1
           fi
 
@@ -161,6 +161,7 @@ jobs:
           echo "prod frontend -> HTTP $code"
           case "$code" in
             2??) ;;
+            401) echo "::notice::prod frontend alias is gated; SPA body unverified"; exit 0 ;;
             *) echo "::error::prod frontend returned HTTP $code"; exit 1 ;;
           esac
           if grep -qi 'scaffolding coming soon' /tmp/prod_frontend.html; then

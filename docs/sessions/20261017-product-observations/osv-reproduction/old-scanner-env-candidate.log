@@ -1,0 +1,33 @@
+Scanning dir sidecar/go/go.mod
+Failed to resolve gitignore for /github/workspace/sidecar/go/go.mod: Rel: can't make /github/workspace/sidecar/go/go.mod relative to 
+Scanned /github/workspace/sidecar/go/go.mod file and found 1 package
+Failed to run code analysis (govulncheck) on '/github/workspace/sidecar/go/go.mod' because govulncheck: loading packages: 
+There are errors with the provided package patterns:
+
+/github/workspace/sidecar/go/internal/config/config.go:1:1: package requires newer Go version go1.25 (application built with go1.24)
+/github/workspace/sidecar/go/internal/executor/executor.go:6:1: package requires newer Go version go1.25 (application built with go1.24)
+/github/workspace/sidecar/go/internal/nodeapi/nodeapi.go:1:1: package requires newer Go version go1.25 (application built with go1.24)
+/github/workspace/sidecar/go/cmd/tracera-sidecar/main.go:1:1: package requires newer Go version go1.25 (application built with go1.24)
+/github/workspace/sidecar/go/internal/client/client.go:2:1: package requires newer Go version go1.25 (application built with go1.24)
+
+For details on package patterns, see https://pkg.go.dev/cmd/go#hdr-Package_lists_and_patterns.
+
+(the Go toolchain is required)
++------------------------------+------+-----------+---------+---------+-------------------+
+| OSV URL                      | CVSS | ECOSYSTEM | PACKAGE | VERSION | SOURCE            |
++------------------------------+------+-----------+---------+---------+-------------------+
+| https://osv.dev/GO-2026-6599 |      | Go        | stdlib  | 1.25.13 | sidecar/go/go.mod |
+| https://osv.dev/GO-2026-6600 |      | Go        | stdlib  | 1.25.13 | sidecar/go/go.mod |
+| https://osv.dev/GO-2026-6603 |      | Go        | stdlib  | 1.25.13 | sidecar/go/go.mod |
+| https://osv.dev/GO-2026-6604 |      | Go        | stdlib  | 1.25.13 | sidecar/go/go.mod |
+| https://osv.dev/GO-2026-6605 |      | Go        | stdlib  | 1.25.13 | sidecar/go/go.mod |
+| https://osv.dev/GO-2026-6607 |      | Go        | stdlib  | 1.25.13 | sidecar/go/go.mod |
+| https://osv.dev/GO-2026-6608 |      | Go        | stdlib  | 1.25.13 | sidecar/go/go.mod |
+| https://osv.dev/GO-2026-6609 |      | Go        | stdlib  | 1.25.13 | sidecar/go/go.mod |
+| https://osv.dev/GO-2026-6610 |      | Go        | stdlib  | 1.25.13 | sidecar/go/go.mod |
+| https://osv.dev/GO-2026-6611 |      | Go        | stdlib  | 1.25.13 | sidecar/go/go.mod |
+| https://osv.dev/GO-2026-6612 |      | Go        | stdlib  | 1.25.13 | sidecar/go/go.mod |
+| https://osv.dev/GO-2026-6613 |      | Go        | stdlib  | 1.25.13 | sidecar/go/go.mod |
+| https://osv.dev/GO-2026-6617 |      | Go        | stdlib  | 1.25.13 | sidecar/go/go.mod |
++------------------------------+------+-----------+---------+---------+-------------------+
+Exit code: 1

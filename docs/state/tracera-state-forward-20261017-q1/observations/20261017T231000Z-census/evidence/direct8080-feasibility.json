@@ -1,0 +1,30 @@
+{
+  "generated_at_utc": "2026-10-18T00:00:19.191437+00:00",
+  "subject": "Desk8080 via owned19282",
+  "results": [
+    {
+      "path": "/",
+      "status": 404
+    },
+    {
+      "path": "/api/v1/projects",
+      "status": 200,
+      "content_type": "application/json",
+      "sha256": "dfc721c4097b397eddd742a0f49b839f3409f15b0d1966de964637a938dc4cef",
+      "shape": [
+        "count",
+        "items"
+      ]
+    },
+    {
+      "path": "/api/v1/items?project_id=proj-64b13e21-67bc-4e97-b3ab-0e097a03e9db&limit=1&offset=0",
+      "status": 200,
+      "content_type": "application/json",
+      "sha256": "d7a22f6a2b94d39365695b4320c87ae78058e71c5138945da89206339e1156d4",
+      "shape": [
+        "items",
+        "total"
+      ]
+    }
+  ]
+}

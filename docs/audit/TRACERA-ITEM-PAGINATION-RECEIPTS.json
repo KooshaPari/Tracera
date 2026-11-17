@@ -1,0 +1,40 @@
+[
+  {
+    "project": "TRACERA",
+    "scope": "Windows8091",
+    "timestamp_utc": "2026-10-15T07:01:05.671841+00:00",
+    "pages": [
+      {
+        "offset": 0,
+        "returned": 533,
+        "total": 533,
+        "stub": null
+      }
+    ],
+    "returned": 533,
+    "unique": 533,
+    "types": {
+      "adr": 11,
+      "component": 17,
+      "test": 372,
+      "requirement": 116,
+      "epic": 17
+    }
+  },
+  {
+    "project": "CIVIS",
+    "scope": "Windows8091",
+    "timestamp_utc": "2026-10-15T07:01:05.802927+00:00",
+    "pages": [
+      {
+        "offset": 0,
+        "returned": 0,
+        "total": 0,
+        "stub": null
+      }
+    ],
+    "returned": 0,
+    "unique": 0,
+    "types": {}
+  }
+]

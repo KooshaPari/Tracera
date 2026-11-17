@@ -1,0 +1,15 @@
+warning: linker stderr: rust-lld: Option `-no_compact_unwind' is undocumented. Should lld implement it?
+  |
+  = note: `#[warn(linker_messages)]` on by default
+
+   Compiling tracera-server v0.2.0 (/private/tmp/tracera-q1-20261017/crates/tracera-server)
+warning: `tracera-server` (test "product_persistence") generated 1 warning
+warning: `tracera-server` (bin "tracera-server") generated 1 warning (1 duplicate)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 9.56s
+     Running tests/product_persistence.rs (target/debug/deps/product_persistence-bf2fcb783583377c)
+
+running 1 test
+test postgres_atomic_replay_and_restart ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 5 filtered out; finished in 0.12s
+

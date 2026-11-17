@@ -9,7 +9,7 @@
 
 | #    | Item                     | Where to Get                  | Status          |
 | ---- | ------------------------ | ----------------------------- | --------------- |
-| 0.1  | **GitHub account**       | github.com                    | ✅ (<REDACTED>) |
+| 0.1  | **GitHub account**       | github.com                    | ✅ (KooshaPari) |
 | 0.2  | **Vercel account**       | vercel.com (free tier)        | ✅              |
 | 0.3  | **Cloudflare account**   | cloudflare.com (free tier)    | ☐               |
 | 0.4  | **Shared ingress owner** | BytePort #438 / Cloudflare    | ☐               |
@@ -595,7 +595,7 @@ cat audit/SCORECARD-FULL-2026-08-30.md | grep "TOTAL"
 
 ```bash
 # 1. Clone repo
-git clone https://github.com/<REDACTED>/Tracera.git
+git clone https://github.com/KooshaPari/Tracera.git
 cd Tracera
 
 # 2. Install tools

@@ -128,8 +128,9 @@ pub struct AgentRun {
     /// Start of the run (UTC).
     #[serde(with = "dt_nanos")]
     pub started_at: DateTime<Utc>,
-    /// End of the run (UTC). `None` for `Pending` / `Running`.
-    #[serde(with = "dt_nanos_opt")]
+    /// End of the run (UTC). `None` for `Pending` / `Running`, and when the
+    /// field is absent from the record entirely.
+    #[serde(with = "dt_nanos_opt", default)]
     pub ended_at: Option<DateTime<Utc>>,
     /// Optional human-readable error message on `Failed` status.
     pub error_message: Option<String>,
@@ -337,6 +338,40 @@ mod tests {
             .stream(),
             "llm_call"
         );
+    }
+
+    #[test]
+    fn missing_ended_at_deserializes_to_none() {
+        // `#[serde(with = "dt_nanos_opt")]` replaces the derive's handling of
+        // this field, which also removes serde's implicit `Option<T>` -> None
+        // default for an absent key. A running agent legitimately has no end
+        // time, so records that omit `ended_at` must still load (Sonar
+        // rust:S9334).
+        let present = Event::AgentRun(AgentRun {
+            run_id: Uuid::nil(),
+            agent: "x".into(),
+            environment: "test".into(),
+            status: AgentRunStatus::Running,
+            started_at: Utc::now(),
+            ended_at: Some(Utc::now()),
+            error_message: None,
+            metadata: "{}".into(),
+        });
+        let mut value = serde_json::to_value(&present).unwrap();
+        assert!(
+            value.get("ended_at").is_some(),
+            "fixture must carry ended_at before it is removed"
+        );
+        value.as_object_mut().unwrap().remove("ended_at");
+
+        // `from_str`, not `from_value`: `id_uuid` wants a borrowed string,
+        // which only the string deserializer can supply.
+        let text = serde_json::to_string(&value).unwrap();
+        let back: Event = serde_json::from_str(&text).unwrap();
+        match back {
+            Event::AgentRun(run) => assert!(run.ended_at.is_none()),
+            other => panic!("expected AgentRun, got {}", other.stream()),
+        }
     }
 
     #[test]

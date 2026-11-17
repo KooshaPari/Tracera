@@ -1,5 +1,5 @@
-import { fireEvent, render, screen } from '@testing-library/react';
-import * as Vitest from 'vitest';
+import { fireEvent, render, screen } from "@testing-library/react";
+import * as Vitest from "vitest";
 
 import {
   DropdownMenu,
@@ -9,13 +9,13 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '../components/DropdownMenu';
+} from "../components/DropdownMenu";
 
-Vitest.describe('DropdownMenu component', () => {
+Vitest.describe("DropdownMenu component", () => {
   const openDropdown = () => {
     // Radix dropdown needs pointerDown then click to open
-    const trigger = screen.getByText('Open Menu');
-    fireEvent.pointerDown(trigger, { pointerType: 'mouse' });
+    const trigger = screen.getByText("Open Menu");
+    fireEvent.pointerDown(trigger, { pointerType: "mouse" });
     fireEvent.click(trigger);
   };
 
@@ -32,35 +32,35 @@ Vitest.describe('DropdownMenu component', () => {
       </DropdownMenu>,
     );
 
-  Vitest.it('renders the trigger button', () => {
+  Vitest.it("renders the trigger button", () => {
     renderDropdown();
-    Vitest.expect(screen.getByText('Open Menu')).toBeInTheDocument();
+    Vitest.expect(screen.getByText("Open Menu")).toBeInTheDocument();
   });
 
-  Vitest.it('trigger has aria-haspopup=menu', () => {
+  Vitest.it("trigger has aria-haspopup=menu", () => {
     renderDropdown();
-    Vitest.expect(screen.getByText('Open Menu')).toHaveAttribute('aria-haspopup', 'menu');
+    Vitest.expect(screen.getByText("Open Menu")).toHaveAttribute("aria-haspopup", "menu");
   });
 
-  Vitest.it('trigger starts closed', () => {
+  Vitest.it("trigger starts closed", () => {
     renderDropdown();
-    Vitest.expect(screen.getByText('Open Menu')).toHaveAttribute('data-state', 'closed');
+    Vitest.expect(screen.getByText("Open Menu")).toHaveAttribute("data-state", "closed");
   });
 
-  Vitest.it('opens menu when trigger is activated', () => {
-    renderDropdown();
-    openDropdown();
-    Vitest.expect(screen.getByText('Edit')).toBeInTheDocument();
-    Vitest.expect(screen.getByText('Delete')).toBeInTheDocument();
-  });
-
-  Vitest.it('renders menu label when open', () => {
+  Vitest.it("opens menu when trigger is activated", () => {
     renderDropdown();
     openDropdown();
-    Vitest.expect(screen.getByText('Actions')).toBeInTheDocument();
+    Vitest.expect(screen.getByText("Edit")).toBeInTheDocument();
+    Vitest.expect(screen.getByText("Delete")).toBeInTheDocument();
   });
 
-  Vitest.it('renders menu separator when open', () => {
+  Vitest.it("renders menu label when open", () => {
+    renderDropdown();
+    openDropdown();
+    Vitest.expect(screen.getByText("Actions")).toBeInTheDocument();
+  });
+
+  Vitest.it("renders menu separator when open", () => {
     renderDropdown();
     openDropdown();
     const separators = document.querySelectorAll("[role='separator']");
@@ -68,8 +68,8 @@ Vitest.describe('DropdownMenu component', () => {
   });
 });
 
-Vitest.describe('DropdownMenuItem component', () => {
-  Vitest.it('renders with inset padding when inset is true', () => {
+Vitest.describe("DropdownMenuItem component", () => {
+  Vitest.it("renders with inset padding when inset is true", () => {
     render(
       <DropdownMenu>
         <DropdownMenuTrigger>Menu</DropdownMenuTrigger>
@@ -78,15 +78,15 @@ Vitest.describe('DropdownMenuItem component', () => {
         </DropdownMenuContent>
       </DropdownMenu>,
     );
-    const trigger = screen.getByText('Menu');
-    fireEvent.pointerDown(trigger, { pointerType: 'mouse' });
+    const trigger = screen.getByText("Menu");
+    fireEvent.pointerDown(trigger, { pointerType: "mouse" });
     fireEvent.click(trigger);
-    Vitest.expect(screen.getByText('Inset Item').className).toContain('pl-8');
+    Vitest.expect(screen.getByText("Inset Item").className).toContain("pl-8");
   });
 });
 
-Vitest.describe('DropdownMenuCheckboxItem component', () => {
-  Vitest.it('renders checkbox item with default checked=false', () => {
+Vitest.describe("DropdownMenuCheckboxItem component", () => {
+  Vitest.it("renders checkbox item with default checked=false", () => {
     render(
       <DropdownMenu>
         <DropdownMenuTrigger>Menu</DropdownMenuTrigger>
@@ -95,13 +95,13 @@ Vitest.describe('DropdownMenuCheckboxItem component', () => {
         </DropdownMenuContent>
       </DropdownMenu>,
     );
-    const trigger = screen.getByText('Menu');
-    fireEvent.pointerDown(trigger, { pointerType: 'mouse' });
+    const trigger = screen.getByText("Menu");
+    fireEvent.pointerDown(trigger, { pointerType: "mouse" });
     fireEvent.click(trigger);
-    Vitest.expect(screen.getByText('Check me')).toBeInTheDocument();
+    Vitest.expect(screen.getByText("Check me")).toBeInTheDocument();
   });
 
-  Vitest.it('renders checkbox item with checked=true', () => {
+  Vitest.it("renders checkbox item with checked=true", () => {
     render(
       <DropdownMenu>
         <DropdownMenuTrigger>Menu</DropdownMenuTrigger>
@@ -110,15 +110,15 @@ Vitest.describe('DropdownMenuCheckboxItem component', () => {
         </DropdownMenuContent>
       </DropdownMenu>,
     );
-    const trigger = screen.getByText('Menu');
-    fireEvent.pointerDown(trigger, { pointerType: 'mouse' });
+    const trigger = screen.getByText("Menu");
+    fireEvent.pointerDown(trigger, { pointerType: "mouse" });
     fireEvent.click(trigger);
-    Vitest.expect(screen.getByText('Checked')).toBeInTheDocument();
+    Vitest.expect(screen.getByText("Checked")).toBeInTheDocument();
   });
 });
 
-Vitest.describe('DropdownMenuLabel component', () => {
-  Vitest.it('renders with inset padding when inset is true', () => {
+Vitest.describe("DropdownMenuLabel component", () => {
+  Vitest.it("renders with inset padding when inset is true", () => {
     render(
       <DropdownMenu>
         <DropdownMenuTrigger>Menu</DropdownMenuTrigger>
@@ -127,9 +127,9 @@ Vitest.describe('DropdownMenuLabel component', () => {
         </DropdownMenuContent>
       </DropdownMenu>,
     );
-    const trigger = screen.getByText('Menu');
-    fireEvent.pointerDown(trigger, { pointerType: 'mouse' });
+    const trigger = screen.getByText("Menu");
+    fireEvent.pointerDown(trigger, { pointerType: "mouse" });
     fireEvent.click(trigger);
-    Vitest.expect(screen.getByText('Inset Label').className).toContain('pl-8');
+    Vitest.expect(screen.getByText("Inset Label").className).toContain("pl-8");
   });
 });

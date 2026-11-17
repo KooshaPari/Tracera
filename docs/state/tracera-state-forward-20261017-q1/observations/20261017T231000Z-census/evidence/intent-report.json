@@ -1,0 +1,526 @@
+{
+  "report_class": "READ_ONLY_RESEARCH",
+  "as_of": "2026-10-17T22:35:49.702361+00:00",
+  "scope": "Shared intent registry and source census, not an accepted product completion denominator",
+  "goals": [
+    {
+      "id": "G01",
+      "title": "Authority and mature identity",
+      "criterion": "Owning intent records retain both and define identity-preserving bridge acceptance; no retrospective feature acceptance.",
+      "expected": "Direct user accepted explicitly unified trace/session/memory/audit and product/discrepancy scope at2026-10-17T09:22:59Z.",
+      "source": {
+        "path": "/Users/kooshapari/Documents/Tracera-State-Forward-2026-10-17/ASSESSMENT.md",
+        "line_start": 95,
+        "line_end": 107
+      },
+      "recorded_status_not_current_verdict": "PASS",
+      "recorded_review": "PROPOSED",
+      "source_location": "inputs/registry-intent.md; inputs/registry-cvp.md; inputs/docs5-DOSSIER.md",
+      "dependencies": [],
+      "current_cells": "Await exact-current source and witness report; frozen goal status is not copied as current verdict"
+    },
+    {
+      "id": "G02",
+      "title": "Local trace capture",
+      "criterion": "Real session capture, exact count/content after restart; invalid/foreign/dangling edges rejected.",
+      "expected": "Capture real input/tool/output session to durable local workspace with source/spec/session identifiers.",
+      "source": {
+        "path": "/Users/kooshapari/Documents/Tracera-State-Forward-2026-10-17/ASSESSMENT.md",
+        "line_start": 109,
+        "line_end": 121
+      },
+      "recorded_status_not_current_verdict": "UNKNOWN",
+      "recorded_review": "PROPOSED",
+      "source_location": "README.md; crates/tracera-server/src/router.rs:153-173",
+      "dependencies": [
+        "G01"
+      ],
+      "current_cells": "Await exact-current source and witness report; frozen goal status is not copied as current verdict"
+    },
+    {
+      "id": "G03",
+      "title": "Cross-run dependency reasoning",
+      "criterion": "Seed known dependency plus unrelated session; persisted query yields exact affected set after reopen. Supplied-links computation alone insufficient.",
+      "expected": "Answer affected prior sessions when a spec changes, using persisted trace graph.",
+      "source": {
+        "path": "/Users/kooshapari/Documents/Tracera-State-Forward-2026-10-17/ASSESSMENT.md",
+        "line_start": 123,
+        "line_end": 135
+      },
+      "recorded_status_not_current_verdict": "UNKNOWN",
+      "recorded_review": "PROPOSED",
+      "source_location": "crates/tracera-server/src/handlers/governance.rs:9-45",
+      "dependencies": [
+        "G01"
+      ],
+      "current_cells": "Await exact-current source and witness report; frozen goal status is not copied as current verdict"
+    },
+    {
+      "id": "G04",
+      "title": "Memory distillation",
+      "criterion": "Persist memory, link source sessions and serve real consumer; restart restores same accepted entry; private/untrusted input cannot escape into public projection.",
+      "expected": "Distill lastN real sessions into stable memory consumable by next session with provenance and privacy.",
+      "source": {
+        "path": "/Users/kooshapari/Documents/Tracera-State-Forward-2026-10-17/ASSESSMENT.md",
+        "line_start": 137,
+        "line_end": 149
+      },
+      "recorded_status_not_current_verdict": "FAIL",
+      "recorded_review": "PROPOSED",
+      "source_location": "crates/tracera-server/src/memory/distillation/distiller.rs:12-26",
+      "dependencies": [
+        "G01"
+      ],
+      "current_cells": "Await exact-current source and witness report; frozen goal status is not copied as current verdict"
+    },
+    {
+      "id": "G05",
+      "title": "Audit and evidence replay",
+      "criterion": "Real evidence/source/run timestamps survive restart, altered/missing/stale evidence fails honestly; audit export replay verified.",
+      "expected": "Reproduce who ran what/when per workspace; evidence freshness and integrity explicit.",
+      "source": {
+        "path": "/Users/kooshapari/Documents/Tracera-State-Forward-2026-10-17/ASSESSMENT.md",
+        "line_start": 151,
+        "line_end": 163
+      },
+      "recorded_status_not_current_verdict": "UNKNOWN",
+      "recorded_review": "PROPOSED",
+      "source_location": "crates/tracera-server/src/handlers/evidence.rs",
+      "dependencies": [
+        "G01"
+      ],
+      "current_cells": "Await exact-current source and witness report; frozen goal status is not copied as current verdict"
+    },
+    {
+      "id": "G06",
+      "title": "Product semantic model",
+      "criterion": "Real owned product import and independently adjudicated gap; no cross-product/baseline/capability leakage; source change invalidates affected evidence.",
+      "expected": "Durable typed product observations now verified at3fd3310; full actual-product discrepancy UI remains unfinished.",
+      "source": {
+        "path": "/Users/kooshapari/Documents/Tracera-State-Forward-2026-10-17/ASSESSMENT.md",
+        "line_start": 165,
+        "line_end": 177
+      },
+      "recorded_status_not_current_verdict": "UNKNOWN",
+      "recorded_review": "PROPOSED",
+      "source_location": "crates/tracera-server/src/product/; docs/WP-07-product-graph-design.md (DRAFT)",
+      "dependencies": [
+        "G01"
+      ],
+      "current_cells": "Await exact-current source and witness report; frozen goal status is not copied as current verdict"
+    },
+    {
+      "id": "G07",
+      "title": "Import and canonical identity",
+      "criterion": "Two sources same externalID stay distinct; retry idempotent; late error atomic or explicit recoverable partial contract. Q1 product batch does not automatically repair Story importer.",
+      "expected": "Sources, products and namespaces preserved across replay, partial failure and complete pagination.",
+      "source": {
+        "path": "/Users/kooshapari/Documents/Tracera-State-Forward-2026-10-17/ASSESSMENT.md",
+        "line_start": 179,
+        "line_end": 191
+      },
+      "recorded_status_not_current_verdict": "UNKNOWN",
+      "recorded_review": "PROPOSED",
+      "source_location": "crates/tracera-server/src/ingest/persist.rs:39-107",
+      "dependencies": [
+        "G01"
+      ],
+      "current_cells": "Await exact-current source and witness report; frozen goal status is not copied as current verdict"
+    },
+    {
+      "id": "G08",
+      "title": "Project catalog and CIVIS",
+      "criterion": "Item-only and empty project load correctly; all pages complete; failure never reported as empty.",
+      "expected": "All owned projects have stable identity; CIVIS genuine zero items distinct from absent/unavailable.",
+      "source": {
+        "path": "/Users/kooshapari/Documents/Tracera-State-Forward-2026-10-17/ASSESSMENT.md",
+        "line_start": 193,
+        "line_end": 205
+      },
+      "recorded_status_not_current_verdict": "UNKNOWN",
+      "recorded_review": "PROPOSED",
+      "source_location": "crates/tracera-server/src/pg_store/projects.rs; historical audit",
+      "dependencies": [
+        "G01"
+      ],
+      "current_cells": "Await exact-current source and witness report; frozen goal status is not copied as current verdict"
+    },
+    {
+      "id": "G09",
+      "title": "Named artifact fidelity",
+      "criterion": "Click every required sidebar/view and representative typed detail using real IDs; 44 historical rows require current requalification.",
+      "expected": "Every named view X renders only complete artifact X, correct project/type and detail fields.",
+      "source": {
+        "path": "/Users/kooshapari/Documents/Tracera-State-Forward-2026-10-17/ASSESSMENT.md",
+        "line_start": 207,
+        "line_end": 219
+      },
+      "recorded_status_not_current_verdict": "UNKNOWN",
+      "recorded_review": "PROPOSED",
+      "source_location": "frontend/apps/web/src/pages/projects/views/; inputs/TRACERA-HISTORICAL-VIEW-COVERAGE.csv",
+      "dependencies": [
+        "G01"
+      ],
+      "current_cells": "Await exact-current source and witness report; frozen goal status is not copied as current verdict"
+    },
+    {
+      "id": "G10",
+      "title": "Specifications Hub",
+      "criterion": "Summary shape matches summary-hooks; totals reconcile complete typed collections; missing compliance/pass data null; failures distinct from zero.",
+      "expected": "Real ADR/contract/feature/scenario aggregates plus honest health/evidence denominator.",
+      "source": {
+        "path": "/Users/kooshapari/Documents/Tracera-State-Forward-2026-10-17/ASSESSMENT.md",
+        "line_start": 221,
+        "line_end": 233
+      },
+      "recorded_status_not_current_verdict": "FAIL",
+      "recorded_review": "PROPOSED",
+      "source_location": "crates/tracera-server/src/routes/specs.rs; frontend SpecificationDashboard.tsx",
+      "dependencies": [
+        "G01"
+      ],
+      "current_cells": "Await exact-current source and witness report; frozen goal status is not copied as current verdict"
+    },
+    {
+      "id": "G11",
+      "title": "Authoring and links",
+      "criterion": "Actual scoped CRUD and links survive restart; invalid/cross-project updates rejected; UI cannot advertise unavailable methods as implemented.",
+      "expected": "Accepted project/item editing and intent->code->test/evidence linking durable and authorized.",
+      "source": {
+        "path": "/Users/kooshapari/Documents/Tracera-State-Forward-2026-10-17/ASSESSMENT.md",
+        "line_start": 235,
+        "line_end": 247
+      },
+      "recorded_status_not_current_verdict": "FAIL",
+      "recorded_review": "PROPOSED",
+      "source_location": "crates/tracera-server/src/handlers/projects.rs; routes/links.rs",
+      "dependencies": [
+        "G01"
+      ],
+      "current_cells": "Await exact-current source and witness report; frozen goal status is not copied as current verdict"
+    },
+    {
+      "id": "G12",
+      "title": "Bounded search and exploration",
+      "criterion": "Known source anchor found; bounded query terminates cycles and marks truncation; no fabricated edge or silently missing page.",
+      "expected": "Explainable bounded navigation, explicit truncation/unsupported dynamic relationships.",
+      "source": {
+        "path": "/Users/kooshapari/Documents/Tracera-State-Forward-2026-10-17/ASSESSMENT.md",
+        "line_start": 249,
+        "line_end": 261
+      },
+      "recorded_status_not_current_verdict": "UNKNOWN",
+      "recorded_review": "PROPOSED",
+      "source_location": "crates/tracera-server/src/routes/graph.rs; routes/search.rs",
+      "dependencies": [
+        "G01"
+      ],
+      "current_cells": "Await exact-current source and witness report; frozen goal status is not copied as current verdict"
+    },
+    {
+      "id": "G13",
+      "title": "Native test/result integration",
+      "criterion": "Ingest actual native report, preserve failed cases/denominators and source revision; unsupported execution honest unavailable.",
+      "expected": "Distinguish test definitions, execution, results and freshness.",
+      "source": {
+        "path": "/Users/kooshapari/Documents/Tracera-State-Forward-2026-10-17/ASSESSMENT.md",
+        "line_start": 263,
+        "line_end": 275
+      },
+      "recorded_status_not_current_verdict": "FAIL",
+      "recorded_review": "PROPOSED",
+      "source_location": "crates/tracera-server/src/routes/test_runs.rs; routes/spec_analytics.rs",
+      "dependencies": [
+        "G01"
+      ],
+      "current_cells": "Await exact-current source and witness report; frozen goal status is not copied as current verdict"
+    },
+    {
+      "id": "G14",
+      "title": "API CLI MCP parity",
+      "criterion": "One real supported operation roundtrips same IDs across required interfaces; unsupported declared; demo modes excluded from acceptance.",
+      "expected": "Current Rust interfaces share canonical data and errors; historical Python oracle not mistaken for current implementation.",
+      "source": {
+        "path": "/Users/kooshapari/Documents/Tracera-State-Forward-2026-10-17/ASSESSMENT.md",
+        "line_start": 277,
+        "line_end": 289
+      },
+      "recorded_status_not_current_verdict": "UNKNOWN",
+      "recorded_review": "PROPOSED",
+      "source_location": "Cargo.toml; crates/tracera-cli/; crates/tracera-mcp/; crates/tracertm-mcp/",
+      "dependencies": [
+        "G01"
+      ],
+      "current_cells": "Await exact-current source and witness report; frozen goal status is not copied as current verdict"
+    },
+    {
+      "id": "G15",
+      "title": "Authentication privacy isolation",
+      "criterion": "401 missing credential,403/404foreign scope, no public backend bypass, redacted logs/export, payload limits and hostile prose tests.",
+      "expected": "Trusted single-user local boundary explicit; shared URL protected; secrets and evidence remain private.",
+      "source": {
+        "path": "/Users/kooshapari/Documents/Tracera-State-Forward-2026-10-17/ASSESSMENT.md",
+        "line_start": 291,
+        "line_end": 303
+      },
+      "recorded_status_not_current_verdict": "UNKNOWN",
+      "recorded_review": "PROPOSED",
+      "source_location": "crates/tracera-server/src/auth.rs; router.rs; deploy/selfhost/README.md",
+      "dependencies": [],
+      "current_cells": "Await exact-current source and witness report; frozen goal status is not copied as current verdict"
+    },
+    {
+      "id": "G16",
+      "title": "Durability recovery migration",
+      "criterion": "Real persistent reopen plus crash/backup/restore/migration trial; compare IDs/content beforeafter; old/new data contract explicit.",
+      "expected": "SQLite/PG durable accepted models, backup/restore, upgrade/cutover with original records preserved.",
+      "source": {
+        "path": "/Users/kooshapari/Documents/Tracera-State-Forward-2026-10-17/ASSESSMENT.md",
+        "line_start": 305,
+        "line_end": 317
+      },
+      "recorded_status_not_current_verdict": "UNKNOWN",
+      "recorded_review": "PROPOSED",
+      "source_location": "crates/tracera-server/src/db.rs; migrations-*; Q0/Q1 receipts",
+      "dependencies": [],
+      "current_cells": "Await exact-current source and witness report; frozen goal status is not copied as current verdict"
+    },
+    {
+      "id": "G17",
+      "title": "Install and desktop delivery",
+      "criterion": "Fresh install useful journey, local-first no mandatory remote API, update retains data and recoverable previous artifact.",
+      "expected": "Real local server+web and packaged nondeveloper desktop, update/recovery under accepted platform boundary.",
+      "source": {
+        "path": "/Users/kooshapari/Documents/Tracera-State-Forward-2026-10-17/ASSESSMENT.md",
+        "line_start": 319,
+        "line_end": 331
+      },
+      "recorded_status_not_current_verdict": "UNKNOWN",
+      "recorded_review": "PROPOSED",
+      "source_location": "desktop/README.md; crates/tracera-tauri/; docs/ARCHITECTURE.md",
+      "dependencies": [
+        "G01"
+      ],
+      "current_cells": "Await exact-current source and witness report; frozen goal status is not copied as current verdict"
+    },
+    {
+      "id": "G18",
+      "title": "Deployment artifact provenance",
+      "criterion": "Current hosted and installed artifact exact identity, authenticated real path; Q0 isolated readiness does not qualify production.",
+      "expected": "SourceSHA->binaryhash->configuration->database->reachable URL attested.",
+      "source": {
+        "path": "/Users/kooshapari/Documents/Tracera-State-Forward-2026-10-17/ASSESSMENT.md",
+        "line_start": 333,
+        "line_end": 345
+      },
+      "recorded_status_not_current_verdict": "UNKNOWN",
+      "recorded_review": "PROPOSED",
+      "source_location": "inputs/TRACERA-Q0-RUNTIME-QUALIFICATION.md",
+      "dependencies": [
+        "G01"
+      ],
+      "current_cells": "Await exact-current source and witness report; frozen goal status is not copied as current verdict"
+    },
+    {
+      "id": "G19",
+      "title": "UX accessibility and DX",
+      "criterion": "Keyboard/focus/labels/contrast assistive audit without captures; no mock data presented as real; documented command starts actual profile.",
+      "expected": "Keyboard navigation, accessible errors/loading/empty states, fresh-start docs and truthful API capability labels.",
+      "source": {
+        "path": "/Users/kooshapari/Documents/Tracera-State-Forward-2026-10-17/ASSESSMENT.md",
+        "line_start": 347,
+        "line_end": 359
+      },
+      "recorded_status_not_current_verdict": "UNKNOWN",
+      "recorded_review": "PROPOSED",
+      "source_location": "frontend/apps/web/src/pages/projects/views/ApiView.tsx; frontend/apps/web/src/routes/",
+      "dependencies": [
+        "G01"
+      ],
+      "current_cells": "Await exact-current source and witness report; frozen goal status is not copied as current verdict"
+    },
+    {
+      "id": "G20",
+      "title": "Assurance and security gates",
+      "criterion": "Run required local gates with explicit coverage denominator/floor; deliberate regression fails; masked Ruff/Python collection fixed if retained.",
+      "expected": "Meaningful positive/negative integration, critical coverage, no masked gates, dependency threats assessed.",
+      "source": {
+        "path": "/Users/kooshapari/Documents/Tracera-State-Forward-2026-10-17/ASSESSMENT.md",
+        "line_start": 361,
+        "line_end": 373
+      },
+      "recorded_status_not_current_verdict": "UNKNOWN",
+      "recorded_review": "PROPOSED",
+      "source_location": ".github/workflows/coverage.yml; lefthook.yml; frontend/apps/web/vitest.config.ts",
+      "dependencies": [],
+      "current_cells": "Await exact-current source and witness report; frozen goal status is not copied as current verdict"
+    },
+    {
+      "id": "G21",
+      "title": "Research and alternatives",
+      "criterion": "Version-pin manualworkflow, catalog/search, requirements/source links and dependency exploration peers; matched seeded cases plus idiomatic comparisons.",
+      "expected": "Test reuse/retain/adopt hypothesis against real beneficiary task, not marketing superiority.",
+      "source": {
+        "path": "/Users/kooshapari/Documents/Tracera-State-Forward-2026-10-17/ASSESSMENT.md",
+        "line_start": 375,
+        "line_end": 387
+      },
+      "recorded_status_not_current_verdict": "NOT_RUN",
+      "recorded_review": "PROPOSED",
+      "source_location": "inputs/docs5-DOSSIER.md:comparators",
+      "dependencies": [
+        "G01"
+      ],
+      "current_cells": "Await exact-current source and witness report; frozen goal status is not copied as current verdict"
+    },
+    {
+      "id": "G22",
+      "title": "Operations and economic ownership",
+      "criterion": "Restore rehearsal, dependency failure, resource bounds and explicit recurring-job owner; no billed services added; actual hosting cost unknown.",
+      "expected": "Owned startup/shutdown, logs, backup schedule, cost/resource boundary and sunset owner.",
+      "source": {
+        "path": "/Users/kooshapari/Documents/Tracera-State-Forward-2026-10-17/ASSESSMENT.md",
+        "line_start": 389,
+        "line_end": 401
+      },
+      "recorded_status_not_current_verdict": "UNKNOWN",
+      "recorded_review": "PROPOSED",
+      "source_location": "docs/04-guides/DEPLOYMENT_GUIDE.md; prior heartbeat ledger",
+      "dependencies": [
+        "G01"
+      ],
+      "current_cells": "Await exact-current source and witness report; frozen goal status is not copied as current verdict"
+    },
+    {
+      "id": "G23",
+      "title": "Actual beneficiary acceptance",
+      "criterion": "Unfamiliar authorized user real owned input, recorded task outcome/interventions/feedback, failures retained; fixture pass does not qualify.",
+      "expected": "Real user completes useful identity-preserving journey and confirms value.",
+      "source": {
+        "path": "/Users/kooshapari/Documents/Tracera-State-Forward-2026-10-17/ASSESSMENT.md",
+        "line_start": 403,
+        "line_end": 415
+      },
+      "recorded_status_not_current_verdict": "NOT_RUN",
+      "recorded_review": "PROPOSED",
+      "source_location": "No actual user-session/feedback receipt supplied",
+      "dependencies": [
+        "G01"
+      ],
+      "current_cells": "Await exact-current source and witness report; frozen goal status is not copied as current verdict"
+    },
+    {
+      "id": "G24",
+      "title": "Full historical parity disposition",
+      "criterion": "Each retained promise maps accepted goal/current contract/closure proof, or explicit authority for supersession/defer/retire; no silent sunset.",
+      "expected": "Retain652 baseline promise records and29historical gaps without treating overlaps as accepted scope or closure.",
+      "source": {
+        "path": "/Users/kooshapari/Documents/Tracera-State-Forward-2026-10-17/ASSESSMENT.md",
+        "line_start": 417,
+        "line_end": 429
+      },
+      "recorded_status_not_current_verdict": "UNKNOWN",
+      "recorded_review": "PROPOSED",
+      "source_location": "inputs/TRACERA-BASELINE-PROMISES.csv; inputs/TRACERA-GAP-INVENTORY.csv",
+      "dependencies": [
+        "G01"
+      ],
+      "current_cells": "Await exact-current source and witness report; frozen goal status is not copied as current verdict"
+    },
+    {
+      "id": "G25",
+      "title": "Unified trace-to-product evidence bridge",
+      "criterion": "Real authorized producer and source anchor, semantic causal navigation, exact restart/replay equality and foreign-product negative controls; meaningful actual user outcome.",
+      "expected": "Actual session/run -> source/product/capability observations -> discrepancy and affected dependencies -> attributable durable memory consumed next session.",
+      "source": {
+        "path": "/Users/kooshapari/Documents/Tracera-State-Forward-2026-10-17/ASSESSMENT.md",
+        "line_start": 431,
+        "line_end": 443
+      },
+      "recorded_status_not_current_verdict": "UNKNOWN",
+      "recorded_review": "PROPOSED",
+      "source_location": "README.md; router.rs codex session endpoints; Q1 product observations API",
+      "dependencies": [
+        "G02",
+        "G03",
+        "G04",
+        "G06",
+        "G07",
+        "G15",
+        "G16"
+      ],
+      "current_cells": "Await exact-current source and witness report; frozen goal status is not copied as current verdict"
+    }
+  ],
+  "source_census": {
+    "manifest_entries": 26,
+    "manifest_files_present": 26,
+    "historical_promise_rows": 652,
+    "literal_unique_contracts": 651,
+    "by_source": {
+      "docs/FEATURE_INVENTORY.md": 501,
+      "docs/governance/policy/endpoint_traceability_map.md": 30,
+      "docs/traceability.md": 7,
+      "docs/ops/TRACEABILITY.json": 1,
+      "docs/sessions/20260726-frontend-convergence/02_PARITY_MATRIX.md": 8,
+      "docs/sessions/20260722-rich-dashboard-recovery/07_FRONTEND_CONVERGENCE_MATRIX.md": 19,
+      "docs/04-guides/mcp-cli-api-matrix.md": 86
+    },
+    "by_kind": {
+      "list-contract": 108,
+      "table-row": 543,
+      "empty-baseline": 1
+    },
+    "view_rows": 59,
+    "sidebar_subset_rows": 44,
+    "direct_route_rows": 15,
+    "view_source_statuses": {
+      "SOURCE_ONLY_RUNTIME_UNKNOWN": 47,
+      "SOURCE_GAP": 12
+    },
+    "view_click_statuses": {
+      "NOT_CLICKED": 59
+    },
+    "selected_snapshot_leaves": 78,
+    "selected_snapshot_statuses": {
+      "UNKNOWN": 75,
+      "PASS": 3
+    }
+  },
+  "dedup_rules": [
+    "Stable leaf Gnn.semantic-slug; aliases FR-ID, HTTP method+path, historical source:line",
+    "Dedup semantic criterion, not raw string; preserve conflicting scope/source claims",
+    "Legend, methodology, summary and empty-baseline rows are not accepted obligations",
+    "651 unique literal rows is not accepted or semantically deduplicated leaf denominator",
+    "Parent PASS requires conjunction of every required child and dimension; witnessed counterexample supports FAIL without percentage"
+  ],
+  "authority_notes": [
+    "Registry intent/CVP/boundary source revision05e163820f1a207f2f827a5485ce6ca04084107f last_verified2026-09-20; normative scope is separate from stale runtime green claims",
+    "Unified direct user decision2026-10-17T09:22:59Z retained both intent branches; no new implementation credit",
+    "docs5 dossier labels itself proposed work program at line7; detailed pilot obligations are proposals until acceptance",
+    "Fleet enrollment/heartbeat/edge and desktop are normative in frozen Registry CVP but current authority supersession must be checked before treating them as final accepted denominator"
+  ],
+  "source_gaps": [
+    "Full historic conversation archive and1963commit history not inspected",
+    "coverage_matrix_self_application.md referenced by traceability.md6 not included in frozen26filemanifest",
+    "All652rawcontractrows require retained/superseded/deferred applicability adjudication; rawinventory includes metadata",
+    "Fresh backend and frontend workers own current source/witness cell classification"
+  ],
+  "tracking_attempts": [
+    {
+      "at": "2026-10-17T22:22Z",
+      "operation": "deferred tool discovery agileplus health_check/dashboard",
+      "result": "No AgilePlus callable tool returned"
+    },
+    {
+      "at": "2026-10-17T22:22Z",
+      "operation": "prescribed agileplus-status health wrapper",
+      "result": "path absent exit127"
+    },
+    {
+      "at": "2026-10-17T22:22Z",
+      "operation": "curl --max-time3 http://127.0.0.1:8765/mcp",
+      "result": "connection refused exit7 HTTP000; endpoint-specific only; feature/WP state UNKNOWN"
+    }
+  ]
+}

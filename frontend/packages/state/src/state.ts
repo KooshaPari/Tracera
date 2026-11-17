@@ -1,6 +1,6 @@
-import { observable } from '@legendapp/state';
+import { observable } from "@legendapp/state";
 
-import type { Agent, Item, Link, Project } from '@tracertm/types';
+import type { Agent, Item, Link, Project } from "@tracertm/types";
 
 // Global application state with Legend State
 export const appState$ = observable({
@@ -18,9 +18,9 @@ export const appState$ = observable({
 
   // UI State
   ui: {
-    currentView: 'FEATURE' as string,
+    currentView: "FEATURE" as string,
     isDarkMode: false,
-    searchQuery: '',
+    searchQuery: "",
     selectedItemId: null as string | null,
     sidebarOpen: true,
   },

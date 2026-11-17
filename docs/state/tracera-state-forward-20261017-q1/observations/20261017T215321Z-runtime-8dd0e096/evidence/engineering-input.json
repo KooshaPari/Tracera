@@ -1,0 +1,31 @@
+{
+  "product_id": "runtime-real",
+  "baseline": 1,
+  "idempotency_key": "engineering-runtime-5b190e862e49e9ff43c0703fe57008a5598c226edb85dba0ffc1f0121d4f3890",
+  "intents": [
+    {
+      "id": "authenticated-durable-intake",
+      "kind": "Capability",
+      "title": "Authenticated durable observation intake",
+      "description": "Engineering observation of accepted authentication, validation and persistence contract; manually assigned product/capability, not external session integration",
+      "status": "Accepted",
+      "baseline": 1
+    }
+  ],
+  "observations": [
+    {
+      "id": "runtime-gates-5b190e862e49e9ff43c0703fe57008a5598c226edb85dba0ffc1f0121d4f3890",
+      "product_id": "runtime-real",
+      "baseline": 1,
+      "kind": "TestResult",
+      "result": "Passed",
+      "source": {
+        "collector": "tracera-owned-runtime-probe",
+        "version": "1.0",
+        "artifact_ref": "sha256:5b190e862e49e9ff43c0703fe57008a5598c226edb85dba0ffc1f0121d4f3890"
+      },
+      "recorded_at": "2026-10-17T21:52:57Z",
+      "capability_id": "authenticated-durable-intake"
+    }
+  ]
+}

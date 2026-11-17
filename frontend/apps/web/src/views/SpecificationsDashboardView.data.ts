@@ -225,12 +225,10 @@ export function buildSpecificationSummary(params: {
   const contractIssues: string[] = [];
   if (contractMetrics.total === 0) {
     contractIssues.push("No contracts defined");
-  } else {
-    if (contractMetrics.verified < contractMetrics.active) {
-      contractIssues.push(
-        `${contractMetrics.active - contractMetrics.verified} contracts unverified`,
-      );
-    }
+  } else if (contractMetrics.verified < contractMetrics.active) {
+    contractIssues.push(
+      `${contractMetrics.active - contractMetrics.verified} contracts unverified`,
+    );
   }
   let contractScore = ONE_HUNDRED;
   if (contractMetrics.total > 0) {
@@ -250,11 +248,9 @@ export function buildSpecificationSummary(params: {
   const featureIssues: string[] = [];
   if (featureMetrics.total === 0) {
     featureIssues.push("No features defined");
-  } else {
-    if (featureMetrics.passRate < PASS_RATE_GAP_THRESHOLD) {
-      featureIssues.push("Pass rate below 80%");
-      featureIssues.push("Pending scenarios detected");
-    }
+  } else if (featureMetrics.passRate < PASS_RATE_GAP_THRESHOLD) {
+    featureIssues.push("Pass rate below 80%");
+    featureIssues.push("Pending scenarios detected");
   }
   healthDetails.push({
     category: "Feature Testing",

@@ -15,15 +15,19 @@ pnpm add @tracertm/env-manager
 ## Quick Start
 
 ```typescript
-import { EnvManager, loadFrontendConfig, validateFrontendConfig } from '@tracertm/env-manager';
+import {
+  EnvManager,
+  loadFrontendConfig,
+  validateFrontendConfig,
+} from "@tracertm/env-manager";
 
 // Create manager
 const env = new EnvManager();
 
 // Get environment variables
-const apiUrl = env.get('VITE_API_URL');
-const timeout = env.getNumber('VITE_API_TIMEOUT', 30000);
-const debug = env.getBoolean('VITE_DEBUG', false);
+const apiUrl = env.get("VITE_API_URL");
+const timeout = env.getNumber("VITE_API_TIMEOUT", 30000);
+const debug = env.getBoolean("VITE_DEBUG", false);
 
 // Or use configuration loader
 const config = loadFrontendConfig();
@@ -90,7 +94,10 @@ Clear all environment variables.
 Use `loadFrontendConfig()` to load typed configuration:
 
 ```typescript
-import { loadFrontendConfig, validateFrontendConfig } from '@tracertm/env-manager';
+import {
+  loadFrontendConfig,
+  validateFrontendConfig,
+} from "@tracertm/env-manager";
 
 const config = loadFrontendConfig();
 validateFrontendConfig(config);
@@ -134,19 +141,19 @@ console.log(config.logLevel); // "debug" | "info" | "warn" | "error"
 const env = new EnvManager();
 
 // String
-const apiUrl: string | undefined = env.get('VITE_API_URL');
+const apiUrl: string | undefined = env.get("VITE_API_URL");
 
 // Number with default
-const timeout: number = env.getNumber('VITE_API_TIMEOUT', 30000);
+const timeout: number = env.getNumber("VITE_API_TIMEOUT", 30000);
 
 // Boolean
-const debug: boolean = env.getBoolean('VITE_DEBUG', false);
+const debug: boolean = env.getBoolean("VITE_DEBUG", false);
 
 // Array
-const items: string[] = env.getArray('VITE_ITEMS', ',');
+const items: string[] = env.getArray("VITE_ITEMS", ",");
 
 // JSON
-const config: any = env.getJSON('VITE_CONFIG', {});
+const config: any = env.getJSON("VITE_CONFIG", {});
 ```
 
 ### Validation
@@ -155,10 +162,10 @@ const config: any = env.getJSON('VITE_CONFIG', {});
 const env = new EnvManager();
 
 try {
-  env.validate(['VITE_API_URL', 'VITE_WS_URL']);
-  console.log('All required variables are set');
+  env.validate(["VITE_API_URL", "VITE_WS_URL"]);
+  console.log("All required variables are set");
 } catch (error) {
-  console.error('Missing required variables:', error.message);
+  console.error("Missing required variables:", error.message);
 }
 ```
 
@@ -168,7 +175,7 @@ try {
 const env = new EnvManager();
 
 // Get all VITE_ variables
-const viteVars = env.getByPrefix('VITE_');
+const viteVars = env.getByPrefix("VITE_");
 console.log(viteVars);
 ```
 

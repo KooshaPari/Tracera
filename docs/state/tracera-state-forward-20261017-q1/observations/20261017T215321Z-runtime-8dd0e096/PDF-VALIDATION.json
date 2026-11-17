@@ -1,0 +1,9 @@
+{
+  "pages": 2,
+  "inspection": "PASS: both generatedPDFpages rasterized withpdftoppm and visually inspected fileonly; no clipping/overlap",
+  "pdf_sha256": "a4b2f8791fbcabc66bdc36674e028b4359375067e65cca9a2d5f12e4d6456499",
+  "reproducibility": "PASS: identicalMDHTMLPDFregeneration",
+  "evidence_hashes": "PASS",
+  "accessibility": "NOT_ACCEPTED: untaggedPDF; textalternatives andHTML/MD provided",
+  "acceptance": "No independentsemanticreview oruseracceptance claimed"
+}

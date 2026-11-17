@@ -1,0 +1,38 @@
+Tracera CLI — manage the bundled/local Tracera Compose stack
+
+Usage: tracera [OPTIONS] <COMMAND>
+
+Commands:
+  up       Start the Tracera Compose stack and wait until /ready
+  down     Stop the Tracera Compose stack (containers stay on disk)
+  status   Show container status (one row per service)
+  logs     Tail logs from one or all services
+  url      Print the local frontend URL and exit (used by the desktop app)
+  backend  Print the resolved backend label and exit
+  open     Open the local frontend in the default browser
+  doctor   Health probe — exits 0 if /health and /ready both return ok
+  init     Generate or refresh the `.env.local` file (POSTGRES_PASSWORD)
+  help     Print this message or the help of the given subcommand(s)
+
+Options:
+      --backend <BACKEND>
+          Container runtime to use. Defaults to auto-detected best available.
+          
+          Choices: `docker`, `podman`, `apple-container`, `wsl+docker`.
+          
+          [env: TRACERA_BACKEND=]
+          [possible values: docker, podman, apple-container, wsl+docker]
+
+      --root <ROOT>
+          Override the path to the Tracera bundle (or worktree root). Default: derived from the location of this binary
+          
+          [env: TRACERA_ROOT=]
+
+  -v, --verbose...
+          Increase verbosity (`-v` info, `-vv` debug, `-vvv` trace)
+
+  -h, --help
+          Print help (see a summary with '-h')
+
+  -V, --version
+          Print version

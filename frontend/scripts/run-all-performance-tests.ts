@@ -4,7 +4,7 @@
  * Runs all performance tests and generates a comprehensive report
  */
 
-import { spawn } from 'bun';
+import { spawn } from "bun";
 
 interface TestSuite {
   name: string;
@@ -15,28 +15,28 @@ interface TestSuite {
 const TEST_SUITES: TestSuite[] = [
   {
     critical: false,
-    name: 'Optimization Validation',
-    script: 'bun scripts/validate-optimizations.ts',
+    name: "Optimization Validation",
+    script: "bun scripts/validate-optimizations.ts",
   },
   {
     critical: true,
-    name: 'Build Performance',
-    script: 'bun scripts/test-build-performance.ts',
+    name: "Build Performance",
+    script: "bun scripts/test-build-performance.ts",
   },
   {
     critical: true,
-    name: 'Runtime Performance',
-    script: 'bun scripts/test-runtime-performance.ts',
+    name: "Runtime Performance",
+    script: "bun scripts/test-runtime-performance.ts",
   },
   {
     critical: true,
-    name: 'Unit Tests',
-    script: 'bun test',
+    name: "Unit Tests",
+    script: "bun test",
   },
   {
     critical: true,
-    name: 'E2E Tests',
-    script: 'bun --cwd apps/web run test:e2e',
+    name: "E2E Tests",
+    script: "bun --cwd apps/web run test:e2e",
   },
 ];
 
@@ -52,11 +52,11 @@ async function runSuite(suite: TestSuite): Promise<SuiteResult> {
   const startTime = Date.now();
 
   try {
-    const [cmd, ...args] = suite.script.split(' ');
+    const [cmd, ...args] = suite.script.split(" ");
     const proc = spawn({
       cmd: [cmd, ...args],
-      stderr: 'inherit',
-      stdout: 'inherit',
+      stderr: "inherit",
+      stdout: "inherit",
     });
 
     const exitCode = await proc.exited;
@@ -102,8 +102,8 @@ async function runAllTests() {
   const criticalFailed = results.filter((r) => r.critical && !r.passed).length;
 
   for (const result of results) {
-    const status = result.passed ? '✅' : '❌';
-    const critical = result.critical ? '🚨' : '  ';
+    const status = result.passed ? "✅" : "❌";
+    const critical = result.critical ? "🚨" : "  ";
 
     if (result.error) {
     }
@@ -122,7 +122,7 @@ async function runAllTests() {
     totalDuration,
   };
 
-  await Bun.write('performance-test-summary.json', JSON.stringify(summary, null, 2));
+  await Bun.write("performance-test-summary.json", JSON.stringify(summary, null, 2));
 
   // Generate markdown report
   await generateMarkdownReport(summary);
@@ -151,27 +151,27 @@ async function generateMarkdownReport(summary: any) {
 
 ${summary.results
   .map((r: SuiteResult) => {
-    const status = r.passed ? '✅ PASS' : '❌ FAIL';
-    const critical = r.critical ? '(Critical)' : '';
+    const status = r.passed ? "✅ PASS" : "❌ FAIL";
+    const critical = r.critical ? "(Critical)" : "";
     return `### ${r.suite} ${critical}
 
 **Status:** ${status}
 **Duration:** ${(r.duration / 1000).toFixed(2)}s
-${r.error ? `**Error:** ${r.error}` : ''}
+${r.error ? `**Error:** ${r.error}` : ""}
 `;
   })
-  .join('\n')}
+  .join("\n")}
 
 ## Success Criteria Validation
 
 | Criteria | Target | Status |
 |----------|--------|--------|
-| Dev startup | < 3s | ${checkResult('Runtime Performance', summary.results)} |
-| Web build | < 15s | ${checkResult('Build Performance', summary.results)} |
-| Full build | < 45s | ${checkResult('Build Performance', summary.results)} |
-| HMR | < 100ms | ${checkResult('Runtime Performance', summary.results)} |
-| node_modules | < 400MB | ${checkResult('Runtime Performance', summary.results)} |
-| All tests | Passing | ${summary.summary.failed === 0 ? '✅' : '❌'} |
+| Dev startup | < 3s | ${checkResult("Runtime Performance", summary.results)} |
+| Web build | < 15s | ${checkResult("Build Performance", summary.results)} |
+| Full build | < 45s | ${checkResult("Build Performance", summary.results)} |
+| HMR | < 100ms | ${checkResult("Runtime Performance", summary.results)} |
+| node_modules | < 400MB | ${checkResult("Runtime Performance", summary.results)} |
+| All tests | Passing | ${summary.summary.failed === 0 ? "✅" : "❌"} |
 
 ## Files Generated
 
@@ -184,17 +184,17 @@ ${r.error ? `**Error:** ${r.error}` : ''}
 
 ${
   summary.summary.criticalFailed === 0
-    ? '✅ All critical tests passed! The frontend is optimized and ready for production.'
+    ? "✅ All critical tests passed! The frontend is optimized and ready for production."
     : `❌ ${summary.summary.criticalFailed} critical test(s) failed. Review the details above and fix issues before deployment.`
 }
 `;
 
-  await Bun.write('PERFORMANCE_TEST_REPORT.md', report);
+  await Bun.write("PERFORMANCE_TEST_REPORT.md", report);
 }
 
 function checkResult(suiteName: string, results: SuiteResult[]): string {
   const result = results.find((r) => r.suite === suiteName);
-  return result?.passed ? '✅' : '❌';
+  return result?.passed ? "✅" : "❌";
 }
 
 // Run all tests

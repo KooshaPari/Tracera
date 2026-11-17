@@ -1,0 +1,96 @@
+route,actual_path,status,timestamp_utc,scope,http,content_type,stub_header,json_type,stub,keys,returned
+/api/v1/adrs/{id}/activities,/api/v1/adrs/{id}/activities,NOT_PROBED_UNRESOLVED_ENTITY_ID,,,,,,,,,
+/api/v1/branches/{id}/compare/{id},/api/v1/branches/{id}/compare/{id},NOT_PROBED_UNRESOLVED_ENTITY_ID,,,,,,,,,
+/api/v1/components/{id}/usage,/api/v1/components/{id}/usage,NOT_PROBED_UNRESOLVED_ENTITY_ID,,,,,,,,,
+/api/v1/contracts/{id}/activities,/api/v1/contracts/{id}/activities,NOT_PROBED_UNRESOLVED_ENTITY_ID,,,,,,,,,
+/api/v1/coverage/{id}/activities,/api/v1/coverage/{id}/activities,NOT_PROBED_UNRESOLVED_ENTITY_ID,,,,,,,,,
+/api/v1/csrf-token,/api/v1/csrf-token,NOT_PROBED_SENSITIVE_OR_ACTION_SEMANTICS,,,,,,,,,
+/api/v1/equivalences/{id},/api/v1/equivalences/{id},NOT_PROBED_UNRESOLVED_ENTITY_ID,,,,,,,,,
+/api/v1/events/{id},/api/v1/events/{id},NOT_PROBED_UNRESOLVED_ENTITY_ID,,,,,,,,,
+/api/v1/executions/{id},/api/v1/executions/{id},NOT_PROBED_UNRESOLVED_ENTITY_ID,,,,,,,,,
+/api/v1/features/{id}/activities,/api/v1/features/{id}/activities,NOT_PROBED_UNRESOLVED_ENTITY_ID,,,,,,,,,
+/api/v1/graph/ancestors/{id},/api/v1/graph/ancestors/{id},NOT_PROBED_UNRESOLVED_ENTITY_ID,,,,,,,,,
+/api/v1/graph/dependencies/{id},/api/v1/graph/dependencies/{id},NOT_PROBED_UNRESOLVED_ENTITY_ID,,,,,,,,,
+/api/v1/graph/descendants/{id},/api/v1/graph/descendants/{id},NOT_PROBED_UNRESOLVED_ENTITY_ID,,,,,,,,,
+/api/v1/graph/impact/{id},/api/v1/graph/impact/{id},NOT_PROBED_UNRESOLVED_ENTITY_ID,,,,,,,,,
+/api/v1/graph/traverse/{id},/api/v1/graph/traverse/{id},NOT_PROBED_UNRESOLVED_ENTITY_ID,,,,,,,,,
+/api/v1/integrations/credentials,/api/v1/integrations/credentials,NOT_PROBED_SENSITIVE_OR_ACTION_SEMANTICS,,,,,,,,,
+/api/v1/integrations/github/app/install-url,/api/v1/integrations/github/app/install-url,NOT_PROBED_SENSITIVE_OR_ACTION_SEMANTICS,,,,,,,,,
+/api/v1/integrations/github/repos/{id}/{id}/issues,/api/v1/integrations/github/repos/{id}/{id}/issues,NOT_PROBED_UNRESOLVED_ENTITY_ID,,,,,,,,,
+/api/v1/integrations/linear/teams/{id}/issues,/api/v1/integrations/linear/teams/{id}/issues,NOT_PROBED_UNRESOLVED_ENTITY_ID,,,,,,,,,
+/api/v1/items/{id}/pivot-targets,/api/v1/items/{id}/pivot-targets,NOT_PROBED_UNRESOLVED_ENTITY_ID,,,,,,,,,
+/api/v1/problems/{id}/activities,/api/v1/problems/{id}/activities,NOT_PROBED_UNRESOLVED_ENTITY_ID,,,,,,,,,
+/api/v1/projects/{id}/executions/{id}/artifacts,/api/v1/projects/{id}/executions/{id}/artifacts,NOT_PROBED_UNRESOLVED_ENTITY_ID,,,,,,,,,
+/api/v1/projects/{id}/item-specs/defects/by-item/{id},/api/v1/projects/{id}/item-specs/defects/by-item/{id},NOT_PROBED_UNRESOLVED_ENTITY_ID,,,,,,,,,
+/api/v1/projects/{id}/item-specs/epics/by-item/{id},/api/v1/projects/{id}/item-specs/epics/by-item/{id},NOT_PROBED_UNRESOLVED_ENTITY_ID,,,,,,,,,
+/api/v1/projects/{id}/item-specs/requirements/by-item/{id},/api/v1/projects/{id}/item-specs/requirements/by-item/{id},NOT_PROBED_UNRESOLVED_ENTITY_ID,,,,,,,,,
+/api/v1/projects/{id}/item-specs/tasks/by-item/{id},/api/v1/projects/{id}/item-specs/tasks/by-item/{id},NOT_PROBED_UNRESOLVED_ENTITY_ID,,,,,,,,,
+/api/v1/projects/{id}/item-specs/tests/by-item/{id},/api/v1/projects/{id}/item-specs/tests/by-item/{id},NOT_PROBED_UNRESOLVED_ENTITY_ID,,,,,,,,,
+/api/v1/projects/{id}/item-specs/user-stories/by-item/{id},/api/v1/projects/{id}/item-specs/user-stories/by-item/{id},NOT_PROBED_UNRESOLVED_ENTITY_ID,,,,,,,,,
+/api/v1/projects/{id}/item-specs/{id}/{id}/content-address,/api/v1/projects/{id}/item-specs/{id}/{id}/content-address,NOT_PROBED_UNRESOLVED_ENTITY_ID,,,,,,,,,
+/api/v1/projects/{id}/item-specs/{id}/{id}/merkle-proof,/api/v1/projects/{id}/item-specs/{id}/{id}/merkle-proof,NOT_PROBED_UNRESOLVED_ENTITY_ID,,,,,,,,,
+/api/v1/projects/{id}/item-specs/{id}/{id}/version-chain,/api/v1/projects/{id}/item-specs/{id}/{id}/version-chain,NOT_PROBED_UNRESOLVED_ENTITY_ID,,,,,,,,,
+/api/v1/quality/items/{id},/api/v1/quality/items/{id},NOT_PROBED_UNRESOLVED_ENTITY_ID,,,,,,,,,
+/api/v1/specifications/scenarios/{id}/activities,/api/v1/specifications/scenarios/{id}/activities,NOT_PROBED_UNRESOLVED_ENTITY_ID,,,,,,,,,
+/api/v1/test-cases/{id}/activities,/api/v1/test-cases/{id}/activities,NOT_PROBED_UNRESOLVED_ENTITY_ID,,,,,,,,,
+/api/v1/test-runs/{id}/activities,/api/v1/test-runs/{id}/activities,NOT_PROBED_UNRESOLVED_ENTITY_ID,,,,,,,,,
+/api/v1/test-suites/{id}/activities,/api/v1/test-suites/{id}/activities,NOT_PROBED_UNRESOLVED_ENTITY_ID,,,,,,,,,
+/api/v1/versions/{id}/snapshot,/api/v1/versions/{id}/snapshot,NOT_PROBED_SENSITIVE_OR_ACTION_SEMANTICS,,,,,,,,,
+/api/v1/webhooks/{id}/logs,/api/v1/webhooks/{id}/logs,NOT_PROBED_UNRESOLVED_ENTITY_ID,,,,,,,,,
+/api/v1/dashboard/summary,/api/v1/dashboard/summary,PROBED_GET,2026-10-15T07:12:34.023348+00:00,Windows8091 localSSHforward,200,application/json,,dict,,projectCount;totalItemCount;perProject;statusDistribution;typeDistribution,
+/api/v1/events,/api/v1/events,PROBED_GET,2026-10-15T07:12:34.028260+00:00,Windows8091 localSSHforward,200,application/json,unimplemented-route,dict,True,items;data;results;total;count;stub,0
+/api/v1/graph/cycles,/api/v1/graph/cycles,HTTP_ERROR,2026-10-15T07:12:34.028872+00:00,Windows8091 localSSHforward,501,application/json,,,,,
+/api/v1/graph/full,/api/v1/graph/full,HTTP_ERROR,2026-10-15T07:12:34.029424+00:00,Windows8091 localSSHforward,501,application/json,,,,,
+/api/v1/graph/orphans,/api/v1/graph/orphans,HTTP_ERROR,2026-10-15T07:12:38.245759+00:00,Windows8091 localSSHforward,501,application/json,,,,,
+/api/v1/graph/path,/api/v1/graph/path,HTTP_ERROR,2026-10-15T07:12:38.268993+00:00,Windows8091 localSSHforward,501,application/json,,,,,
+/api/v1/graph/paths,/api/v1/graph/paths,HTTP_ERROR,2026-10-15T07:12:38.269767+00:00,Windows8091 localSSHforward,501,application/json,,,,,
+/api/v1/graph/topo-sort,/api/v1/graph/topo-sort,HTTP_ERROR,2026-10-15T07:12:38.275904+00:00,Windows8091 localSSHforward,501,application/json,,,,,
+/api/v1/integrations/conflicts,/api/v1/integrations/conflicts,PROBED_GET,2026-10-15T07:12:38.343737+00:00,Windows8091 localSSHforward,200,application/json,unimplemented-route,dict,True,items;data;results;total;count;stub,0
+/api/v1/integrations/github/app/installations,/api/v1/integrations/github/app/installations,PROBED_GET,2026-10-15T07:12:38.349340+00:00,Windows8091 localSSHforward,200,application/json,unimplemented-route,dict,True,items;data;results;total;count;stub,0
+/api/v1/integrations/github/projects,/api/v1/integrations/github/projects,PROBED_GET,2026-10-15T07:12:38.349743+00:00,Windows8091 localSSHforward,200,application/json,unimplemented-route,dict,True,items;data;results;total;count;stub,0
+/api/v1/integrations/linear/projects,/api/v1/integrations/linear/projects,PROBED_GET,2026-10-15T07:12:38.360566+00:00,Windows8091 localSSHforward,200,application/json,unimplemented-route,dict,True,items;data;results;total;count;stub,0
+/api/v1/integrations/linear/teams,/api/v1/integrations/linear/teams,PROBED_GET,2026-10-15T07:12:38.366660+00:00,Windows8091 localSSHforward,200,application/json,unimplemented-route,dict,True,items;data;results;total;count;stub,0
+/api/v1/integrations/stats,/api/v1/integrations/stats,PROBED_GET,2026-10-15T07:12:38.371413+00:00,Windows8091 localSSHforward,200,application/json,unimplemented-route,dict,True,items;data;results;total;count;stub,0
+/api/v1/integrations/sync/queue,/api/v1/integrations/sync/queue,PROBED_GET,2026-10-15T07:12:38.383883+00:00,Windows8091 localSSHforward,200,application/json,unimplemented-route,dict,True,items;data;results;total;count;stub,0
+/api/v1/integrations/sync/status,/api/v1/integrations/sync/status,PROBED_GET,2026-10-15T07:12:38.388993+00:00,Windows8091 localSSHforward,200,application/json,unimplemented-route,dict,True,items;data;results;total;count;stub,0
+/api/v1/notifications,/api/v1/notifications,PROBED_GET,2026-10-15T07:12:38.397060+00:00,Windows8091 localSSHforward,200,application/json,unimplemented-route,list,,,0
+/api/v1/projects/{id}/adrs/stats,/api/v1/projects/{id}/adrs/stats,PROBED_GET,2026-10-15T07:12:38.412861+00:00,Windows8091 localSSHforward,200,application/json,unimplemented-route,dict,True,items;data;results;total;count;stub,0
+/api/v1/projects/{id}/codex/auth-status,/api/v1/projects/{id}/codex/auth-status,HTTP_ERROR,2026-10-15T07:12:38.414761+00:00,Windows8091 localSSHforward,501,application/json,,,,,
+/api/v1/projects/{id}/codex/interactions,/api/v1/projects/{id}/codex/interactions,PROBED_GET,2026-10-15T07:12:38.416192+00:00,Windows8091 localSSHforward,200,application/json,unimplemented-route,dict,True,items;data;results;total;count;stub,0
+/api/v1/projects/{id}/contracts/stats,/api/v1/projects/{id}/contracts/stats,PROBED_GET,2026-10-15T07:12:38.435027+00:00,Windows8091 localSSHforward,200,application/json,unimplemented-route,dict,True,items;data;results;total;count;stub,0
+/api/v1/projects/{id}/coverage/gaps,/api/v1/projects/{id}/coverage/gaps,PROBED_GET,2026-10-15T07:12:38.898995+00:00,Windows8091 localSSHforward,200,application/json,unimplemented-route,dict,True,items;data;results;total;count;stub,0
+/api/v1/projects/{id}/coverage/matrix,/api/v1/projects/{id}/coverage/matrix,PROBED_GET,2026-10-15T07:12:38.899903+00:00,Windows8091 localSSHforward,200,application/json,unimplemented-route,dict,True,items;data;results;total;count;stub,0
+/api/v1/projects/{id}/coverage/stats,/api/v1/projects/{id}/coverage/stats,PROBED_GET,2026-10-15T07:12:38.906198+00:00,Windows8091 localSSHforward,200,application/json,unimplemented-route,dict,True,items;data;results;total;count;stub,0
+/api/v1/projects/{id}/equivalence/export-statistics,/api/v1/projects/{id}/equivalence/export-statistics,PROBED_GET,2026-10-15T07:12:38.908241+00:00,Windows8091 localSSHforward,200,application/json,unimplemented-route,dict,True,items;data;results;total;count;stub,0
+/api/v1/projects/{id}/equivalences,/api/v1/projects/{id}/equivalences,HTTP_ERROR,2026-10-15T07:12:39.050301+00:00,Windows8091 localSSHforward,501,application/json,,,,,
+/api/v1/projects/{id}/export,/api/v1/projects/{id}/export,HTTP_ERROR,2026-10-15T07:12:39.073849+00:00,Windows8091 localSSHforward,400,application/json,,,,,
+/api/v1/projects/{id}/features/stats,/api/v1/projects/{id}/features/stats,PROBED_GET,2026-10-15T07:12:39.074783+00:00,Windows8091 localSSHforward,200,application/json,unimplemented-route,dict,True,items;data;results;total;count;stub,0
+/api/v1/projects/{id}/graph,/api/v1/projects/{id}/graph,PROBED_GET,2026-10-15T07:12:39.081595+00:00,Windows8091 localSSHforward,200,application/json,unimplemented-route,dict,True,items;data;results;total;count;stub,0
+/api/v1/projects/{id}/graphs,/api/v1/projects/{id}/graphs,PROBED_GET,2026-10-15T07:12:39.097393+00:00,Windows8091 localSSHforward,200,application/json,unimplemented-route,dict,True,items;data;results;total;count;stub,0
+/api/v1/projects/{id}/item-specs/requirements/high-risk,/api/v1/projects/{id}/item-specs/requirements/high-risk,PROBED_GET,2026-10-15T07:12:39.107373+00:00,Windows8091 localSSHforward,200,application/json,unimplemented-route,dict,True,items;data;results;total;count;stub,0
+/api/v1/projects/{id}/item-specs/requirements/unverified,/api/v1/projects/{id}/item-specs/requirements/unverified,PROBED_GET,2026-10-15T07:12:39.113257+00:00,Windows8091 localSSHforward,200,application/json,unimplemented-route,dict,True,items;data;results;total;count;stub,0
+/api/v1/projects/{id}/item-specs/tests/flaky,/api/v1/projects/{id}/item-specs/tests/flaky,PROBED_GET,2026-10-15T07:12:39.118038+00:00,Windows8091 localSSHforward,200,application/json,unimplemented-route,dict,True,items;data;results;total;count;stub,0
+/api/v1/projects/{id}/item-specs/tests/health-report,/api/v1/projects/{id}/item-specs/tests/health-report,PROBED_GET,2026-10-15T07:12:39.136483+00:00,Windows8091 localSSHforward,200,application/json,unimplemented-route,dict,True,items;data;results;total;count;stub,0
+/api/v1/projects/{id}/item-specs/tests/quarantined,/api/v1/projects/{id}/item-specs/tests/quarantined,PROBED_GET,2026-10-15T07:12:39.137118+00:00,Windows8091 localSSHforward,200,application/json,unimplemented-route,dict,True,items;data;results;total;count;stub,0
+/api/v1/projects/{id}/matrix,/api/v1/projects/{id}/matrix,PROBED_GET,2026-10-15T07:12:39.139134+00:00,Windows8091 localSSHforward,200,application/json,unimplemented-route,dict,True,items;data;results;total;count;stub,0
+/api/v1/projects/{id}/matrix/export,/api/v1/projects/{id}/matrix/export,PROBED_GET,2026-10-15T07:12:39.151602+00:00,Windows8091 localSSHforward,200,application/json,unimplemented-route,dict,True,items;data;results;total;count;stub,0
+/api/v1/projects/{id}/problems/stats,/api/v1/projects/{id}/problems/stats,PROBED_GET,2026-10-15T07:12:39.198223+00:00,Windows8091 localSSHforward,200,application/json,unimplemented-route,dict,True,items;data;results;total;count;stub,0
+/api/v1/projects/{id}/processes/stats,/api/v1/projects/{id}/processes/stats,PROBED_GET,2026-10-15T07:12:39.198816+00:00,Windows8091 localSSHforward,200,application/json,unimplemented-route,dict,True,items;data;results;total;count;stub,0
+/api/v1/projects/{id}/specifications/summary,/api/v1/projects/{id}/specifications/summary,PROBED_GET,2026-10-15T07:12:39.199173+00:00,Windows8091 localSSHforward,200,application/json,unimplemented-route,dict,True,items;data;results;total;count;stub,0
+/api/v1/projects/{id}/test-cases/stats,/api/v1/projects/{id}/test-cases/stats,PROBED_GET,2026-10-15T07:12:39.200485+00:00,Windows8091 localSSHforward,200,application/json,unimplemented-route,dict,True,items;data;results;total;count;stub,0
+/api/v1/projects/{id}/test-runs/stats,/api/v1/projects/{id}/test-runs/stats,PROBED_GET,2026-10-15T07:12:39.230919+00:00,Windows8091 localSSHforward,200,application/json,unimplemented-route,dict,True,items;data;results;total;count;stub,0
+/api/v1/projects/{id}/test-suites/stats,/api/v1/projects/{id}/test-suites/stats,PROBED_GET,2026-10-15T07:12:39.262319+00:00,Windows8091 localSSHforward,200,application/json,unimplemented-route,dict,True,items;data;results;total;count;stub,0
+/api/v1/projects/{id}/webhooks/stats,/api/v1/projects/{id}/webhooks/stats,PROBED_GET,2026-10-15T07:12:39.264187+00:00,Windows8091 localSSHforward,200,application/json,unimplemented-route,dict,True,items;data;results;total;count;stub,0
+/api/v1/projects/{id}/workflows/runs,/api/v1/projects/{id}/workflows/runs,PROBED_GET,2026-10-15T07:12:39.270369+00:00,Windows8091 localSSHforward,200,application/json,unimplemented-route,dict,True,items;data;results;total;count;stub,0
+/api/v1/projects/{id}/workflows/schedules,/api/v1/projects/{id}/workflows/schedules,PROBED_GET,2026-10-15T07:12:39.418684+00:00,Windows8091 localSSHforward,200,application/json,unimplemented-route,dict,True,items;data;results;total;count;stub,0
+/api/v1/qa/metrics/coverage,/api/v1/qa/metrics/coverage,PROBED_GET,2026-10-15T07:12:39.419584+00:00,Windows8091 localSSHforward,200,application/json,unimplemented-route,dict,True,items;data;results;total;count;stub,0
+/api/v1/qa/metrics/defect-density,/api/v1/qa/metrics/defect-density,PROBED_GET,2026-10-15T07:12:39.425730+00:00,Windows8091 localSSHforward,200,application/json,unimplemented-route,dict,True,items;data;results;total;count;stub,0
+/api/v1/qa/metrics/execution-history,/api/v1/qa/metrics/execution-history,PROBED_GET,2026-10-15T07:12:39.427864+00:00,Windows8091 localSSHforward,200,application/json,unimplemented-route,dict,True,items;data;results;total;count;stub,0
+/api/v1/qa/metrics/flaky-tests,/api/v1/qa/metrics/flaky-tests,PROBED_GET,2026-10-15T07:12:39.445422+00:00,Windows8091 localSSHforward,200,application/json,unimplemented-route,dict,True,items;data;results;total;count;stub,0
+/api/v1/qa/metrics/pass-rate,/api/v1/qa/metrics/pass-rate,PROBED_GET,2026-10-15T07:12:39.453005+00:00,Windows8091 localSSHforward,200,application/json,unimplemented-route,dict,True,items;data;results;total;count;stub,0
+/api/v1/qa/metrics/summary,/api/v1/qa/metrics/summary,PROBED_GET,2026-10-15T07:12:39.453711+00:00,Windows8091 localSSHforward,200,application/json,unimplemented-route,dict,True,items;data;results;total;count;stub,0
+/api/v1/search/health,/api/v1/search/health,HTTP_ERROR,2026-10-15T07:12:39.459576+00:00,Windows8091 localSSHforward,501,application/json,,,,,
+/api/v1/search/stats,/api/v1/search/stats,HTTP_ERROR,2026-10-15T07:12:39.470426+00:00,Windows8091 localSSHforward,501,application/json,,,,,
+/api/v1/search/suggest,/api/v1/search/suggest,HTTP_ERROR,2026-10-15T07:12:39.486329+00:00,Windows8091 localSSHforward,501,application/json,,,,,
+/api/v1/specifications/projects/{id}/scenarios,/api/v1/specifications/projects/{id}/scenarios,PROBED_GET,2026-10-15T07:12:39.497716+00:00,Windows8091 localSSHforward,200,application/json,unimplemented-route,dict,True,items;data;results;total;count;stub,0
+/api/v1/specifications/projects/{id}/scenarios/activities,/api/v1/specifications/projects/{id}/scenarios/activities,PROBED_GET,2026-10-15T07:12:39.499180+00:00,Windows8091 localSSHforward,200,application/json,unimplemented-route,dict,True,items;data;results;total;count;stub,0

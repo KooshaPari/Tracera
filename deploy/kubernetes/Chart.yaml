@@ -6,11 +6,11 @@ description: |
 type: application
 version: 0.1.0
 appVersion: "0.1.0"
-home: https://github.com/<REDACTED>/Tracera
+home: https://github.com/KooshaPari/Tracera
 sources:
-  - https://github.com/<REDACTED>/Tracera
+  - https://github.com/KooshaPari/Tracera
 maintainers:
-  - name: <REDACTED>
+  - name: KooshaPari
     email: <REDACTED>@gmail.com
 keywords:
   - tracera

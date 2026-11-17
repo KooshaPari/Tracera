@@ -102,8 +102,11 @@ task-tunnel-stop: ## RETIRED: do not stop shared Cloudflare infrastructure from 
 # =============================================================================
 # Prod: local runtime only; shared public ingress is independently managed
 # =============================================================================
-task-prod: stack task-tunnel-status task-run-server ## Local go-live; does not mutate shared ingress
-	@echo "[prod] local stack + tracera-server are up; shared public ingress is externally managed."
+task-prod: ## Start local dependencies, inspect ingress, then run server in foreground
+	@$(MAKE) stack
+	@$(MAKE) task-tunnel-status
+	@echo "[prod] starting tracera-server in foreground; readiness is not yet verified."
+	@$(MAKE) task-run-server
 
 # =============================================================================
 # Deploy: Render fallback only (used when local box is offline)

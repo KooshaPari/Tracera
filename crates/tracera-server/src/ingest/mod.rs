@@ -30,6 +30,7 @@ mod tests;
 mod trace_refs;
 
 pub use self::agcord::AgcordConfig;
+pub(crate) use self::benchmark::benchmark_run_to_issue;
 pub use self::github::GitHubConfig;
 pub use self::jira::JiraConfig;
 pub use self::persist::{ingest_from_payload, ingest_live};
@@ -43,6 +44,8 @@ pub enum IngestError {
     NoSourceConfigured,
     /// An HTTP or serialization error during fetch.
     Fetch(String),
+    /// The atomic store write failed; the transaction was rolled back.
+    Store(String),
 }
 
 impl std::fmt::Display for IngestError {
@@ -54,6 +57,7 @@ impl std::fmt::Display for IngestError {
                  and/or JIRA_URL+JIRA_EMAIL+JIRA_API_TOKEN+JIRA_PROJECT_KEY"
             ),
             IngestError::Fetch(msg) => write!(f, "fetch error: {msg}"),
+            IngestError::Store(msg) => write!(f, "store error (batch rolled back): {msg}"),
         }
     }
 }

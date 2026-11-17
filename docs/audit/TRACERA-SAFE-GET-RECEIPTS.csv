@@ -1,0 +1,7 @@
+project,method,path,scope,timestamp_utc,http,content_type,stub_header,json_type,keys,returned,total,count,stub,error
+TRACERA,GET,/api/v1/projects/proj-64b13e21-67bc-4e97-b3ab-0e097a03e9db/items?limit=1000,Windows loopback8091 through localSSHforward,2026-10-15T06:55:22.970395+00:00,200,application/json,unimplemented-route,dict,items;data;results;total;count;stub,0,0,0,True,
+TRACERA,GET,/api/v1/projects/proj-64b13e21-67bc-4e97-b3ab-0e097a03e9db/specifications/summary,Windows loopback8091 through localSSHforward,2026-10-15T06:55:22.971021+00:00,200,application/json,unimplemented-route,dict,items;data;results;total;count;stub,0,0,0,True,
+TRACERA,GET,/api/v1/items?project_id=proj-64b13e21-67bc-4e97-b3ab-0e097a03e9db&limit=1000,Windows loopback8091 through localSSHforward,2026-10-15T06:55:22.971341+00:00,400,application/json,,,,,,,,HTTPError
+CIVIS,GET,/api/v1/projects/proj-cc8c08b8-ced6-4a75-9fc6-de409d1165bb/items?limit=1000,Windows loopback8091 through localSSHforward,2026-10-15T06:55:23.121098+00:00,200,application/json,unimplemented-route,dict,items;data;results;total;count;stub,0,0,0,True,
+CIVIS,GET,/api/v1/projects/proj-cc8c08b8-ced6-4a75-9fc6-de409d1165bb/specifications/summary,Windows loopback8091 through localSSHforward,2026-10-15T06:55:23.131568+00:00,200,application/json,unimplemented-route,dict,items;data;results;total;count;stub,0,0,0,True,
+CIVIS,GET,/api/v1/items?project_id=proj-cc8c08b8-ced6-4a75-9fc6-de409d1165bb&limit=1000,Windows loopback8091 through localSSHforward,2026-10-15T06:55:23.132829+00:00,400,application/json,,,,,,,,HTTPError

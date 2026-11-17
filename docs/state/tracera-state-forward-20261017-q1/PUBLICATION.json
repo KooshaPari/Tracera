@@ -1,0 +1,27 @@
+{
+  "snapshot_id": "tracera-state-forward-20261017-q1",
+  "observed_at": "2026-10-17T10:31:20.073041+00:00",
+  "artifact_commit": "cc878b8e7bd03ea4f4b2dd0760f4b41131407962",
+  "branch": "docs/instinct-state-forward-20261017",
+  "pr": "https://github.com/KooshaPari/Tracera/pull/1158",
+  "state": "OPEN; no merge/deploy; remote ls-remote matched",
+  "source_subject": "3fd3310fb98fdd2f9bca99eddd669f974fb1fb61",
+  "follow_on_subject": "097015d0d9d10d7c8721b67a57a40856942d8e5b",
+  "hashes": {
+    "TRACERA-STATE-FORWARD.pdf": "f218537087191011f85d739f5a865298d874c3b2b6813b9ada0c385fecb72d12",
+    "input-manifest.json": "6a90a60f9b3220bf593106a2fa8ab2f1f5c3b6dcb7115ffbc67e6dab11fb26cd",
+    "views/build.json": "d5c1a05d966293e40ff6fd500823f9a031a015c6de59d078e618e4892980fbee",
+    "PDF-VALIDATION.json": "bbcc848620a718b383d0bde875f8debfd23535ac02de91cf4cc0909ccfa4d484"
+  },
+  "safari": {
+    "command": "open -a Safari /Users/kooshapari/Downloads/Tracera-State-Forward-2026-10-17.pdf",
+    "exit_code": 0,
+    "pid": 15253,
+    "proof": "Launch request succeeded; no screenshot, no claim user read or accepted"
+  },
+  "persistent_bundle": "/Users/kooshapari/Documents/Tracera-State-Forward-2026-10-17",
+  "inspection": "All31finalpages offline rendered and inspected;2URI annotations verified",
+  "registry_pointer": "Separate registry owner preparing PR662 pointer; not claimed completed here",
+  "history": "Earlier projection bytes retained in Gitfe4adabb/0179c828/f075bb35; prior1132 and2026-10-16bundle untouched",
+  "self_hash": "Excluded; receipt append-only after artifact commit avoids circular commit hash"
+}

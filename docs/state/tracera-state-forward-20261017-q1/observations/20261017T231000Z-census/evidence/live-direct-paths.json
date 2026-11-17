@@ -1,0 +1,36 @@
+{
+  "generated_at_utc": "2026-10-17T23:48:57.221Z",
+  "subject": "Desk deployed8091 via owned19281, codeprovenanceUNKNOWN",
+  "capture": {
+    "screenshot": false,
+    "trace": false,
+    "video": false
+  },
+  "views": [
+    {
+      "path": "/",
+      "error": "page.goto: net::ERR_EMPTY_RESPONSE at http://127.0.0.1:19281/\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:19281/\", waiting until \"domcontentloaded\"\u001b[22m\n"
+    },
+    {
+      "path": "/projects",
+      "error": "page.goto: net::ERR_EMPTY_RESPONSE at http://127.0.0.1:19281/projects\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:19281/projects\", waiting until \"domcontentloaded\"\u001b[22m\n"
+    },
+    {
+      "path": "/items",
+      "error": "page.goto: net::ERR_EMPTY_RESPONSE at http://127.0.0.1:19281/items\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:19281/items\", waiting until \"domcontentloaded\"\u001b[22m\n"
+    },
+    {
+      "path": "/agents",
+      "error": "page.goto: net::ERR_EMPTY_RESPONSE at http://127.0.0.1:19281/agents\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:19281/agents\", waiting until \"domcontentloaded\"\u001b[22m\n"
+    },
+    {
+      "path": "/settings",
+      "error": "page.goto: net::ERR_EMPTY_RESPONSE at http://127.0.0.1:19281/settings\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:19281/settings\", waiting until \"domcontentloaded\"\u001b[22m\n"
+    }
+  ],
+  "assets": [],
+  "blocked": [],
+  "project_list": {
+    "error": "page.evaluate: Execution context was destroyed, most likely because of a navigation"
+  }
+}

@@ -55,7 +55,7 @@ vi.mock("@/views/projects-list/ImportDialog", () => ({
 }));
 
 const makeProject = (id: string, name: string, createdAt: string): Project =>
-  ({ createdAt, id, name }) as Project;
+  ({ createdAt, id, name, problem_count: 0 }) as Project;
 
 const projects = [
   makeProject("older", "Zulu Registry", "2024-01-01T00:00:00.000Z"),

@@ -1,0 +1,121 @@
+{
+  "kind": "actual-controlled-local-producer-execution",
+  "compute_placement": "all on device; standard-library Python, three print-only subprocesses; no heavy build",
+  "source_repo": "/Users/kooshapari/CodeProjects/Phenotype/repos/helios-cli",
+  "source_sha": "f36e13e650dfc322e2e541d3e9b152638aeccd47",
+  "source_dirty": "?? demos/\n",
+  "source_hashes": {
+    "harness/scripts/run-harness.py": "e6f843d5119e65bd854d79147bb2b07ac3a8e30323324f5b0aff53854d83f960",
+    "harness/src/harness/benchmark_envelope.py": "a95ed9a603aa4b81f540aa7d49b053214457327ae4de1661427b15630178ef03",
+    "harness/src/harness/discoverer.py": "814d05631175fb891018eef984514680d76b927cb65d09cfc3d93a5ff6987820",
+    "harness/src/harness/runner.py": "391758ddc34e04f13c62e9c59a43c925ffb0debd0849e98e5fdd00060af899b8",
+    "harness/src/harness/schema.py": "aae5c0d7960101a6e223bf8dd4929af82b3c6cc71932df6b4a348cb8a11c4887",
+    "harness/src/harness/interfaces.py": "1402226d0c7b767c6d9fdb1cd3ef006784466f4552801f8b603d85f3918970a6",
+    "harness/src/harness/normalizer.py": "4f88cee664def95f82bed85f8ab29550347fc1075e38307c39d8a93927d65ec6"
+  },
+  "executable": "/opt/homebrew/opt/python@3.12/bin/python3.12",
+  "executable_sha256": "372c9d4f13af39cea1d55b8ed716c515726918286d4abfd9a8ddf0a8cf0a886a",
+  "python": "3.12.13 (main, Mar  3 2026, 12:39:30) [Clang 21.0.0 (clang-2100.0.123.102)]",
+  "command": [
+    "/opt/homebrew/opt/python@3.12/bin/python3.12",
+    "/Users/kooshapari/CodeProjects/Phenotype/repos/helios-cli/harness/scripts/run-harness.py",
+    "run",
+    "--repo",
+    "/var/folders/wl/z8733y815nzg28yy0_1_lh7w0000gn/T/helios-producer-20261017-b8z96u26/controlled-subject",
+    "--profile",
+    "strict-full",
+    "--out",
+    "benchmark.json",
+    "--max-parallel",
+    "1",
+    "--timeout",
+    "10",
+    "--budget",
+    "30"
+  ],
+  "cwd": "/var/folders/wl/z8733y815nzg28yy0_1_lh7w0000gn/T/helios-producer-20261017-b8z96u26",
+  "started_at": "2026-10-17T20:09:30.534782+00:00",
+  "finished_at": "2026-10-17T20:09:30.970785+00:00",
+  "exit_code": 0,
+  "input_subject_sha": "a86c86f8a8010cf6ef0bc3f61b7a743ba2727c14",
+  "input_hashes": {
+    "package.json": "fb278e9cb92563e8aeb5faf226d37aa89c90ac1e422f24b9d87756921832baff",
+    ".gitignore": "91b80230cfc9e1cec326c85c26cdb334b4699404003f1b76d80c64b6f53daf83"
+  },
+  "limits": [
+    "Controlled synthetic subject, not a product workload or personal session",
+    "Unsigned envelope; no tenant ownership or cryptographic authenticity established",
+    "No external model/API calls or installed helios-harness binary qualification"
+  ],
+  "output_sha256": "028f3e89d04788bad14e92d60cefb31051f5284ce7ea32b2a86c4c43acad8a1c",
+  "identity": {
+    "tenant_id": "phenotype",
+    "run_id": "run_165fe01400fc0226e4cd36033aa3e6c280a285055388eabd8466cf23e990a137",
+    "session_id": "ses_30ae420db91a86f565ed1dbd17246cfd1726874b49bfbd9192085825a3349828",
+    "attempt_id": "att_764d6dd55323af9d7c04a93419f534b1970eb915c05479e14d8f564638af777b"
+  },
+  "replay_hash": "9584a6e44defa69af0e9f1af476e55722d25a0533d82d43ff322104e1c14c377",
+  "result": {
+    "status": "passed",
+    "outcome_sha256": "b7f88e9127eb99c05cc09a7942527cd3ffd3acdbcd9296b6e8a415e2f1e995f3",
+    "replay_hash": "9584a6e44defa69af0e9f1af476e55722d25a0533d82d43ff322104e1c14c377",
+    "failure_class": "none",
+    "artifacts": [
+      {
+        "kind": "report",
+        "uri": "urn:helios:legacy-evidence:b7f88e9127eb99c05cc09a7942527cd3ffd3acdbcd9296b6e8a415e2f1e995f3",
+        "sha256": "b7f88e9127eb99c05cc09a7942527cd3ffd3acdbcd9296b6e8a415e2f1e995f3"
+      }
+    ]
+  },
+  "runs": [
+    {
+      "run_id": "taskrun_620f80474238c6e93b410524b32cab479eff6a7ce8145cdb207cfa9397370089",
+      "task_id": "task_0262ba1e7c6db84f58f1f0c3ee0f4e13ab958fd4d19d1f07ff5578ae2cbc2cb8",
+      "command": "/opt/homebrew/opt/python@3.12/bin/python3.12 -c \"print('lint: controlled local benchmark')\"",
+      "status": "passed",
+      "returncode": 0,
+      "duration_ms": 40
+    },
+    {
+      "run_id": "taskrun_b9ccd04fe2e9d1956b3538ac3b6dfc23fad006bf12b26901bc345825bf8055a7",
+      "task_id": "task_888c29f4e617d6278d340476b065a04dd316636b0365ca79746f4fe3eb4c8122",
+      "command": "/opt/homebrew/opt/python@3.12/bin/python3.12 -c \"print('test: controlled local benchmark')\"",
+      "status": "passed",
+      "returncode": 0,
+      "duration_ms": 76
+    },
+    {
+      "run_id": "taskrun_107d6fbe440f769a2cd673a9a67bad02d37547bbc71dbd1a52767a8ef1862542",
+      "task_id": "task_6822703d2e87a95be17f315379e94c7b1855bfca95f3a5547199a18623cd8718",
+      "command": "/opt/homebrew/opt/python@3.12/bin/python3.12 -c \"print('build: controlled local benchmark')\"",
+      "status": "passed",
+      "returncode": 0,
+      "duration_ms": 44
+    }
+  ],
+  "signature": {
+    "status": "unsigned",
+    "algorithm": "none",
+    "reason": "signing_authority_not_configured"
+  },
+  "artifact_hashes": {
+    "producer.stdout.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "benchmark.json": "028f3e89d04788bad14e92d60cefb31051f5284ce7ea32b2a86c4c43acad8a1c",
+    "producer.stderr.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "controlled-subject/.gitignore": "91b80230cfc9e1cec326c85c26cdb334b4699404003f1b76d80c64b6f53daf83",
+    "controlled-subject/package.json": "fb278e9cb92563e8aeb5faf226d37aa89c90ac1e422f24b9d87756921832baff",
+    "controlled-subject/.helios-harness/5658d024f9e1.stderr.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "controlled-subject/.helios-harness/7e5072be0e59.stderr.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "controlled-subject/.helios-harness/aa9cd63e9032.stderr.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "controlled-subject/.helios-harness/5658d024f9e1.stdout.log": "c321a788b15b0ffdde2ea2203fe74b8f0c0cf8f28feaa2bed07aa2b2180b3175",
+    "controlled-subject/.helios-harness/7e5072be0e59.stdout.log": "e42e50cb29fde040e52e3e0ccc8830933ae7e16227f6e5701731d94557f48261",
+    "controlled-subject/.helios-harness/aa9cd63e9032.stdout.log": "f3f5f5193c7627d1758188e81271ec577fed2745c452d83a07163a57ecaaa4e4"
+  },
+  "verification": {
+    "producer_verify_envelope_integrity": "PASS",
+    "schema_validation": "not run; jsonschema not installed in selected standard-library Python",
+    "subject_dirty_after": ".helios-harness ignored by committed .gitignore",
+    "no_background_processes_or_ports_started": true
+  }
+}

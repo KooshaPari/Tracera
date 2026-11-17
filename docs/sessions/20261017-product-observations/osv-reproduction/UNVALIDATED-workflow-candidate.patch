@@ -1,0 +1,28 @@
+diff --git a/.github/workflows/dependency-audit.yml b/.github/workflows/dependency-audit.yml
+index ecaa38c39d..2a0dc0f68e 100644
+--- a/.github/workflows/dependency-audit.yml
++++ b/.github/workflows/dependency-audit.yml
+@@ -31,12 +31,17 @@ jobs:
+     runs-on: ubuntu-latest
+     steps:
+       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+-      - uses: google/osv-scanner-action/osv-scanner-action@e69cc6c86b31f1e7e23935bbe7031b50e51082de # v2.0.2
+-        with:
+-          # uv.lock is historical benchmark tooling; Tracera has no Python runtime manifest.
+-          # Keep the audit fail-closed for the authoritative Rust, web, and Go manifests.
+-          scan-args: |-
+-            scan source Cargo.lock frontend/bun.lock sidecar/go/go.mod
++      - name: Scan authoritative dependencies
++        # v2.7.0 includes a Go 1.27 scanner; v2.0.2's embedded analyzer cannot load Go 1.25.
++        # Invoke the binary directly so scanner errors and missing manifests remain failures.
++        run: |
++          docker run --rm \
++            --entrypoint /root/osv-scanner \
++            -e GOTOOLCHAIN=auto \
++            -v "$GITHUB_WORKSPACE:/github/workspace:ro" \
++            -w /github/workspace \
++            ghcr.io/google/osv-scanner-action@sha256:d54770fe0b09493894e76a02aaed9f51a0513fa57c5186452a755d257b0068a6 \
++            scan source --call-analysis=go --all-vulns Cargo.lock frontend/bun.lock sidecar/go/go.mod
+ 
+   rust-policy:
+     name: Rust dependency policy

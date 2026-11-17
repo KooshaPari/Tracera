@@ -4,9 +4,9 @@
  * Tests dev server startup, HMR, and production runtime performance
  */
 
-import { spawn } from 'bun';
-import { existsSync } from 'node:fs';
-import { readdir } from 'node:fs/promises';
+import { spawn } from "bun";
+import { existsSync } from "node:fs";
+import { readdir } from "node:fs/promises";
 
 interface RuntimeMetrics {
   test: string;
@@ -34,10 +34,10 @@ async function measureDevServerStartup(): Promise<RuntimeMetrics> {
 
   try {
     const proc = spawn({
-      cmd: ['bun', 'run', 'dev'],
-      cwd: 'apps/web',
-      stderr: 'pipe',
-      stdout: 'pipe',
+      cmd: ["bun", "run", "dev"],
+      cwd: "apps/web",
+      stderr: "pipe",
+      stdout: "pipe",
     });
 
     // Monitor output for server ready signal
@@ -53,7 +53,7 @@ async function measureDevServerStartup(): Promise<RuntimeMetrics> {
       }
 
       const output = new TextDecoder().decode(value);
-      if (output.includes('Local:') || output.includes('ready in')) {
+      if (output.includes("Local:") || output.includes("ready in")) {
         serverReady = true;
         clearTimeout(timeout);
         proc.kill();
@@ -65,82 +65,82 @@ async function measureDevServerStartup(): Promise<RuntimeMetrics> {
     const pass = startupTime < 3000; // 3s threshold
 
     return {
-      metric: 'startup_time',
+      metric: "startup_time",
       pass,
-      test: 'Dev Server Startup',
+      test: "Dev Server Startup",
       threshold: 3000,
-      unit: 'ms',
+      unit: "ms",
       value: startupTime,
     };
   } catch (error) {
     console.log(`  ❌ Error: ${error}`);
     return {
-      metric: 'startup_time',
+      metric: "startup_time",
       pass: false,
-      test: 'Dev Server Startup',
+      test: "Dev Server Startup",
       threshold: 3000,
-      unit: 'ms',
+      unit: "ms",
       value: -1,
     };
   }
 }
 
 async function checkShippedArtifacts(): Promise<RuntimeMetrics> {
-  const distPath = 'apps/web/dist';
+  const distPath = "apps/web/dist";
   const artifactManifest = existsSync(`${distPath}/index.html`);
   const assets = artifactManifest
     ? (await readdir(distPath, { recursive: true })).filter((file) => /\.(js|css)$/.test(file))
     : [];
   return {
-    metric: 'shipped_artifacts',
+    metric: "shipped_artifacts",
     pass: artifactManifest && assets.length > 0,
-    test: 'Shipped Web Artifacts',
+    test: "Shipped Web Artifacts",
     threshold: 1,
-    unit: 'assets',
+    unit: "assets",
     value: assets.length,
   };
 }
 
 async function checkHMRConfig(): Promise<RuntimeMetrics> {
   // Check vite.config for optimized HMR settings
-  const viteConfigPath = 'apps/web/vite.config.mjs';
+  const viteConfigPath = "apps/web/vite.config.mjs";
   const hasViteConfig = existsSync(viteConfigPath);
 
   if (!hasViteConfig) {
     return {
-      metric: 'hmr_config',
+      metric: "hmr_config",
       pass: false,
-      test: 'HMR Configuration',
+      test: "HMR Configuration",
       threshold: 1,
-      unit: 'boolean',
+      unit: "boolean",
       value: 0,
     };
   }
 
   const config = await Bun.file(viteConfigPath).text();
-  const hasHMRConfig = config.includes('hmr') || config.includes('react');
+  const hasHMRConfig = config.includes("hmr") || config.includes("react");
 
   return {
-    test: 'HMR Configuration',
-    metric: 'hmr_config',
+    test: "HMR Configuration",
+    metric: "hmr_config",
     value: hasHMRConfig ? 1 : 0,
-    unit: 'boolean',
+    unit: "boolean",
     pass: true, // Not a hard requirement
     threshold: 1,
   };
 }
 
 async function checkBuildOptimizations(): Promise<RuntimeMetrics> {
-  const turboCfgPath = 'turbo.json';
+  const turboCfgPath = "turbo.json";
   const hasTurboConfig = existsSync(turboCfgPath);
 
   if (!hasTurboConfig) {
     return {
-      metric: 'build_optimizations',
+      metric: "build_optimizations",
       pass: false,
-      test: 'Build Optimizations',
+      test: "Build Optimizations",
       threshold: 1,
-      unit: 'boolean',
+      unit: "boolean",
       value: 0,
     };
   }
@@ -152,11 +152,11 @@ async function checkBuildOptimizations(): Promise<RuntimeMetrics> {
   const hasPrune = turboCfg.experimentalSpaces !== undefined || turboCfg.tasks !== undefined;
 
   return {
-    metric: 'build_optimizations',
+    metric: "build_optimizations",
     pass: hasCache && hasPrune,
-    test: 'Build Optimizations',
+    test: "Build Optimizations",
     threshold: 1,
-    unit: 'boolean',
+    unit: "boolean",
     value: hasCache && hasPrune ? 1 : 0,
   };
 }
@@ -187,13 +187,13 @@ async function runRuntimeTests(): Promise<RuntimeResults> {
 
 function printResults(results: RuntimeResults): void {
   for (const metric of results.metrics) {
-    const status = metric.pass ? '✅' : '❌';
+    const status = metric.pass ? "✅" : "❌";
     const value =
-      metric.unit === 'boolean' ? (metric.value ? 'Yes' : 'No') : `${metric.value} ${metric.unit}`;
+      metric.unit === "boolean" ? (metric.value ? "Yes" : "No") : `${metric.value} ${metric.unit}`;
   }
 
-  const devStartup = results.metrics.find((m) => m.metric === 'startup_time');
-  const shippedArtifacts = results.metrics.find((m) => m.metric === 'shipped_artifacts');
+  const devStartup = results.metrics.find((m) => m.metric === "startup_time");
+  const shippedArtifacts = results.metrics.find((m) => m.metric === "shipped_artifacts");
 }
 
 // Main execution
@@ -201,11 +201,11 @@ const results = await runRuntimeTests();
 printResults(results);
 
 // Write results to file
-await Bun.write('runtime-performance-results.json', JSON.stringify(results, null, 2));
+await Bun.write("runtime-performance-results.json", JSON.stringify(results, null, 2));
 
 // Exit with error code if critical tests failed
 const criticalTests = results.metrics.filter(
-  (m) => m.metric === 'startup_time' || m.metric === 'shipped_artifacts',
+  (m) => m.metric === "startup_time" || m.metric === "shipped_artifacts",
 );
 const criticalFailures = criticalTests.filter((m) => !m.pass).length;
 

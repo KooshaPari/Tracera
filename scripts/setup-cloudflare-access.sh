@@ -163,64 +163,113 @@ if stat.S_IMODE(s.st_mode) & 0o077:
   fi
 
   umask 077
-  if ! python3 -c '
+  # Reserve atomically and capture identity in the same operation. A failed
+  # reservation owns nothing and must not remove another caller's file.
+  if ! output_identity=$(python3 -c '
 import os, sys
-path = sys.argv[1]
-flags = os.O_WRONLY | os.O_CREAT | os.O_EXCL
-flags |= getattr(os, "O_NOFOLLOW", 0)
-fd = os.open(path, flags, 0o600)
-os.close(fd)
-' "$TOKEN_OUTPUT_FILE"; then
-    echo "error: cannot securely create TOKEN_OUTPUT_FILE" >&2
-    rm -f -- "$TOKEN_OUTPUT_FILE"
-    exit 2
-  fi
-  output_identity=$(python3 -c '
-import os, sys
-s = os.lstat(sys.argv[1])
-print(f"{s.st_dev}:{s.st_ino}")
-' "$TOKEN_OUTPUT_FILE")
-
-  if ! created=$(cf_post "/accounts/${CLOUDFLARE_ACCOUNT_ID}/access/service_tokens"     "$(python3 -c 'import json,sys; print(json.dumps({"name":sys.argv[1]}))' "$TOKEN_NAME")"); then
-    rm -f -- "$TOKEN_OUTPUT_FILE"
-    echo "error: service-token creation failed" >&2
-    exit 1
-  fi
-  token_id=$(printf '%s' "$created" | python3 -c 'import json,sys; print(json.load(sys.stdin)["result"]["id"])')
-
-  if ! printf '%s' "$created" | python3 -c '
-import json, os, stat, sys
-dst, expected = sys.argv[1], sys.argv[2]
-expected_dev, expected_ino = map(int, expected.split(":"))
-flags = os.O_WRONLY | os.O_TRUNC
-flags |= getattr(os, "O_NOFOLLOW", 0)
-fd = os.open(dst, flags)
+fd = os.open(sys.argv[1], os.O_WRONLY | os.O_CREAT | os.O_EXCL | getattr(os, "O_NOFOLLOW", 0), 0o600)
 try:
     st = os.fstat(fd)
-    if not stat.S_ISREG(st.st_mode) or st.st_dev != expected_dev or st.st_ino != expected_ino:
-        raise RuntimeError("credential destination identity changed")
-    r = json.load(sys.stdin)["result"]
-    payload = (
-        "CF_ACCESS_CLIENT_ID=" + r["client_id"] + "\n"
-        "CF_ACCESS_CLIENT_SECRET=" + r["client_secret"] + "\n"
-    ).encode()
-    view = memoryview(payload)
-    offset = 0
-    while offset < len(view):
-        written = os.write(fd, view[offset:])
-        if written <= 0:
-            raise OSError("short credential write")
-        offset += written
-    os.fsync(fd)
-    os.fchmod(fd, 0o600)
+    print(f"{st.st_dev}:{st.st_ino}")
 finally:
     os.close(fd)
-' "$TOKEN_OUTPUT_FILE" "$output_identity"; then
-    echo "error: failed to persist one-time service-token credentials; rolling token back" >&2
-    rm -f -- "$TOKEN_OUTPUT_FILE"
-    cf_delete "/accounts/${CLOUDFLARE_ACCOUNT_ID}/access/service_tokens/${token_id}" >/dev/null ||       echo "error: token rollback failed; disable/delete token id=${token_id} immediately" >&2
+' "$TOKEN_OUTPUT_FILE"); then
+    echo "error: cannot securely reserve TOKEN_OUTPUT_FILE" >&2
+    exit 2
+  fi
+  cleanup_owned_output() {
+    python3 -c '
+import os, sys
+try:
+    st = os.lstat(sys.argv[1])
+    if f"{st.st_dev}:{st.st_ino}" == sys.argv[2]:
+        os.unlink(sys.argv[1])
+except FileNotFoundError:
+    pass
+' "$TOKEN_OUTPUT_FILE" "$output_identity"
+  }
+  trap cleanup_owned_output EXIT
+
+  # An indeterminate request is never retried: it may already have created a token.
+  if ! created=$(cf_post "/accounts/${CLOUDFLARE_ACCOUNT_ID}/access/service_tokens" \
+    "$(python3 -c 'import json,sys; print(json.dumps({"name":sys.argv[1]}))' "$TOKEN_NAME")"); then
+    echo "error: token creation indeterminate; revocation unconfirmed; inspect service tokens manually" >&2
     exit 1
   fi
+  # Extract a rollback-safe identifier independently of credential validation.
+  rollback_id=$(printf '%s' "$created" | python3 -c '
+import json, re, sys
+try:
+    d = json.load(sys.stdin)
+    r = d.get("result") if isinstance(d, dict) else None
+    v = r.get("id") if isinstance(r, dict) else None
+    if isinstance(v, str) and re.fullmatch(r"[A-Za-z0-9_-]+", v):
+        print(v)
+except (ValueError, TypeError):
+    pass
+')
+  rollback_created() {
+    cleanup_owned_output
+    if [[ -z "$rollback_id" ]]; then
+      echo "error: unusable token id; revocation unconfirmed; inspect service tokens manually" >&2
+      return
+    fi
+    if ! rollback_response=$(cf_delete "/accounts/${CLOUDFLARE_ACCOUNT_ID}/access/service_tokens/${rollback_id}"); then
+      echo "error: rollback transport failed; manually revoke token id=${rollback_id}" >&2
+    elif ! printf '%s' "$rollback_response" | python3 -c '
+import json, sys
+try:
+    d = json.load(sys.stdin)
+    ok = isinstance(d, dict) and d.get("success") is True
+except (ValueError, TypeError):
+    ok = False
+raise SystemExit(0 if ok else 1)
+'; then
+      echo "error: rollback API failed; manually revoke token id=${rollback_id}" >&2
+    fi
+  }
+  if ! printf '%s' "$created" | python3 -c '
+import json, os, re, stat, sys
+try:
+    d = json.load(sys.stdin)
+    if not isinstance(d, dict) or d.get("success") is not True:
+        raise ValueError("unsuccessful response")
+    r = d.get("result")
+    if not isinstance(r, dict):
+        raise ValueError("invalid result")
+    for k in ("id", "client_id", "client_secret"):
+        v = r.get(k)
+        if not isinstance(v, str) or not v or any(ord(c) < 32 or ord(c) == 127 for c in v):
+            raise ValueError("invalid credential field")
+    if not re.fullmatch(r"[A-Za-z0-9_-]+", r["id"]):
+        raise ValueError("invalid token id")
+    dst, expected = sys.argv[1:]
+    fd = os.open(dst, os.O_WRONLY | getattr(os, "O_NOFOLLOW", 0))
+    try:
+        st = os.fstat(fd)
+        if not stat.S_ISREG(st.st_mode) or f"{st.st_dev}:{st.st_ino}" != expected:
+            raise ValueError("credential destination changed")
+        os.ftruncate(fd, 0)
+        payload = ("CF_ACCESS_CLIENT_ID=" + r["client_id"] + "\nCF_ACCESS_CLIENT_SECRET=" + r["client_secret"] + "\n").encode()
+        offset = 0
+        while offset < len(payload):
+            n = os.write(fd, payload[offset:])
+            if n <= 0:
+                raise OSError("short credential write")
+            offset += n
+        os.fsync(fd)
+        os.fchmod(fd, 0o600)
+    finally:
+        os.close(fd)
+except Exception:
+    print("error: invalid token response or credential persistence failed", file=sys.stderr)
+    raise SystemExit(1)
+' "$TOKEN_OUTPUT_FILE" "$output_identity"; then
+    rollback_created
+    exit 1
+  fi
+  token_id="$rollback_id"
+  trap - EXIT
   echo "[access] created service token id=${token_id}"
   echo "[access] one-time credentials written to TOKEN_OUTPUT_FILE (value not logged)"
 else

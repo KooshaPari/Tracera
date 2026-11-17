@@ -53,10 +53,8 @@ grep -qE '^      - "443:443"$' "$compose" \
   || fail "Caddy must publish HTTPS port 443 at its ingress boundary"
 
 if [[ "$mode" == "public" ]]; then
-  grep -qE '^[[:space:]]*(forward_auth|basic_auth|jwt)[[:space:]]' "$caddy" \
-    || fail "public mode requires an active Caddy auth directive (forward_auth/basic_auth/jwt)"
-  grep -qE '^[^[:space:]].*[[:space:]]\{$' "$caddy" \
-    || fail "public mode requires an explicit Caddy site listener"
+  python3 "$root/scripts/verify-caddy-public.py" \
+    || fail "public mode requires the requested HTTPS/443 site with active auth"
 fi
 
 echo "deployment security gate passed (mode=$mode)"

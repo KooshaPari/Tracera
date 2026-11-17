@@ -4,8 +4,17 @@
 | ----------- | ----------------------------------------------- |
 | **Spec ID** | TRACERA-SPEC-009                                |
 | **Title**   | AgilePlus Governance to Tracera Graph Ingestion |
-| **Status**  | Draft                                           |
-| **Date**    | 2026-08-30                                      |
+| **Status**  | Implemented (contract v2026-08-30)              |
+| **Date**    | 2026-08-30 (amended 2026-11-02)                 |
+
+> **Amendment 2026-11-02 (issue #1164).** This spec is now a description of
+> shipped behaviour, not a draft. The acceptor endpoint is
+> `POST /api/v1/ingest/agileplus`. The former `/ingest/agileplus` registration
+> actually ingested AgCord payloads and produced false-positive "AgilePlus
+> accepted" claims; AgCord ingestion now lives at `POST /ingest/agcord`, and
+> legacy `/ingest/agileplus` traffic is redirected (see §2.7). Sections
+> describing phases, coverage scoring and memory distillation are retained as
+> design intent and are explicitly marked as not implemented in §2.8.
 
 ---
 
@@ -29,6 +38,10 @@ AgilePlus is the single authoritative governance source for all projects in the 
 ```
 POST /api/v1/ingest/agileplus
 ```
+
+`POST /ingest/agileplus` is **not** this endpoint. It is a legacy alias for the
+AgCord ingester and answers `308 Permanent Redirect` to `/ingest/agcord` for AgCord
+payloads, or `400 agileplus_wrong_path` for a SPEC-009 body.
 
 ### 2.2 Request Headers
 
@@ -128,6 +141,72 @@ POST /api/v1/ingest/agileplus
 - Polling ingestion: 60 requests/minute per token
 - Webhook ingestion: 300 requests/minute (burst: 50)
 - Event bus ingestion: 1000 events/minute (queue-backed)
+
+> **Not implemented (2026-11-02).** No rate limiter is attached to the endpoint;
+> the limits above remain design intent and a 429 is never emitted.
+
+### 2.7 Implemented request handling
+
+The endpoint is fail-closed at every step. Nothing is written unless the whole
+request is acceptable.
+
+| Condition                                                                        | Status | `error` code                                                                         |
+| -------------------------------------------------------------------------------- | ------ | ------------------------------------------------------------------------------------ |
+| `TRACERA_AGILEPLUS_TOKEN` unset on the server                                    | 503    | `agileplus_ingest_not_configured`                                                    |
+| Missing or wrong `X-AgilePlus-Token`                                             | 401    | `agileplus_unauthorized`                                                             |
+| Body is not JSON                                                                 | 400    | `agileplus_malformed_body`                                                           |
+| Missing `X-Idempotency-Key`, or not a UUID v4                                    | 400    | `agileplus_missing_idempotency_key`                                                  |
+| Body does not match the envelope                                                 | 422    | `agileplus_invalid_envelope`                                                         |
+| `source` is not `"agileplus"`                                                    | 422    | `agileplus_wrong_producer`                                                           |
+| `version` is not in the accepted set                                             | 422    | `agileplus_unsupported_version`                                                      |
+| `entities[]` empty or over 500 entries                                           | 422    | `agileplus_empty_entities` / `agileplus_too_many_entities`                           |
+| Unknown entity `type`, bad `agileplus_id`/`title`                                | 422    | `agileplus_invalid_entity_type` / `agileplus_invalid_id` / `agileplus_missing_title` |
+| `metadata.version` missing or `< 1`                                              | 422    | `agileplus_missing_revision`                                                         |
+| Entity asserts `verified: true` / `product_verified: true`                       | 422    | `agileplus_unaccepted_claim`                                                         |
+| `governance_decision` approved without `metadata.author` + `metadata.decided_at` | 422    | `agileplus_forged_approval`                                                          |
+| Trace-link `confidence` outside `0.0..=1.0`                                      | 422    | `agileplus_invalid_confidence`                                                       |
+| `X-Idempotency-Key` already consumed                                             | 409    | `agileplus_idempotency_key_consumed`                                                 |
+| Entity revision does not advance the accepted one                                | 409    | `agileplus_stale_revision`                                                           |
+| Store cannot persist provenance                                                  | 501    | `agileplus_provenance_unsupported`                                                   |
+| Provenance persistence failed                                                    | 500    | `agileplus_store_error`                                                              |
+
+Conflict responses on a consumed key carry `identical_replay` and
+`conflicting_replay` booleans so a retry can be distinguished from a forgery.
+Revisions are strictly increasing per `agileplus_id`: an equal revision is a
+duplicate and a lower one is stale; both are 409.
+
+Idempotency keys, body fingerprints and accepted revisions are persisted in
+`agileplus_ingest_keys` and `agileplus_revisions`
+(`migrations-sqlite/0011_agileplus_ingest.sql`,
+`migrations-postgres/0011_agileplus_ingest.sql`), so they survive restart.
+
+### 2.8 Implemented subset and ownership boundary
+
+Implemented: typed envelope validation, token authentication, durable
+idempotency and revision gating, entity→node mapping, and trace links whose
+both endpoints are present in the request. Trace links referencing an entity
+absent from the request are returned in `trace_links_unresolved` and are **not**
+written.
+
+Persisted nodes use the SWEE taxonomy; the SPEC-009 label is kept in node
+metadata as `agileplus_entity`:
+
+| SPEC-009 type         | `node_type`      | `external_id` prefix |
+| --------------------- | ---------------- | -------------------- |
+| `spec`                | `specification`  | `ap:`                |
+| `work_item`           | `story`          | `ap:`                |
+| `governance_decision` | `change_request` | `ap-gov:`            |
+| `research_doc`        | `evidence`       | `ap-rd:`             |
+
+Every persisted node carries `governance_owner: "agileplus"`,
+`product_state_owner: "tracera"` and `capability_verified: false`. A
+`work_item` whose status is `done` is stored as governance evidence only: it
+never marks a Tracera product capability verified, and the response always
+reports `product_capabilities_verified: 0`.
+
+Not implemented (explicitly reported in the response `not_implemented` array):
+`memory_distillation`, `coverage_score_recomputation`. `coverage_delta` reports
+only the counts actually written.
 
 ---
 
@@ -229,6 +308,10 @@ CREATE TABLE trace_link (
 ## 5. Three-Phase Ingestion Architecture
 
 ### 5.1 Phase 1 - Polling
+
+> **Status 2026-11-02:** the synchronous accept path exists; the polling loop,
+> `ingestion_state` delta-sync table, webhook HMAC verification and the Redis
+> event-bus consumer are **not implemented**.
 
 - Poll interval: configurable, default 5 minutes
 - Delta sync: AgilePlus returns only entities modified since last_sync_token

@@ -60,7 +60,7 @@ export function groupByLinkTargets(items: Item[], links: Link[], minGroupSize = 
     }
 
     // Create a key from sorted targets
-    const targetKey = [...targets].toSorted().join("|");
+    const targetKey = [...targets].toSorted((a, b) => a.localeCompare(b)).join("|");
 
     if (!groupMap.has(targetKey)) {
       groupMap.set(targetKey, new Set());
@@ -126,7 +126,7 @@ export function groupByDependencies(items: Item[], links: Link[], minGroupSize =
       continue;
     }
 
-    const depKey = [...deps].toSorted().join("|");
+    const depKey = [...deps].toSorted((a, b) => a.localeCompare(b)).join("|");
 
     if (!groupMap.has(depKey)) {
       groupMap.set(depKey, new Set());

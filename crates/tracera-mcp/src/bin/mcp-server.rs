@@ -123,23 +123,26 @@ async fn build_store_from_url(url: &str) -> Result<Arc<dyn Store>, String> {
 // ---------------------------------------------------------------------------
 //
 // This is a minimal stub of [`tracera_server::store::Store`] that returns
-// empty collections for every read and errors for every write. It exists
+// empty collections for legacy reads and errors for writes and item storage.
+// It exists
 // so a developer can launch the binary without configuring a database:
 //
 //   $ TRACERA_DEMO=1 cargo run -p tracera-mcp --bin tracera-mcp
 //
 // The `tools/list` and `tools/call` round-trip will succeed; calls into
-// the store will return empty results.
+// the store will return empty legacy reads or explicit errors.
 //
-// We deliberately do not implement the full trait here — the canonical
+// We deliberately do not provide persistent storage here — the canonical
 // `PgStore` / `SqliteStore` implementations live in `tracera-server`. This
 // stub is only a placeholder for the demo binary path.
 
 mod demo {
     use chrono::{DateTime, Utc};
     use serde_json::Value;
+    use tracera_server::item::{Item, ItemFilter, ItemPage};
     use tracera_server::store::{
-        BoxFuture, EvidenceItem, ListParams, Problem, Store, StoreError, StoreResult,
+        BoxFuture, EvidenceItem, IngestOutcome, IngestRecord, ListParams, Problem, Store,
+        StoreError, StoreResult,
     };
 
     /// Compile-time check: `DemoStore` only exists for the demo path.
@@ -148,6 +151,49 @@ mod demo {
     pub struct DemoStore;
 
     impl Store for DemoStore {
+        fn ingest_product_observations(
+            &self,
+            _: tracera_server::product::persistence::ProductObservationBatch,
+        ) -> BoxFuture<'_, StoreResult<tracera_server::product::persistence::ProductIngestReceipt>>
+        {
+            Box::pin(async {
+                Err(StoreError::UnsupportedOperation(
+                    "DemoStore::ingest_product_observations",
+                ))
+            })
+        }
+        fn product_observations(
+            &self,
+            _: String,
+            _: u64,
+        ) -> BoxFuture<
+            '_,
+            StoreResult<Option<tracera_server::product::persistence::ProductObservationModel>>,
+        > {
+            Box::pin(async {
+                Err(StoreError::UnsupportedOperation(
+                    "DemoStore::product_observations",
+                ))
+            })
+        }
+
+        fn list_items(
+            &self,
+            _filter: ItemFilter,
+            _limit: i64,
+            _offset: i64,
+        ) -> BoxFuture<'_, StoreResult<ItemPage>> {
+            Box::pin(async { Err(StoreError::UnsupportedOperation("DemoStore::list_items")) })
+        }
+
+        fn get_item(&self, _id: String) -> BoxFuture<'_, StoreResult<Option<Item>>> {
+            Box::pin(async { Err(StoreError::UnsupportedOperation("DemoStore::get_item")) })
+        }
+
+        fn create_item(&self, _item: Item) -> BoxFuture<'_, StoreResult<()>> {
+            Box::pin(async { Err(StoreError::UnsupportedOperation("DemoStore::create_item")) })
+        }
+
         fn list_evidence(&self) -> BoxFuture<'_, StoreResult<Vec<EvidenceItem>>> {
             Box::pin(async { Ok(vec![]) })
         }
@@ -213,6 +259,17 @@ mod demo {
             _src: String,
             _now: DateTime<Utc>,
         ) -> BoxFuture<'_, StoreResult<tracera_server::store::TraceLink>> {
+            Box::pin(async {
+                Err(StoreError::Database(
+                    "DemoStore is read-only; configure TRACERA_DB_URL for writes".into(),
+                ))
+            })
+        }
+        fn persist_ingest_batch(
+            &self,
+            _records: Vec<IngestRecord>,
+            _now: DateTime<Utc>,
+        ) -> BoxFuture<'_, StoreResult<IngestOutcome>> {
             Box::pin(async {
                 Err(StoreError::Database(
                     "DemoStore is read-only; configure TRACERA_DB_URL for writes".into(),
@@ -352,3 +409,7 @@ mod demo {
 }
 
 use demo::DemoStore;
+
+#[cfg(test)]
+#[path = "tests/demo_store_tests.rs"]
+mod demo_store_tests;

@@ -1,5 +1,5 @@
-import { render, screen } from '@testing-library/react';
-import * as Vitest from 'vitest';
+import { render, screen } from "@testing-library/react";
+import * as Vitest from "vitest";
 
 import {
   Select,
@@ -7,65 +7,65 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '../components/Select';
+} from "../components/Select";
 
-Vitest.describe('Select component', () => {
-  Vitest.it('renders the trigger with combobox role', () => {
+Vitest.describe("Select component", () => {
+  Vitest.it("renders the trigger with combobox role", () => {
     render(
       <Select>
         <SelectTrigger>
-          <SelectValue placeholder='Choose...' />
+          <SelectValue placeholder="Choose..." />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value='a'>A</SelectItem>
+          <SelectItem value="a">A</SelectItem>
         </SelectContent>
       </Select>,
     );
-    Vitest.expect(screen.getByRole('combobox')).toBeInTheDocument();
+    Vitest.expect(screen.getByRole("combobox")).toBeInTheDocument();
   });
 
-  Vitest.it('renders with placeholder when no value selected', () => {
+  Vitest.it("renders with placeholder when no value selected", () => {
     render(
       <Select>
         <SelectTrigger>
-          <SelectValue placeholder='Choose...' />
+          <SelectValue placeholder="Choose..." />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value='a'>A</SelectItem>
+          <SelectItem value="a">A</SelectItem>
         </SelectContent>
       </Select>,
     );
-    Vitest.expect(screen.getByText('Choose...')).toBeInTheDocument();
+    Vitest.expect(screen.getByText("Choose...")).toBeInTheDocument();
   });
 
-  Vitest.it('trigger has aria-expanded attribute', () => {
+  Vitest.it("trigger has aria-expanded attribute", () => {
     render(
       <Select>
         <SelectTrigger>
-          <SelectValue placeholder='Pick' />
+          <SelectValue placeholder="Pick" />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value='a'>A</SelectItem>
+          <SelectItem value="a">A</SelectItem>
         </SelectContent>
       </Select>,
     );
-    Vitest.expect(screen.getByRole('combobox')).toHaveAttribute('aria-expanded', 'false');
+    Vitest.expect(screen.getByRole("combobox")).toHaveAttribute("aria-expanded", "false");
   });
 });
 
-Vitest.describe('SelectTrigger component', () => {
-  Vitest.it('applies custom className', () => {
+Vitest.describe("SelectTrigger component", () => {
+  Vitest.it("applies custom className", () => {
     render(
       <Select>
-        <SelectTrigger className='custom-trigger'>
+        <SelectTrigger className="custom-trigger">
           <SelectValue />
         </SelectTrigger>
       </Select>,
     );
-    Vitest.expect(screen.getByRole('combobox').className).toContain('custom-trigger');
+    Vitest.expect(screen.getByRole("combobox").className).toContain("custom-trigger");
   });
 
-  Vitest.it('can be disabled', () => {
+  Vitest.it("can be disabled", () => {
     render(
       <Select disabled>
         <SelectTrigger>
@@ -73,28 +73,28 @@ Vitest.describe('SelectTrigger component', () => {
         </SelectTrigger>
       </Select>,
     );
-    Vitest.expect(screen.getByRole('combobox')).toBeDisabled();
+    Vitest.expect(screen.getByRole("combobox")).toBeDisabled();
   });
 
-  Vitest.it('has data-state=closed by default', () => {
+  Vitest.it("has data-state=closed by default", () => {
     render(
       <Select>
         <SelectTrigger>
-          <SelectValue placeholder='Pick' />
+          <SelectValue placeholder="Pick" />
         </SelectTrigger>
       </Select>,
     );
-    Vitest.expect(screen.getByRole('combobox')).toHaveAttribute('data-state', 'closed');
+    Vitest.expect(screen.getByRole("combobox")).toHaveAttribute("data-state", "closed");
   });
 
-  Vitest.it('passes through additional props', () => {
+  Vitest.it("passes through additional props", () => {
     render(
       <Select>
-        <SelectTrigger data-testid='select-trigger'>
+        <SelectTrigger data-testid="select-trigger">
           <SelectValue />
         </SelectTrigger>
       </Select>,
     );
-    Vitest.expect(screen.getByTestId('select-trigger')).toBeInTheDocument();
+    Vitest.expect(screen.getByTestId("select-trigger")).toBeInTheDocument();
   });
 });

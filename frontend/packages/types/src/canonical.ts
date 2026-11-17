@@ -13,15 +13,15 @@
  * Each strategy has a default confidence score
  */
 export type EquivalenceStrategy =
-  | 'explicit_annotation' // @trace-implements, @canonical - confidence: 1.0
-  | 'manual_link' // User-created link - confidence: 1.0
-  | 'api_contract' // Frontend fetch → backend route - confidence: 0.9
-  | 'shared_canonical' // Same canonical concept - confidence: 0.9
-  | 'naming_pattern' // CamelCase/snake_case matching - confidence: 0.7
-  | 'semantic_similarity' // Embedding cosine similarity - confidence: 0.6
-  | 'structural' // Similar structure/hierarchy - confidence: 0.5
-  | 'temporal' // Created/modified together - confidence: 0.4
-  | 'co_occurrence'; // Frequently appear together - confidence: 0.3
+  | "explicit_annotation" // @trace-implements, @canonical - confidence: 1.0
+  | "manual_link" // User-created link - confidence: 1.0
+  | "api_contract" // Frontend fetch → backend route - confidence: 0.9
+  | "shared_canonical" // Same canonical concept - confidence: 0.9
+  | "naming_pattern" // CamelCase/snake_case matching - confidence: 0.7
+  | "semantic_similarity" // Embedding cosine similarity - confidence: 0.6
+  | "structural" // Similar structure/hierarchy - confidence: 0.5
+  | "temporal" // Created/modified together - confidence: 0.4
+  | "co_occurrence"; // Frequently appear together - confidence: 0.3
 
 /**
  * Default confidence scores for each strategy
@@ -78,7 +78,7 @@ export interface CanonicalConcept {
 
   // Metadata
   confidence: number; // 0-1, how confident we are this is a valid concept
-  source: 'manual' | 'inferred' | 'imported';
+  source: "manual" | "inferred" | "imported";
   createdBy?: string | undefined;
 
   // Timestamps
@@ -143,7 +143,7 @@ export interface EquivalenceLink {
   canonicalId?: string | undefined;
 
   // User actions
-  status: 'suggested' | 'confirmed' | 'rejected' | 'auto_confirmed';
+  status: "suggested" | "confirmed" | "rejected" | "auto_confirmed";
   confirmedBy?: string | undefined;
   confirmedAt?: string | undefined;
   rejectedReason?: string | undefined;
@@ -157,11 +157,11 @@ export interface EquivalenceLink {
  * Types of equivalence relationships
  */
 export type EquivalenceLinkType =
-  | 'same_as' // Exact same concept in different views
-  | 'represents' // One item represents another (code implements requirement)
-  | 'manifests_as' // Abstract concept manifests as concrete item
-  | 'derived_from' // One item derived from another
-  | 'alternative_to'; // Alternative implementation/approach
+  | "same_as" // Exact same concept in different views
+  | "represents" // One item represents another (code implements requirement)
+  | "manifests_as" // Abstract concept manifests as concrete item
+  | "derived_from" // One item derived from another
+  | "alternative_to"; // Alternative implementation/approach
 
 /**
  * Evidence for an equivalence detection
@@ -188,23 +188,23 @@ export interface EquivalenceEvidence {
  * Maturity dimension - how complete/stable is this item
  */
 export type MaturityLevel =
-  | 'idea' // Just an idea, not fleshed out
-  | 'draft' // Initial draft, incomplete
-  | 'defined' // Well-defined but not implemented
-  | 'implemented' // Implemented but not verified
-  | 'verified' // Verified/tested
-  | 'stable' // Stable, in production
-  | 'deprecated'; // Marked for removal
+  | "idea" // Just an idea, not fleshed out
+  | "draft" // Initial draft, incomplete
+  | "defined" // Well-defined but not implemented
+  | "implemented" // Implemented but not verified
+  | "verified" // Verified/tested
+  | "stable" // Stable, in production
+  | "deprecated"; // Marked for removal
 
 /**
  * Complexity dimension - how complex is this item
  */
 export type ComplexityLevel =
-  | 'trivial' // Very simple, obvious
-  | 'simple' // Simple, straightforward
-  | 'moderate' // Some complexity
-  | 'complex' // Significant complexity
-  | 'very_complex'; // High complexity, needs decomposition
+  | "trivial" // Very simple, obvious
+  | "simple" // Simple, straightforward
+  | "moderate" // Some complexity
+  | "complex" // Significant complexity
+  | "very_complex"; // High complexity, needs decomposition
 
 /**
  * Coverage dimension - how well is this item covered by tests/docs
@@ -219,7 +219,7 @@ export interface CoverageMetrics {
 /**
  * Risk dimension - risk level of this item
  */
-export type RiskLevel = 'none' | 'low' | 'medium' | 'high' | 'critical';
+export type RiskLevel = "none" | "low" | "medium" | "high" | "critical";
 
 /**
  * All dimensions for an item
@@ -239,7 +239,7 @@ export interface ItemDimensions {
  */
 export interface DimensionFilter {
   dimension: keyof ItemDimensions | string;
-  operator: 'eq' | 'neq' | 'gt' | 'gte' | 'lt' | 'lte' | 'in' | 'not_in';
+  operator: "eq" | "neq" | "gt" | "gte" | "lt" | "lte" | "in" | "not_in";
   value: string | number | boolean | string[] | number[];
 }
 
@@ -247,10 +247,10 @@ export interface DimensionFilter {
  * Dimension display mode in the graph
  */
 export type DimensionDisplayMode =
-  | 'filter' // Hide items that don't match
-  | 'highlight' // Highlight matching items, dim others
-  | 'color' // Color-code by dimension value
-  | 'size'; // Size nodes by dimension value
+  | "filter" // Hide items that don't match
+  | "highlight" // Highlight matching items, dim others
+  | "color" // Color-code by dimension value
+  | "size"; // Size nodes by dimension value
 
 // =============================================================================
 // CODE & DOCUMENTATION REFERENCES
@@ -286,26 +286,26 @@ export interface CodeReference {
 }
 
 export type CodeSymbolType =
-  | 'file'
-  | 'module'
-  | 'class'
-  | 'interface'
-  | 'function'
-  | 'method'
-  | 'variable'
-  | 'constant'
-  | 'type'
-  | 'enum'
-  | 'component' // React/Vue component
-  | 'hook' // React hook
-  | 'route' // API route
-  | 'handler' // Request handler
-  | 'middleware'
-  | 'model'
-  | 'schema'
-  | 'migration'
-  | 'test'
-  | 'fixture';
+  | "file"
+  | "module"
+  | "class"
+  | "interface"
+  | "function"
+  | "method"
+  | "variable"
+  | "constant"
+  | "type"
+  | "enum"
+  | "component" // React/Vue component
+  | "hook" // React hook
+  | "route" // API route
+  | "handler" // Request handler
+  | "middleware"
+  | "model"
+  | "schema"
+  | "migration"
+  | "test"
+  | "fixture";
 
 /**
  * Reference to a documentation entity (document, section, chunk)
@@ -338,15 +338,15 @@ export interface DocReference {
 }
 
 export type DocContentType =
-  | 'heading'
-  | 'paragraph'
-  | 'code_block'
-  | 'list'
-  | 'table'
-  | 'blockquote'
-  | 'image'
-  | 'link'
-  | 'mixed';
+  | "heading"
+  | "paragraph"
+  | "code_block"
+  | "list"
+  | "table"
+  | "blockquote"
+  | "image"
+  | "link"
+  | "mixed";
 
 // =============================================================================
 // PERSPECTIVE CONFIGURATION
@@ -357,17 +357,17 @@ export type DocContentType =
  * Perspectives represent WHO sees the data (stakeholder views)
  */
 export type PerspectiveType =
-  | 'product' // Product managers, UX designers
-  | 'business' // Business analysts, stakeholders
-  | 'technical' // Developers, architects
-  | 'ui' // UI/UX designers, frontend devs
-  | 'security' // Security engineers, auditors
-  | 'performance' // Performance engineers
-  | 'test' // QA engineers, testers
-  | 'operations' // DevOps, SRE
-  | 'data' // Data engineers, analysts
-  | 'compliance' // Compliance officers
-  | 'all' // All perspectives combined
+  | "product" // Product managers, UX designers
+  | "business" // Business analysts, stakeholders
+  | "technical" // Developers, architects
+  | "ui" // UI/UX designers, frontend devs
+  | "security" // Security engineers, auditors
+  | "performance" // Performance engineers
+  | "test" // QA engineers, testers
+  | "operations" // DevOps, SRE
+  | "data" // Data engineers, analysts
+  | "compliance" // Compliance officers
+  | "all" // All perspectives combined
   | string; // Custom perspectives
 
 /**
@@ -429,157 +429,157 @@ export interface EntityTypeMapping {
  * Layout types for graph visualization
  */
 export type LayoutType =
-  | 'cose' // Force-directed (Cytoscape)
-  | 'breadthfirst' // Hierarchical top-down
-  | 'circle' // Circular layout
-  | 'grid' // Grid layout
-  | 'elk' // ELK layered layout
-  | 'dagre' // Directed graph layout
-  | 'cola' // Constraint-based layout
-  | 'concentric'; // Concentric circles
+  | "cose" // Force-directed (Cytoscape)
+  | "breadthfirst" // Hierarchical top-down
+  | "circle" // Circular layout
+  | "grid" // Grid layout
+  | "elk" // ELK layered layout
+  | "dagre" // Directed graph layout
+  | "cola" // Constraint-based layout
+  | "concentric"; // Concentric circles
 
 /**
  * Default perspective configurations
  */
 export const DEFAULT_PERSPECTIVES: Omit<
   PerspectiveConfig,
-  'id' | 'projectId' | 'createdAt' | 'updatedAt'
+  "id" | "projectId" | "createdAt" | "updatedAt"
 >[] = [
   {
-    color: '#64748b',
+    color: "#64748b",
     defaultExpansionLevel: 2,
-    description: 'Complete traceability graph showing all items and relationships',
+    description: "Complete traceability graph showing all items and relationships",
     entityTypeMappings: [],
     excludeTypes: [],
     excludeViews: [],
-    icon: 'Network',
+    icon: "Network",
     includeTypes: [],
     includeViews: [],
     isCustom: false,
     isDefault: true,
-    layoutPreference: 'cose',
-    name: 'All Items',
+    layoutPreference: "cose",
+    name: "All Items",
     order: 0,
-    perspectiveType: 'all',
+    perspectiveType: "all",
   },
   {
-    color: '#9333ea',
+    color: "#9333ea",
     defaultExpansionLevel: 3,
-    description: 'User-facing features, journeys, and experiences',
+    description: "User-facing features, journeys, and experiences",
     entityTypeMappings: [],
     excludeTypes: [],
     excludeViews: [],
-    icon: 'Users',
-    includeTypes: ['requirement', 'feature', 'user_story', 'story', 'journey', 'wireframe', 'page'],
-    includeViews: ['FEATURE', 'feature', 'WIREFRAME', 'wireframe', 'journey'],
+    icon: "Users",
+    includeTypes: ["requirement", "feature", "user_story", "story", "journey", "wireframe", "page"],
+    includeViews: ["FEATURE", "feature", "WIREFRAME", "wireframe", "journey"],
     isCustom: false,
     isDefault: true,
-    layoutPreference: 'breadthfirst',
-    name: 'Product View',
+    layoutPreference: "breadthfirst",
+    name: "Product View",
     order: 1,
-    perspectiveType: 'product',
+    perspectiveType: "product",
   },
   {
-    color: '#3b82f6',
+    color: "#3b82f6",
     defaultExpansionLevel: 3,
-    description: 'Requirements, epics, stories, and project deliverables',
+    description: "Requirements, epics, stories, and project deliverables",
     entityTypeMappings: [],
     excludeTypes: [],
     excludeViews: [],
-    icon: 'Briefcase',
-    includeTypes: ['requirement', 'feature', 'epic', 'user_story', 'story', 'task', 'bug'],
-    includeViews: ['FEATURE', 'feature'],
+    icon: "Briefcase",
+    includeTypes: ["requirement", "feature", "epic", "user_story", "story", "task", "bug"],
+    includeViews: ["FEATURE", "feature"],
     isCustom: false,
     isDefault: true,
-    layoutPreference: 'breadthfirst',
-    name: 'Business View',
+    layoutPreference: "breadthfirst",
+    name: "Business View",
     order: 2,
-    perspectiveType: 'business',
+    perspectiveType: "business",
   },
   {
-    color: '#22c55e',
+    color: "#22c55e",
     defaultExpansionLevel: 2,
-    description: 'Architecture, APIs, databases, and code structure',
+    description: "Architecture, APIs, databases, and code structure",
     entityTypeMappings: [],
     excludeTypes: [],
     excludeViews: [],
-    icon: 'Code',
+    icon: "Code",
     includeTypes: [
-      'api',
-      'database',
-      'code',
-      'architecture',
-      'infrastructure',
-      'configuration',
-      'dependency',
-      'test',
+      "api",
+      "database",
+      "code",
+      "architecture",
+      "infrastructure",
+      "configuration",
+      "dependency",
+      "test",
     ],
-    includeViews: ['CODE', 'code', 'API', 'api', 'DATABASE', 'database', 'architecture'],
+    includeViews: ["CODE", "code", "API", "api", "DATABASE", "database", "architecture"],
     isCustom: false,
     isDefault: true,
-    layoutPreference: 'elk',
-    name: 'Technical View',
+    layoutPreference: "elk",
+    name: "Technical View",
     order: 3,
-    perspectiveType: 'technical',
+    perspectiveType: "technical",
   },
   {
-    color: '#ec4899',
+    color: "#ec4899",
     defaultExpansionLevel: 4,
-    description: 'Components, wireframes, and UI interactions',
+    description: "Components, wireframes, and UI interactions",
     entityTypeMappings: [],
     excludeTypes: [],
     excludeViews: [],
-    icon: 'Layout',
+    icon: "Layout",
     includeTypes: [
-      'wireframe',
-      'ui_component',
-      'page',
-      'component',
-      'layout',
-      'section',
-      'element',
+      "wireframe",
+      "ui_component",
+      "page",
+      "component",
+      "layout",
+      "section",
+      "element",
     ],
-    includeViews: ['WIREFRAME', 'wireframe'],
+    includeViews: ["WIREFRAME", "wireframe"],
     isCustom: false,
     isDefault: true,
-    layoutPreference: 'breadthfirst',
-    name: 'UI View',
+    layoutPreference: "breadthfirst",
+    name: "UI View",
     order: 4,
-    perspectiveType: 'ui',
+    perspectiveType: "ui",
   },
   {
-    color: '#ef4444',
+    color: "#ef4444",
     defaultExpansionLevel: 2,
-    description: 'Security requirements, audits, and vulnerabilities',
+    description: "Security requirements, audits, and vulnerabilities",
     entityTypeMappings: [],
     excludeTypes: [],
     excludeViews: [],
-    icon: 'Shield',
-    includeTypes: ['security', 'vulnerability', 'audit'],
-    includeViews: ['security'],
+    icon: "Shield",
+    includeTypes: ["security", "vulnerability", "audit"],
+    includeViews: ["security"],
     isCustom: false,
     isDefault: true,
-    layoutPreference: 'cose',
-    name: 'Security View',
+    layoutPreference: "cose",
+    name: "Security View",
     order: 5,
-    perspectiveType: 'security',
+    perspectiveType: "security",
   },
   {
-    color: '#10b981',
+    color: "#10b981",
     defaultExpansionLevel: 3,
-    description: 'Test cases, suites, and coverage',
+    description: "Test cases, suites, and coverage",
     entityTypeMappings: [],
     excludeTypes: [],
     excludeViews: [],
-    icon: 'TestTube',
-    includeTypes: ['test', 'test_case', 'test_suite', 'test_step', 'assertion'],
-    includeViews: ['TEST', 'test'],
+    icon: "TestTube",
+    includeTypes: ["test", "test_case", "test_suite", "test_step", "assertion"],
+    includeViews: ["TEST", "test"],
     isCustom: false,
     isDefault: true,
-    layoutPreference: 'breadthfirst',
-    name: 'Test View',
+    layoutPreference: "breadthfirst",
+    name: "Test View",
     order: 6,
-    perspectiveType: 'test',
+    perspectiveType: "test",
   },
 ];
 

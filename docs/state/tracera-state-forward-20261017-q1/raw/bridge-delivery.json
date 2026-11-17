@@ -1,0 +1,169 @@
+{
+  "subject": "KooshaPari/Tracera",
+  "candidate_sha": "097015d0d9d10d7c8721b67a57a40856942d8e5b",
+  "q1_parent_sha": "3fd3310fb98fdd2f9bca99eddd669f974fb1fb61",
+  "branch": "feat/instinct-product-observations-20261017",
+  "pr": "https://github.com/KooshaPari/Tracera/pull/1157",
+  "observed_at": "2026-10-17T10:17:54.242904+00:00",
+  "tests": {
+    "full_library": 96,
+    "full_binary": 123,
+    "existing_db": 4,
+    "sqlite_full": 6,
+    "historical_raw_q1_replay_separate": 1,
+    "mounted_routes_after_additional_negatives": 5,
+    "strict_clippy": "pass",
+    "format": "pass",
+    "diff": "pass"
+  },
+  "runtime": {
+    "binary_sha256": "011f017e2b8d56ef3fc14ad7aa503580392c23fde53bc17b93ab67d2bbba898b",
+    "first": [
+      200,
+      {
+        "accepted": 1,
+        "replayed": false
+      }
+    ],
+    "before": [
+      200,
+      {
+        "product_id": "q1-runtime",
+        "baseline": 1,
+        "intents": [
+          {
+            "id": "durable-read",
+            "kind": "Capability",
+            "title": "Evidence persists",
+            "description": "Read evidence after restart",
+            "status": "Accepted",
+            "baseline": 1
+          }
+        ],
+        "observations": [
+          {
+            "id": "phenotype:run_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa:att_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "product_id": "q1-runtime",
+            "baseline": 1,
+            "kind": "TestResult",
+            "result": "Passed",
+            "source": {
+              "causality": {
+                "tenant_id": "phenotype",
+                "run_id": "run_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                "session_id": "ses_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                "attempt_id": "att_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                "replay_hash": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+                "envelope_sha256": "e51d6856a2a1bac8f498290ebea84cddc8238bd5cbeb9bfc3b8713aaa8389646"
+              },
+              "collector": "helios-benchmark-envelope",
+              "version": "1.0.0",
+              "artifact_ref": "urn:helios:run:run_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+            },
+            "recorded_at": "2026-10-15T00:00:00Z",
+            "capability_id": "durable-read"
+          }
+        ]
+      }
+    ],
+    "after": [
+      200,
+      {
+        "product_id": "q1-runtime",
+        "baseline": 1,
+        "intents": [
+          {
+            "id": "durable-read",
+            "kind": "Capability",
+            "title": "Evidence persists",
+            "description": "Read evidence after restart",
+            "status": "Accepted",
+            "baseline": 1
+          }
+        ],
+        "observations": [
+          {
+            "id": "phenotype:run_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa:att_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "product_id": "q1-runtime",
+            "baseline": 1,
+            "kind": "TestResult",
+            "result": "Passed",
+            "source": {
+              "causality": {
+                "tenant_id": "phenotype",
+                "run_id": "run_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                "session_id": "ses_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                "attempt_id": "att_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                "replay_hash": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+                "envelope_sha256": "e51d6856a2a1bac8f498290ebea84cddc8238bd5cbeb9bfc3b8713aaa8389646"
+              },
+              "collector": "helios-benchmark-envelope",
+              "version": "1.0.0",
+              "artifact_ref": "urn:helios:run:run_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+            },
+            "recorded_at": "2026-10-15T00:00:00Z",
+            "capability_id": "durable-read"
+          }
+        ]
+      }
+    ],
+    "replay": [
+      200,
+      {
+        "accepted": 0,
+        "replayed": true
+      }
+    ],
+    "findings": [
+      200,
+      {
+        "findings": [
+          {
+            "kind": "Freshness",
+            "product_id": "q1-runtime",
+            "capability_id": "durable-read",
+            "message": "Observation 'phenotype:run_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa:att_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa' is 209250 seconds old (max: 86400s). The result may no longer be current.",
+            "evidence": [
+              "phenotype:run_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa:att_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+            ],
+            "detector_version": "1.1.0",
+            "detected_at": "2026-10-17T10:07:30.029670Z",
+            "severity": "Medium"
+          }
+        ],
+        "products_scanned": 1,
+        "capabilities_scanned": 1,
+        "detector_version": "1.1.0",
+        "ran_at": "2026-10-17T10:07:30.029789Z"
+      }
+    ],
+    "restart_exact_equality": true,
+    "candidate_stopped": true
+  },
+  "classification": "fixture-qualified actual adapter and isolated process; no authenticated external producer receipt",
+  "goal_delta": {
+    "bridge": "existing benchmark validator now mounted into durable observations with explicit product/capability/baseline and typed causal provenance"
+  },
+  "remaining": [
+    "authenticated producer binding",
+    "actual source/trace/session receipt",
+    "UI complete user journey",
+    "real product discrepancy and source-change reconciliation",
+    "per-product authorization",
+    "real user validation"
+  ],
+  "evidence_hashes": {
+    "bridge-legacy.log": "5ab9004c67dd00c28b010334e6d1f6bdde58a3f258c8b62352a0d345bcb01b6b",
+    "bridge-build-final.log": "672264c47607788e6b56795e8823271821bd1bae6624a57b6a90c3db7be960f5",
+    "bridge-clippy.log": "43f6345684a1c5a49a062e9ef5f0393995dcedeefbbfbbaa84a861794c1b0925",
+    "bridge-clippy-verified.log": "d0018f15254876d4704c384ec32ef7072f4258650423bd158aa6ef71ef64a4f9",
+    "bridge-build.log": "c57eaac7d9f907dd7f76256094c29d5bf1d11cc26b445fbceb0ea8c41a15deee",
+    "bridge-red.log": "dd9b09cb5311b22d9ef3b8e8c78c36dabb00716e53155d491f58d952003b60b4",
+    "bridge-final-tests.log": "1a309bf2c5cbe2b64ec5b28251541a445c553866f628535ed625b4bad3a73fa1",
+    "bridge-full-tests.log": "0deb81ff1d69ded3a5d1f8e5fdf05219f97662a0004dba93c9a02011cced4de7",
+    "bridge-runtime-server.log": "ae432a41bde53e6b6090462d63a2497a2a13aa27ebf65747ab31c7bf09f35927",
+    "bridge-negatives-final.log": "5b31b625fd690e05d3ca1de5d9d9e126e8b7fb576c00eda7cc32d21bc97d9160",
+    "bridge-clippy-final.log": "4b67693d591152b533e1b260181bd11f2d59c8582897934913ce6b574153e42d",
+    "bridge-green.log": "cb819a7f8eb06d9393ffe06cd4bf24e0eb9e90cc3f5f999bc4245e5390ee0dec"
+  }
+}

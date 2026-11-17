@@ -2,8 +2,8 @@
 // Extends entity-hierarchy.ts with UI-specific item types for the UI dimension
 // Supports page decomposition, component libraries, and design system integration
 
-import type { CodeReference } from './canonical';
-import type { UIEntityType } from './entity-hierarchy';
+import type { CodeReference } from "./canonical";
+import type { UIEntityType } from "./entity-hierarchy";
 
 // =============================================================================
 // UI ITEM (Extended Item for UI Dimension)
@@ -53,7 +53,7 @@ export interface UIItem {
   libraryComponentRef?: LibraryComponentRef | undefined;
 
   // Status
-  status: 'draft' | 'active' | 'deprecated' | 'archived';
+  status: "draft" | "active" | "deprecated" | "archived";
 
   // Timestamps
   createdAt: string;
@@ -82,7 +82,7 @@ export interface BoundingBox {
   width: number;
   height: number;
   // Relative to parent or viewport
-  relativeTo: 'parent' | 'viewport' | 'page';
+  relativeTo: "parent" | "viewport" | "page";
 }
 
 /**
@@ -98,28 +98,28 @@ export interface UIInteraction {
 }
 
 export type UIInteractionType =
-  | 'navigate' // Page navigation
-  | 'open_modal' // Open modal/dialog
-  | 'close_modal' // Close modal/dialog
-  | 'open_drawer' // Open drawer/sidebar
-  | 'toggle' // Toggle state
-  | 'submit' // Form submission
-  | 'expand' // Expand/collapse
-  | 'scroll_to' // Scroll to element
-  | 'external_link' // External navigation
-  | 'api_call'; // Trigger API call
+  | "navigate" // Page navigation
+  | "open_modal" // Open modal/dialog
+  | "close_modal" // Close modal/dialog
+  | "open_drawer" // Open drawer/sidebar
+  | "toggle" // Toggle state
+  | "submit" // Form submission
+  | "expand" // Expand/collapse
+  | "scroll_to" // Scroll to element
+  | "external_link" // External navigation
+  | "api_call"; // Trigger API call
 
 export type UITrigger =
-  | 'click'
-  | 'double_click'
-  | 'hover'
-  | 'focus'
-  | 'blur'
-  | 'submit'
-  | 'change'
-  | 'keypress'
-  | 'scroll'
-  | 'load';
+  | "click"
+  | "double_click"
+  | "hover"
+  | "focus"
+  | "blur"
+  | "submit"
+  | "change"
+  | "keypress"
+  | "scroll"
+  | "load";
 
 // =============================================================================
 // DESIGN TOKEN REFERENCES
@@ -137,17 +137,17 @@ export interface DesignTokenRef {
 }
 
 export type DesignTokenType =
-  | 'color'
-  | 'spacing'
-  | 'typography'
-  | 'shadow'
-  | 'border'
-  | 'radius'
-  | 'opacity'
-  | 'z-index'
-  | 'breakpoint'
-  | 'animation'
-  | 'custom';
+  | "color"
+  | "spacing"
+  | "typography"
+  | "shadow"
+  | "border"
+  | "radius"
+  | "opacity"
+  | "z-index"
+  | "breakpoint"
+  | "animation"
+  | "custom";
 
 /**
  * Reference to a component from a component library

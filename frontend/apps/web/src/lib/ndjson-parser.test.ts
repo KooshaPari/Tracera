@@ -44,10 +44,7 @@ function ndjsonResponse(lines: string[]): Response {
 }
 
 /** Build a Response that emits chunks split mid-line (boundary test). */
-function chunkedNdjsonResponse(
-  chunks: string[],
-  closeAfter = true,
-): Response {
+function chunkedNdjsonResponse(chunks: string[], closeAfter = true): Response {
   const encoder = new TextEncoder();
   return new Response(
     new ReadableStream({
@@ -72,11 +69,9 @@ async function collect<T>(gen: AsyncGenerator<T>): Promise<T[]> {
 describe("parseNDJSON", () => {
   it("parses simple newline-delimited JSON objects", async () => {
     const items = await collect(
-      parseNDJSON(ndjsonResponse([
-        '{"id":1,"name":"a"}',
-        '{"id":2,"name":"b"}',
-        '{"id":3,"name":"c"}',
-      ])),
+      parseNDJSON(
+        ndjsonResponse(['{"id":1,"name":"a"}', '{"id":2,"name":"b"}', '{"id":3,"name":"c"}']),
+      ),
     );
     expect(items).toEqual([
       { id: 1, name: "a" },
@@ -87,20 +82,12 @@ describe("parseNDJSON", () => {
 
   it("throws when response body is null", async () => {
     const r = new Response(null);
-    await expect(collect(parseNDJSON(r))).rejects.toThrow(
-      "Response body is null",
-    );
+    await expect(collect(parseNDJSON(r))).rejects.toThrow("Response body is null");
   });
 
   it("skips empty lines and whitespace-only lines", async () => {
     const items = await collect(
-      parseNDJSON(ndjsonResponse([
-        "",
-        "   ",
-        '{"x":1}',
-        "\t",
-        '{"x":2}',
-      ])),
+      parseNDJSON(ndjsonResponse(["", "   ", '{"x":1}', "\t", '{"x":2}'])),
     );
     expect(items).toEqual([{ x: 1 }, { x: 2 }]);
   });
@@ -112,13 +99,15 @@ describe("parseNDJSON", () => {
     console.error = (...args: any[]) => errs.push(args);
 
     const items = await collect(
-      parseNDJSON(ndjsonResponse([
-        '{"good":1}',
-        "{not valid json",
-        '{"good":2}',
-        "completely broken",
-        '{"good":3}',
-      ])),
+      parseNDJSON(
+        ndjsonResponse([
+          '{"good":1}',
+          "{not valid json",
+          '{"good":2}',
+          "completely broken",
+          '{"good":3}',
+        ]),
+      ),
     );
 
     expect(items).toEqual([{ good: 1 }, { good: 2 }, { good: 3 }]);
@@ -137,9 +126,7 @@ describe("parseNDJSON", () => {
       '"}\n',
       '{"msg":"done"}\n',
     ];
-    const items = await collect(
-      parseNDJSON(chunkedNdjsonResponse(chunks)),
-    );
+    const items = await collect(parseNDJSON(chunkedNdjsonResponse(chunks)));
     expect(items).toEqual([{ msg: "😀 hello 🌍" }, { msg: "done" }]);
   });
 
@@ -179,11 +166,7 @@ describe("parseNDJSON", () => {
   });
 
   it("handles CRLF line endings", async () => {
-    const items = await collect(
-      parseNDJSON(
-        ndjsonResponse(['{"a":1}\r\n{"b":2}\r\n']),
-      ),
-    );
+    const items = await collect(parseNDJSON(ndjsonResponse(['{"a":1}\r\n{"b":2}\r\n'])));
     expect(items).toEqual([{ a: 1 }, { b: 2 }]);
   });
 });
@@ -201,10 +184,7 @@ describe("parseNDJSONWithProgress", () => {
       JSON.stringify({ id: 3 }),
     ];
     const items = await collect(
-      parseNDJSONWithProgress(
-        ndjsonResponse(lines),
-        (s) => events.push(s),
-      ),
+      parseNDJSONWithProgress(ndjsonResponse(lines), (s) => events.push(s)),
     );
     expect(items).toEqual([{ id: 1 }, { id: 2 }, { id: 3 }]);
     // progress after item 1, progress after item 2 (from onProgress via continue), and final progress on completion
@@ -227,10 +207,7 @@ describe("parseNDJSONWithProgress", () => {
       ),
     );
     expect(items).toEqual([{ id: "a1" }, { id: "a2" }]);
-    expect(metadata.map((m) => m.type)).toEqual([
-      "section",
-      "error",
-    ]);
+    expect(metadata.map((m) => m.type)).toEqual(["section", "error"]);
   });
 
   it("collects errors into stats.errors array", async () => {
@@ -242,12 +219,9 @@ describe("parseNDJSONWithProgress", () => {
     ];
     let captured: StreamingStats | null = null;
     await collect(
-      parseNDJSONWithProgress(
-        ndjsonResponse(lines),
-        (s) => {
-          captured = { ...s };
-        },
-      ),
+      parseNDJSONWithProgress(ndjsonResponse(lines), (s) => {
+        captured = { ...s };
+      }),
     );
     expect(captured).not.toBeNull();
     expect(captured!.errors).toEqual(["first", "second"]);
@@ -256,9 +230,7 @@ describe("parseNDJSONWithProgress", () => {
 
   it("treats items without type field as regular data items", async () => {
     const items = await collect(
-      parseNDJSONWithProgress(
-        ndjsonResponse(['{"id":1}', '{"id":2,"type":"weird"}']),
-      ),
+      parseNDJSONWithProgress(ndjsonResponse(['{"id":1}', '{"id":2,"type":"weird"}'])),
     );
     // First has no type → yielded. Second has unknown type → yielded (default branch).
     expect(items).toEqual([{ id: 1 }, { id: 2, type: "weird" }]);
@@ -267,10 +239,7 @@ describe("parseNDJSONWithProgress", () => {
   it("captures start/end timing in stats", async () => {
     let captured: StreamingStats | null = null;
     await collect(
-      parseNDJSONWithProgress(
-        ndjsonResponse(['{"id":1}']),
-        (s) => (captured = { ...s }),
-      ),
+      parseNDJSONWithProgress(ndjsonResponse(['{"id":1}']), (s) => (captured = { ...s })),
     );
     expect(captured!.startTime).toBeGreaterThan(0);
     expect(captured!.endTime).toBeGreaterThanOrEqual(captured!.startTime);
@@ -281,17 +250,13 @@ describe("parseNDJSONWithProgress", () => {
 
 describe("collectNDJSON", () => {
   it("collects all items from stream", async () => {
-    const stream = parseNDJSON(
-      ndjsonResponse(['{"a":1}', '{"a":2}', '{"a":3}']),
-    );
+    const stream = parseNDJSON(ndjsonResponse(['{"a":1}', '{"a":2}', '{"a":3}']));
     const items = await collectNDJSON(stream);
     expect(items).toEqual([{ a: 1 }, { a: 2 }, { a: 3 }]);
   });
 
   it("respects maxItems limit", async () => {
-    const stream = parseNDJSON(
-      ndjsonResponse(['{"a":1}', '{"a":2}', '{"a":3}', '{"a":4}']),
-    );
+    const stream = parseNDJSON(ndjsonResponse(['{"a":1}', '{"a":2}', '{"a":3}', '{"a":4}']));
     const items = await collectNDJSON(stream, 2);
     expect(items).toEqual([{ a: 1 }, { a: 2 }]);
   });
@@ -307,11 +272,7 @@ describe("collectNDJSON", () => {
 
 describe("batchNDJSON", () => {
   it("groups items into batches of the requested size", async () => {
-    const stream = parseNDJSON(
-      ndjsonResponse(
-        Array.from({ length: 7 }, (_, i) => `{"i":${i}}`),
-      ),
-    );
+    const stream = parseNDJSON(ndjsonResponse(Array.from({ length: 7 }, (_, i) => `{"i":${i}}`)));
     const batches = await collect(batchNDJSON(stream, 3));
     expect(batches).toEqual([
       [{ i: 0 }, { i: 1 }, { i: 2 }],
@@ -337,11 +298,7 @@ describe("batchNDJSON", () => {
 
 describe("filterNDJSON", () => {
   it("keeps only items matching the predicate", async () => {
-    const stream = parseNDJSON(
-      ndjsonResponse(
-        Array.from({ length: 10 }, (_, i) => `{"i":${i}}`),
-      ),
-    );
+    const stream = parseNDJSON(ndjsonResponse(Array.from({ length: 10 }, (_, i) => `{"i":${i}}`)));
     const items = await collect(filterNDJSON(stream, (x) => x.i % 2 === 0));
     expect(items.map((x) => x.i)).toEqual([0, 2, 4, 6, 8]);
   });
@@ -349,20 +306,14 @@ describe("filterNDJSON", () => {
 
 describe("mapNDJSON", () => {
   it("transforms each item", async () => {
-    const stream = parseNDJSON(
-      ndjsonResponse(['{"n":1}', '{"n":2}', '{"n":3}']),
-    );
+    const stream = parseNDJSON(ndjsonResponse(['{"n":1}', '{"n":2}', '{"n":3}']));
     const items = await collect(mapNDJSON(stream, (x) => x.n * 10));
     expect(items).toEqual([10, 20, 30]);
   });
 
   it("supports async mappers", async () => {
-    const stream = parseNDJSON(
-      ndjsonResponse(['{"n":1}', '{"n":2}']),
-    );
-    const items = await collect(
-      mapNDJSON(stream, async (x) => x.n * 100),
-    );
+    const stream = parseNDJSON(ndjsonResponse(['{"n":1}', '{"n":2}']));
+    const items = await collect(mapNDJSON(stream, async (x) => x.n * 100));
     expect(items).toEqual([100, 200]);
   });
 });
@@ -405,9 +356,7 @@ describe("fetchNDJSON", () => {
     globalThis.fetch = (async () =>
       new Response("not found", { status: 404, statusText: "Not Found" })) as typeof fetch;
     try {
-      await expect(collect(fetchNDJSON("http://test/x"))).rejects.toThrow(
-        "HTTP 404: Not Found",
-      );
+      await expect(collect(fetchNDJSON("http://test/x"))).rejects.toThrow("HTTP 404: Not Found");
     } finally {
       globalThis.fetch = origFetch;
     }
@@ -415,8 +364,7 @@ describe("fetchNDJSON", () => {
 
   it("streams items from a 200 response", async () => {
     const origFetch = globalThis.fetch;
-    globalThis.fetch = (async () =>
-      ndjsonResponse(['{"n":1}', '{"n":2}'])) as typeof fetch;
+    globalThis.fetch = (async () => ndjsonResponse(['{"n":1}', '{"n":2}'])) as typeof fetch;
     try {
       const items = await collect(fetchNDJSON("http://test/x"));
       expect(items).toEqual([{ n: 1 }, { n: 2 }]);
@@ -428,9 +376,7 @@ describe("fetchNDJSON", () => {
 
 describe("createCancellableNDJSONStream", () => {
   it("exposes a stream and a cancel function", async () => {
-    const { stream, cancel } = createCancellableNDJSONStream(
-      "http://test/x",
-    );
+    const { stream, cancel } = createCancellableNDJSONStream("http://test/x");
     cancel();
     // Stream should yield no items after cancel
     const items: unknown[] = [];

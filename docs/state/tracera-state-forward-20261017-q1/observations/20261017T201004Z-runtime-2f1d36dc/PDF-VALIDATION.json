@@ -1,0 +1,11 @@
+{
+  "method": "File-only pdftoppm rendering at1300px and visual inspection of both finalpages; pdfinfo textmetadata; evidencehash checks and deterministic projection regeneration",
+  "pages": 2,
+  "visual": "PASS: legible, no clipping/overlap/orphan page",
+  "tagged": false,
+  "pdf_accessibility": "NOT_ACCEPTED: untagged; equivalent HTML/Markdown and diagram textalternative included",
+  "screenshot_policy": "No desktop/browsercapture performed; generatedPDFfiles only",
+  "pdf_sha256": "0749a6d2ffec8343d53fa604830f514b3a092ce637e8be1ce4afb49bd23b5363",
+  "evaluator": "Python3/reportlab5.0.1; Poppler pdftoppm/pdfinfo",
+  "limits": "Not independent semantic review or product acceptance"
+}

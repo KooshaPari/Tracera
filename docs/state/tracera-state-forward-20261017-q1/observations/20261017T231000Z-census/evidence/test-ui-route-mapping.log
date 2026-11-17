@@ -1,0 +1,17 @@
+node:fs:621
+    return binding.readFileUtf8(path, stringToFlags(options.flag));
+                   ^
+
+Error: ENOENT: no such file or directory, open '/private/tmp/tracera-auth-docs-shallow-20261017/frontend/apps/web/src/App.jsx'
+    at Object.readFileSync (node:fs:621:20)
+    at file:///private/tmp/tracera-auth-docs-shallow-20261017/frontend/scripts/test-ui-route-mapping.mjs:8:22
+    at ModuleJob.run (node:internal/modules/esm/module_job:569:25)
+    at async node:internal/modules/esm/loader:650:26
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/private/tmp/tracera-auth-docs-shallow-20261017/frontend/apps/web/src/App.jsx'
+}
+
+Node.js v26.8.1

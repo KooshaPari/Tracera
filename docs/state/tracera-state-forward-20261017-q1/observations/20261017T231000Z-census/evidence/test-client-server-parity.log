@@ -1,0 +1,1 @@
+PASS client/server route audit (20 Rust-native, 19 gateway-owned)

@@ -141,25 +141,19 @@ describe("Tracera desktop — build smoke (CI-safe)", () => {
       stderr: "pipe",
     });
     // Allow up to 10 s for the binary to print help and exit
-    const exitCode = await Promise.race([
-      bunxResult.exited,
-      Bun.sleep(10_000).then(() => -1),
-    ]);
+    const exitCode = await Promise.race([bunxResult.exited, Bun.sleep(10_000).then(() => -1)]);
     // electrobun --help may exit 0 or 1 but should NOT timeout (exitCode = -1)
     // and should NOT fail with ENOENT (which throws an exception above)
     expect(exitCode).not.toBe(-1);
   }, 15_000);
 
   test("src/index.ts bun typecheck passes", async () => {
-    const proc = Bun.spawn(
-      ["bun", "tsc", "--noEmit", "--project", "tsconfig.json"],
-      {
-        cwd: DESKTOP_DIR,
-        stdout: "pipe",
-        stderr: "pipe",
-        env: { ...process.env, PATH: process.env.PATH ?? "" },
-      },
-    );
+    const proc = Bun.spawn(["bun", "tsc", "--noEmit", "--project", "tsconfig.json"], {
+      cwd: DESKTOP_DIR,
+      stdout: "pipe",
+      stderr: "pipe",
+      env: { ...process.env, PATH: process.env.PATH ?? "" },
+    });
     const [stdout, stderr, exitCode] = await Promise.all([
       new Response(proc.stdout as ReadableStream).text(),
       new Response(proc.stderr as ReadableStream).text(),

@@ -1,5 +1,5 @@
-import { fireEvent, render, screen } from '@testing-library/react';
-import * as Vitest from 'vitest';
+import { fireEvent, render, screen } from "@testing-library/react";
+import * as Vitest from "vitest";
 
 import {
   Dialog,
@@ -9,10 +9,10 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from '../components/Dialog';
+} from "../components/Dialog";
 
-Vitest.describe('Dialog component', () => {
-  Vitest.it('renders the trigger button', () => {
+Vitest.describe("Dialog component", () => {
+  Vitest.it("renders the trigger button", () => {
     render(
       <Dialog>
         <DialogTrigger>Open Dialog</DialogTrigger>
@@ -22,10 +22,10 @@ Vitest.describe('Dialog component', () => {
         </DialogContent>
       </Dialog>,
     );
-    Vitest.expect(screen.getByText('Open Dialog')).toBeInTheDocument();
+    Vitest.expect(screen.getByText("Open Dialog")).toBeInTheDocument();
   });
 
-  Vitest.it('opens dialog when trigger is clicked', () => {
+  Vitest.it("opens dialog when trigger is clicked", () => {
     render(
       <Dialog>
         <DialogTrigger>Open</DialogTrigger>
@@ -35,12 +35,12 @@ Vitest.describe('Dialog component', () => {
         </DialogContent>
       </Dialog>,
     );
-    fireEvent.click(screen.getByText('Open'));
-    Vitest.expect(screen.getByText('Dialog Title')).toBeInTheDocument();
-    Vitest.expect(screen.getByText('Dialog body content')).toBeInTheDocument();
+    fireEvent.click(screen.getByText("Open"));
+    Vitest.expect(screen.getByText("Dialog Title")).toBeInTheDocument();
+    Vitest.expect(screen.getByText("Dialog body content")).toBeInTheDocument();
   });
 
-  Vitest.it('renders dialog content when open is true', () => {
+  Vitest.it("renders dialog content when open is true", () => {
     render(
       <Dialog open>
         <DialogContent>
@@ -49,10 +49,10 @@ Vitest.describe('Dialog component', () => {
         </DialogContent>
       </Dialog>,
     );
-    Vitest.expect(screen.getByText('Always Open')).toBeInTheDocument();
+    Vitest.expect(screen.getByText("Always Open")).toBeInTheDocument();
   });
 
-  Vitest.it('renders the close button inside DialogContent', () => {
+  Vitest.it("renders the close button inside DialogContent", () => {
     render(
       <Dialog open>
         <DialogContent>
@@ -61,11 +61,11 @@ Vitest.describe('Dialog component', () => {
         </DialogContent>
       </Dialog>,
     );
-    const closeButton = screen.getByRole('button');
+    const closeButton = screen.getByRole("button");
     Vitest.expect(closeButton).toBeInTheDocument();
   });
 
-  Vitest.it('renders dialog with role=dialog', () => {
+  Vitest.it("renders dialog with role=dialog", () => {
     render(
       <Dialog open>
         <DialogContent>
@@ -74,36 +74,36 @@ Vitest.describe('Dialog component', () => {
         </DialogContent>
       </Dialog>,
     );
-    Vitest.expect(screen.getByRole('dialog')).toBeInTheDocument();
+    Vitest.expect(screen.getByRole("dialog")).toBeInTheDocument();
   });
 });
 
-Vitest.describe('DialogHeader component', () => {
-  Vitest.it('renders children', () => {
+Vitest.describe("DialogHeader component", () => {
+  Vitest.it("renders children", () => {
     render(<DialogHeader>Header content</DialogHeader>);
-    Vitest.expect(screen.getByText('Header content')).toBeInTheDocument();
+    Vitest.expect(screen.getByText("Header content")).toBeInTheDocument();
   });
 
-  Vitest.it('applies custom className', () => {
-    render(<DialogHeader className='custom-header'>Header</DialogHeader>);
-    Vitest.expect(screen.getByText('Header').className).toContain('custom-header');
+  Vitest.it("applies custom className", () => {
+    render(<DialogHeader className="custom-header">Header</DialogHeader>);
+    Vitest.expect(screen.getByText("Header").className).toContain("custom-header");
   });
 });
 
-Vitest.describe('DialogFooter component', () => {
-  Vitest.it('renders children', () => {
+Vitest.describe("DialogFooter component", () => {
+  Vitest.it("renders children", () => {
     render(<DialogFooter>Footer content</DialogFooter>);
-    Vitest.expect(screen.getByText('Footer content')).toBeInTheDocument();
+    Vitest.expect(screen.getByText("Footer content")).toBeInTheDocument();
   });
 
-  Vitest.it('applies custom className', () => {
-    render(<DialogFooter className='custom-footer'>Footer</DialogFooter>);
-    Vitest.expect(screen.getByText('Footer').className).toContain('custom-footer');
+  Vitest.it("applies custom className", () => {
+    render(<DialogFooter className="custom-footer">Footer</DialogFooter>);
+    Vitest.expect(screen.getByText("Footer").className).toContain("custom-footer");
   });
 });
 
-Vitest.describe('DialogTitle component', () => {
-  Vitest.it('renders within an open dialog', () => {
+Vitest.describe("DialogTitle component", () => {
+  Vitest.it("renders within an open dialog", () => {
     render(
       <Dialog open>
         <DialogContent>
@@ -112,12 +112,12 @@ Vitest.describe('DialogTitle component', () => {
         </DialogContent>
       </Dialog>,
     );
-    Vitest.expect(screen.getByText('My Title')).toBeInTheDocument();
+    Vitest.expect(screen.getByText("My Title")).toBeInTheDocument();
   });
 });
 
-Vitest.describe('DialogDescription component', () => {
-  Vitest.it('renders within an open dialog', () => {
+Vitest.describe("DialogDescription component", () => {
+  Vitest.it("renders within an open dialog", () => {
     render(
       <Dialog open>
         <DialogContent>
@@ -126,6 +126,6 @@ Vitest.describe('DialogDescription component', () => {
         </DialogContent>
       </Dialog>,
     );
-    Vitest.expect(screen.getByText('My Description')).toBeInTheDocument();
+    Vitest.expect(screen.getByText("My Description")).toBeInTheDocument();
   });
 });
