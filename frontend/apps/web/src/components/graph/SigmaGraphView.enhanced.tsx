@@ -22,7 +22,7 @@ import type Graph from "graphology";
 
 import { SigmaContainer, useLoadGraph, useRegisterEvents, useSigma } from "@react-sigma/core";
 import { memo, useEffect, useMemo, useRef, useState } from "react";
-import "@react-sigma/core/lib/react-sigma.min.css";
+import "@react-sigma/core/lib/style.css";
 
 export interface SigmaGraphViewProps {
   graph: Graph;
