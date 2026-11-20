@@ -622,18 +622,6 @@ pub trait Store: Send + Sync {
         Box::pin(async { Err(StoreError::UnsupportedOperation("get_agileplus_ingest_key")) })
     }
 
-    /// Atomically consume an idempotency key and advance entity revisions.
-    ///
-    /// A duplicate key must fail (unique-constraint error) rather than
-    /// overwrite the earlier receipt.
-    fn record_agileplus_ingest(
-        &self,
-        _record: AgilePlusIngestRecord,
-        _now: DateTime<Utc>,
-    ) -> BoxFuture<'_, StoreResult<()>> {
-        Box::pin(async { Err(StoreError::UnsupportedOperation("record_agileplus_ingest")) })
-    }
-
     /// Last accepted revision for one AgilePlus entity id.
     fn get_agileplus_revision(
         &self,

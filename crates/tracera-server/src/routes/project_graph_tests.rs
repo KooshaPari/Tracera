@@ -27,7 +27,7 @@ async fn fixture() -> (Router, Arc<SqliteStore>) {
     ] {
         let item: Item = serde_json::from_value(json!({
             "id":id,"projectId":project,"status":"todo","view":item_type,
-            "priority":"high","type":item_type,"title":format!("{id}"),"version":1,
+            "priority":"high","type":item_type,"title":id,"version":1,
             "description":"fixture item","createdAt":"2026-11-20T00:00:00Z","updatedAt":"2026-11-20T00:00:00Z",
             "canonicalId":format!("canonical-{id}"),"metadata":{},"dimensions":{}
         }))

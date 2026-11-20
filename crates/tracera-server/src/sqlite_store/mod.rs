@@ -381,14 +381,6 @@ impl Store for SqliteStore {
         agileplus::get_agileplus_ingest_key(&self.pool, idempotency_key)
     }
 
-    fn record_agileplus_ingest(
-        &self,
-        record: crate::store::AgilePlusIngestRecord,
-        now: DateTime<Utc>,
-    ) -> BoxFuture<'_, StoreResult<()>> {
-        agileplus::record_agileplus_ingest(&self.pool, record, now)
-    }
-
     fn get_agileplus_revision(
         &self,
         agileplus_id: String,
