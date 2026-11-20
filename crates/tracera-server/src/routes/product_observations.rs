@@ -1,13 +1,39 @@
 //! Product-scoped durable evidence and explainable detector API.
 use super::auth_routes::ProductScope;
 use crate::{
-    product::{persistence::*, ProductDetectorSuite},
+    product::{
+        persistence::*, AssessmentEngine, AssessmentResult, AssessmentStatus, DetectorResult,
+        ProductDetectorSuite,
+    },
     store::{StoreError, StoreResult},
     AppState,
 };
 use axum::{extract::State, http::StatusCode, routing::get, Json, Router};
 use serde_json::{json, Value};
 type Failure = (StatusCode, Json<Value>);
+/// Observations older than this are stale for both detection and assessment.
+const FRESHNESS_THRESHOLD_SECS: i64 = 86_400;
+
+/// `/findings` response: the detector report plus the deterministic
+/// [`AssessmentEngine`] verdict for the same persisted evidence.
+///
+/// Detector fields (`products_scanned`, `capabilities_scanned`, `findings`,
+/// `detector_version`, `ran_at`) keep their previous top-level positions;
+/// `status` and `assessment` are additive. Each assessment finding carries its
+/// own status, severity, contributing observation IDs and an evidence-level
+/// explanation, so failed, missing, stale, contradictory, satisfied and
+/// unknown evidence stay distinguishable rather than collapsing into a single
+/// undifferentiated detector list.
+#[derive(Debug, serde::Serialize)]
+struct ProductFindings {
+    /// Worst assessment status across every capability finding.
+    status: AssessmentStatus,
+    /// Per-capability assessment: status, explanation and evidence IDs.
+    assessment: AssessmentResult,
+    /// Detector findings (freshness, coverage, contradiction).
+    #[serde(flatten)]
+    detectors: DetectorResult,
+}
 fn failure(status: StatusCode, code: &str) -> Failure {
     (status, Json(json!({"error":code})))
 }
@@ -64,13 +90,24 @@ async fn read(
 async fn findings(
     State(state): State<AppState>,
     ProductScope((product, baseline)): ProductScope,
-) -> Result<Json<crate::product::DetectorResult>, Failure> {
+) -> Result<Json<ProductFindings>, Failure> {
     let model = model(&state, product, baseline).await?;
-    Ok(Json(ProductDetectorSuite::new(86400).run(
+    let assessment = AssessmentEngine::new(FRESHNESS_THRESHOLD_SECS).assess_scoped_intents(
+        model.product_id.as_str(),
+        model.baseline,
+        &model.intents,
+        &model.observations,
+    );
+    let detectors = ProductDetectorSuite::new(FRESHNESS_THRESHOLD_SECS).run(
         &model.product_id,
         &model.intents,
         &model.observations,
-    )))
+    );
+    Ok(Json(ProductFindings {
+        status: assessment.status,
+        assessment,
+        detectors,
+    }))
 }
 pub(crate) fn routes() -> Router<AppState> {
     Router::new()

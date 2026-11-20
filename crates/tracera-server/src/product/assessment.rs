@@ -195,13 +195,39 @@ impl AssessmentEngine {
             .iter()
             .all(|o| (now - o.recorded_at).num_seconds() > self.freshness_threshold_secs);
         if all_stale {
+            let failed = obs
+                .iter()
+                .filter(|o| o.result == ObservationResult::Failed)
+                .count();
+            let passed = obs
+                .iter()
+                .filter(|o| o.result == ObservationResult::Passed)
+                .count();
+            // Staleness is reported as distinct from a current violation, but
+            // the explanation must still say which evidence exists and why it
+            // cannot be treated as current proof (issue #1098).
+            let detail = match (failed, passed) {
+                (0, 0) => String::new(),
+                (0, _) => format!(
+                    " {passed} of them passed, but that pass is too old to count \
+                     as current evidence."
+                ),
+                (_, 0) => format!(
+                    " {failed} of them failed, so the failure is unverified \
+                     against the current build rather than confirmed."
+                ),
+                _ => format!(
+                    " {passed} passed and {failed} failed, so the failure is \
+                     unverified against the current build rather than confirmed."
+                ),
+            };
             return AssessmentFinding {
                 product_id: String::new(),
                 capability_id: Some(capability_id.to_string()),
                 status: AssessmentStatus::Stale,
                 explanation: format!(
                     "All {count} observations for capability '{capability_id}' \
-                     are older than the freshness threshold ({thresh}s).",
+                     are older than the freshness threshold ({thresh}s).{detail}",
                     count = obs.len(),
                     thresh = self.freshness_threshold_secs,
                 ),
