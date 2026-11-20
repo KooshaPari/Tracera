@@ -9,16 +9,11 @@ pub(crate) static CSRF_TOKENS: std::sync::OnceLock<tokio::sync::Mutex<VecDeque<S
 pub(crate) const MAX_CSRF_TOKENS: usize = 1024;
 pub(crate) const CANONICAL_BROWSER_ORIGIN: &str = "http://127.0.0.1:18000";
 
-/// CSRF protection middleware.
+/// CSRF protection middleware for the explicit browser-csrf-origin profile.
 ///
-/// For state-mutating requests (POST/PUT/DELETE/PATCH), verifies that the
-/// request originates from an allowed origin. This prevents cross-site request
-/// forgery attacks where a malicious site could submit forms on behalf of
-/// authenticated users.
-///
-/// Tokens are process-local and bounded. They are deliberately independent of
-/// bearer authentication: browser mutations must prove both the canonical
-/// browser origin and possession of a token issued by this process.
+/// For state-mutating requests (POST/PUT/DELETE/PATCH), verifies the canonical
+/// Origin (or Referer for browsers that omit Origin) and a process-issued
+/// token. This middleware is installed only for that profile.
 pub(crate) async fn csrf_protection(
     request: axum::http::Request<axum::body::Body>,
     next: axum::middleware::Next,

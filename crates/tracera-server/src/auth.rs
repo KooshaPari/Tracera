@@ -9,26 +9,83 @@ use std::sync::Arc;
 
 pub(crate) type AuthToken = Option<Arc<str>>;
 
-/// Protect every application route when a public listener is enabled. Health
-/// probes remain unauthenticated so orchestrators can determine liveness and
-/// readiness without carrying application credentials.
+/// The single explicit authentication profile accepted by this server.
+///
+/// A router must be built with exactly one profile. No profile, or an
+/// unrecognised profile name, is rejected before any request is served.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub(crate) enum AuthProfile {
+    /// Browser clients: WorkOS AuthKit at the ingress, canonical Origin and
+    /// a process-issued CSRF token for state-mutating requests.
+    BrowserCsrfOrigin,
+    /// Declared MCP service clients: a bearer token configured for this
+    /// process. Browser CSRF checks do not apply to this profile.
+    BearerService,
+}
+
+impl AuthProfile {
+    pub(crate) const BROWSER_CSRF_ORIGIN: &'static str = "browser-csrf-origin";
+    pub(crate) const BEARER_SERVICE: &'static str = "bearer-service";
+    pub(crate) const ENV: &'static str = "TRACERA_AUTH_PROFILE";
+
+    pub(crate) fn as_str(self) -> &'static str {
+        match self {
+            Self::BrowserCsrfOrigin => Self::BROWSER_CSRF_ORIGIN,
+            Self::BearerService => Self::BEARER_SERVICE,
+        }
+    }
+
+    /// Resolve the profile from the environment. Absence is not a default:
+    /// it is an error, so no implicit bypass profile can be selected.
+    pub(crate) fn from_env() -> Result<Self, String> {
+        let raw = std::env::var(Self::ENV).map_err(|_| {
+            format!(
+                "{} must be set to `{}` or `{}`",
+                Self::ENV,
+                Self::BROWSER_CSRF_ORIGIN,
+                Self::BEARER_SERVICE
+            )
+        })?;
+        Self::parse(&raw)
+    }
+
+    pub(crate) fn parse(raw: &str) -> Result<Self, String> {
+        match raw.trim() {
+            Self::BROWSER_CSRF_ORIGIN => Ok(Self::BrowserCsrfOrigin),
+            Self::BEARER_SERVICE => Ok(Self::BearerService),
+            other => Err(format!(
+                "unknown {} `{other}`; expected `{}` or `{}`",
+                Self::ENV,
+                Self::BROWSER_CSRF_ORIGIN,
+                Self::BEARER_SERVICE
+            )),
+        }
+    }
+}
+
+/// Protects application routes in the declared bearer service profile.
+///
+/// In the browser profile this middleware is not installed at all, so there
+/// is no code path where a missing token can silently disable protection.
 pub(crate) async fn require_bearer(
     State(expected): State<AuthToken>,
     request: Request<Body>,
     next: Next,
 ) -> Response {
-    if expected.is_none() || is_health_route(request.uri().path()) {
-        return next.run(request).await;
-    }
+    let Some(expected) = expected.as_ref() else {
+        return (
+            StatusCode::SERVICE_UNAVAILABLE,
+            "auth profile bearer-service is not configured",
+        )
+            .into_response();
+    };
 
     let valid = request
         .headers()
         .get(AUTHORIZATION)
         .and_then(|value| value.to_str().ok())
         .and_then(|value| value.strip_prefix("Bearer "))
-        .is_some_and(|provided| {
-            constant_time_equal(provided.as_bytes(), expected.as_ref().unwrap().as_bytes())
-        });
+        .is_some_and(|provided| constant_time_equal(provided.as_bytes(), expected.as_bytes()));
 
     if valid {
         next.run(request).await
@@ -42,14 +99,6 @@ pub(crate) async fn require_bearer(
     }
 }
 
-fn is_health_route(path: &str) -> bool {
-    matches!(
-        path,
-        "/health" | "/healthz" | "/ready" | "/readyz" | "/api/v1/health" | "/api/v1/csrf-token"
-    ) || path.ends_with("/health")
-        || path.ends_with("/healthz")
-}
-
 fn constant_time_equal(left: &[u8], right: &[u8]) -> bool {
     let mut difference = left.len() ^ right.len();
     for index in 0..left.len().max(right.len()) {
@@ -61,7 +110,7 @@ fn constant_time_equal(left: &[u8], right: &[u8]) -> bool {
 
 #[cfg(test)]
 mod tests {
-    use super::{constant_time_equal, is_health_route};
+    use super::{constant_time_equal, AuthProfile};
 
     #[test]
     fn constant_time_comparison_requires_exact_bytes() {
@@ -71,19 +120,17 @@ mod tests {
     }
 
     #[test]
-    fn health_probe_routes_are_public_but_application_routes_are_not() {
-        for path in [
-            "/health",
-            "/healthz",
-            "/ready",
-            "/readyz",
-            "/evidence/health",
-            "/api/v1/health",
-            "/api/v1/csrf-token",
-        ] {
-            assert!(is_health_route(path), "{path} should be a probe route");
-        }
-        assert!(!is_health_route("/evidence"));
-        assert!(!is_health_route("/api/v1/projects"));
+    fn only_two_explicit_profiles_parse() {
+        assert_eq!(
+            AuthProfile::parse("browser-csrf-origin"),
+            Ok(AuthProfile::BrowserCsrfOrigin)
+        );
+        assert_eq!(
+            AuthProfile::parse("bearer-service"),
+            Ok(AuthProfile::BearerService)
+        );
+        assert!(AuthProfile::parse("").is_err());
+        assert!(AuthProfile::parse("none").is_err());
+        assert!(AuthProfile::parse("bearer").is_err());
     }
 }

@@ -158,3 +158,6 @@ impl<S: Send + Sync> axum::extract::FromRequestParts<S> for ProductScope {
         Ok(Self(scope))
     }
 }
+#[cfg(test)]
+#[path = "auth_tests.rs"]
+mod auth_tests;

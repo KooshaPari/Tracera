@@ -10,10 +10,23 @@ fn api_base() -> String {
     std::env::var("TRACERA_API_URL").unwrap_or_else(|_| "http://127.0.0.1:3000".to_string())
 }
 
-fn auth_token() -> Option<String> {
+fn auth_token() -> Result<String, String> {
+    let profile = std::env::var("TRACERA_AUTH_PROFILE")
+        .map_err(|_| {
+            "TRACERA_AUTH_PROFILE must be set to `bearer-service` for this MCP adapter"
+                .to_string()
+        })?;
+    if profile.trim() != "bearer-service" {
+        return Err(format!(
+            "TRACERA_AUTH_PROFILE `{profile}` is not supported by this MCP adapter; expected `bearer-service`"
+        ));
+    }
     std::env::var("TRACERA_AUTH_TOKEN")
         .ok()
-        .filter(|t| !t.is_empty())
+        .filter(|token| !token.is_empty())
+        .ok_or_else(|| {
+            "TRACERA_AUTH_TOKEN must contain the declared service bearer token".to_string()
+        })
 }
 
 #[derive(Debug, Deserialize)]
@@ -65,12 +78,13 @@ struct CoverageLink {
 }
 
 async fn http_get(path: &str) -> Result<String, String> {
+    let token = match auth_token() {
+        Ok(token) => token,
+        Err(error) => return Err(format!("auth configuration error: {error}")),
+    };
     let url = format!("{}{}", api_base(), path);
     let client = reqwest::Client::new();
-    let mut req = client.get(&url);
-    if let Some(token) = auth_token() {
-        req = req.bearer_auth(token);
-    }
+    let mut req = client.get(&url).bearer_auth(token);
     let resp = req
         .send()
         .await
@@ -87,12 +101,13 @@ async fn http_get(path: &str) -> Result<String, String> {
 }
 
 async fn http_post(path: &str, payload: &Value) -> Result<String, String> {
+    let token = match auth_token() {
+        Ok(token) => token,
+        Err(error) => return Err(format!("auth configuration error: {error}")),
+    };
     let url = format!("{}{}", api_base(), path);
     let client = reqwest::Client::new();
-    let mut req = client.post(&url).json(payload);
-    if let Some(token) = auth_token() {
-        req = req.bearer_auth(token);
-    }
+    let mut req = client.post(&url).json(payload).bearer_auth(token);
     let resp = req
         .send()
         .await

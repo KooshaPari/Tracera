@@ -306,11 +306,34 @@ async fn main() {
         r2: tracera_server::r2::R2Client::from_env().map(Arc::new),
     };
 
+    let auth_profile = match auth::AuthProfile::from_env() {
+        Ok(profile) => {
+            info!(profile = profile.as_str(), "authentication profile");
+            profile
+        }
+        Err(error) => {
+            eprintln!("FATAL: {error}");
+            std::process::exit(1);
+        }
+    };
     let auth_token = env::var(AUTH_TOKEN_ENV)
         .ok()
         .filter(|token| !token.is_empty())
         .map(Arc::<str>::from);
-    let app = router::build_router_with_auth(state, auth_token.clone());
+    if auth_profile == auth::AuthProfile::BearerService && auth_token.is_none() {
+        eprintln!(
+            "FATAL: {} must contain a bearer token when {} is `{}`",
+            AUTH_TOKEN_ENV,
+            auth::AuthProfile::ENV,
+            auth::AuthProfile::BEARER_SERVICE
+        );
+        std::process::exit(1);
+    }
+    let app = router::build_router_with_profile(
+        state,
+        auth_profile,
+        auth_token.clone(),
+    );
 
     let serve_dir = ServeDir::new(&frontend_dist).fallback(ServeFile::new(&index_html));
     let app = app.fallback_service(serve_dir);
