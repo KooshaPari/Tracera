@@ -1,4 +1,5 @@
 mod agileplus;
+mod agileplus_atomic;
 mod evidence;
 mod ingest;
 mod items;
@@ -16,6 +17,7 @@ use serde_json::Value;
 use sqlx::{Row, SqlitePool};
 
 use crate::store::{
+    AgilePlusEdgeWrite, AgilePlusIngestOutcome, AgilePlusIngestRecord, AgilePlusNodeWrite,
     BoxFuture, EvidenceItem, IngestOutcome, IngestRecord, ListParams, Problem, ProjectSummary,
     Sprint, Store, StoreError, StoreResult, Story, TeamRow, TraceLink,
 };
@@ -389,5 +391,17 @@ impl Store for SqliteStore {
         agileplus_id: String,
     ) -> BoxFuture<'_, StoreResult<Option<i64>>> {
         agileplus::get_agileplus_revision(&self.pool, agileplus_id)
+    }
+
+    fn ingest_agileplus_atomic(
+        &self,
+        nodes: Vec<AgilePlusNodeWrite>,
+        edges: Vec<AgilePlusEdgeWrite>,
+        record: AgilePlusIngestRecord,
+        now: DateTime<Utc>,
+    ) -> BoxFuture<'_, StoreResult<AgilePlusIngestOutcome>> {
+        Box::pin(
+            async move { agileplus_atomic::ingest(&self.pool, nodes, edges, record, now).await },
+        )
     }
 }
