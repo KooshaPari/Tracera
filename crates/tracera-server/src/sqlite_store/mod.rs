@@ -5,6 +5,9 @@ mod ingest;
 mod items;
 mod problems;
 mod product_observations;
+#[cfg(test)]
+#[path = "project_identity_tests.rs"]
+mod project_identity_tests;
 mod projects;
 mod sprints;
 mod stories;
