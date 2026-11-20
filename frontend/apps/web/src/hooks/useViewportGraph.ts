@@ -67,6 +67,11 @@ interface ViewportGraphResponse {
 /**
  * Hook return type
  */
+interface ViewportGraphFetchError extends Error {
+  status: number;
+  statusText: string;
+}
+
 interface UseViewportGraphResult {
   /** All loaded nodes as array */
   nodes: Node[];
@@ -87,6 +92,12 @@ interface UseViewportGraphResult {
   isLoading: boolean;
   /** Number of loaded regions */
   loadedRegionCount: number;
+  /** HTTP status of the failed request */
+  status: number | undefined;
+  /** Last load error, including HTTP status */
+  error: ViewportGraphFetchError | undefined;
+  /** Clear the last error and allow an explicit retry */
+  retry: () => void;
 }
 
 /**
@@ -141,6 +152,8 @@ export function useViewportGraph(
   });
   const [totalCount, setTotalCount] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<ViewportGraphFetchError>();
+  const [retryToken, setRetryToken] = useState(0);
 
   // Track in-flight requests to prevent duplicate loads
   const loadingRegionsRef = useRef<Set<string>>(new Set());
@@ -166,6 +179,7 @@ export function useViewportGraph(
       // Mark region as loading
       loadingRegionsRef.current.add(regionKey);
       setIsLoading(true);
+      setError(undefined);
 
       try {
         // Fetch viewport data from backend
@@ -233,8 +247,19 @@ export function useViewportGraph(
             data.metadata.totalEdgesInRegion,
           );
         }
-      } catch (error) {
-        logger.error("[useViewportGraph] Failed to load viewport:", error);
+      } catch (cause) {
+        const fetchError =
+          cause instanceof Error
+            ? (cause as ViewportGraphFetchError)
+            : (new Error(String(cause)) as ViewportGraphFetchError);
+        if (typeof (fetchError as { status?: unknown }).status !== "number") {
+          (fetchError as { status?: number }).status = 0;
+        }
+        if (typeof (fetchError as { statusText?: unknown }).statusText !== "string") {
+          (fetchError as { statusText?: string }).statusText = "";
+        }
+        setError(fetchError);
+        logger.error("[useViewportGraph] Failed to load viewport:", cause);
         // Don't add to loadedRegions on error - allow retry
       } finally {
         // Remove from loading set
@@ -242,19 +267,28 @@ export function useViewportGraph(
         setIsLoading(loadingRegionsRef.current.size > 0);
       }
     },
-    [projectId, loadedRegions, bufferPx, onRegionLoaded],
+    [projectId, loadedRegions, bufferPx, onRegionLoaded, retryToken],
   );
 
   // Auto-load on mount (initial viewport)
   useEffect(() => {}, [loadViewport]);
 
+  const retry = useCallback((): void => {
+    setError(undefined);
+    loadingRegionsRef.current.clear();
+    setRetryToken((token) => token + 1);
+  }, []);
+
   return {
     edges: [...allEdges.values()],
+    error,
     hasMore,
     isLoading,
     loadViewport,
     loadedRegionCount: loadedRegions.size,
     nodes: [...allNodes.values()],
+    retry,
+    status: error?.status,
     totalCount,
   };
 }

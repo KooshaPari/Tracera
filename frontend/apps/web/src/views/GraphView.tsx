@@ -10,6 +10,9 @@ import {
   SelectValue,
 } from "@tracertm/ui/components/Select";
 
+import { Badge } from "@tracertm/ui/components/Badge";
+import { Button } from "@tracertm/ui/components/Button";
+
 import { UnifiedGraphView } from "../components/graph/UnifiedGraphView";
 import { useGraphProjection, useGraphs } from "../hooks/useGraphs";
 
@@ -187,7 +190,8 @@ const toLink = (link: NormalizedLink, projectId: string): Link => {
 const handleNavigateToItem = (_itemId: string): void => {};
 
 export function GraphView({ projectId }: GraphViewProps): JSX.Element {
-  const { data: graphsData } = useGraphs(projectId);
+  const graphsQuery = useGraphs(projectId);
+  const { data: graphsData } = graphsQuery;
   const [selectedGraphId, setSelectedGraphId] = useState<string | undefined>();
   const [overlayMode, setOverlayMode] = useState("off");
   const overlayMapping = overlayMode === "on";
@@ -207,10 +211,8 @@ export function GraphView({ projectId }: GraphViewProps): JSX.Element {
     return graphs[0];
   }, [graphs, selectedGraphId]);
 
-  const { data: graphData, isLoading: graphLoading } = useGraphProjection(
-    projectId,
-    selectedGraph?.id,
-  );
+  const graphQuery = useGraphProjection(projectId, selectedGraph?.id);
+  const { data: graphData, isLoading: graphLoading } = graphQuery;
 
   const mappingGraph = useMemo(
     () => graphs.find((graph) => graph.graphType === "mapping"),
@@ -249,9 +251,63 @@ export function GraphView({ projectId }: GraphViewProps): JSX.Element {
   }, [graphData, mappingData, overlayMapping, items, projectId]);
 
   const canLoadMore = false;
+  const projectionError = graphQuery.error ?? graphsQuery.error;
+  const graphState = projectionError
+    ? "unavailable"
+    : graphsQuery.isLoading || graphLoading
+      ? "loading"
+      : items.length === 0
+        ? "empty"
+        : "ready";
+
+  if (graphState === "loading") {
+    return <div className="animate-in-fade-up text-muted-foreground p-6 text-sm">Loading graph...</div>;
+  }
+
+  if (graphState === "unavailable") {
+    const message =
+      projectionError instanceof Error && projectionError.message.length > 0
+        ? projectionError.message
+        : "Graph data is unavailable";
+    const status =
+      typeof (projectionError as { status?: unknown } | null)?.status === "number"
+        ? ` (HTTP ${(projectionError as { status?: number } | null)?.status ?? 0})`
+        : "";
+    return (
+      <div className="animate-in-fade-up space-y-4" data-state="unavailable" role="alert">
+        <Badge variant="destructive">Unavailable</Badge>
+        <div className="border-destructive/40 bg-destructive/5 rounded-lg border p-6">
+          <p className="font-medium">Unable to load graph{status}</p>
+          <p className="text-muted-foreground mt-2 text-sm">{message}</p>
+          <Button
+            className="mt-4"
+            variant="outline"
+            onClick={() => {
+              graphsQuery.refetch().catch(() => undefined);
+              graphQuery.refetch().catch(() => undefined);
+            }}
+          >
+            Retry
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  if (graphState === "empty") {
+    return (
+      <div className="animate-in-fade-up space-y-4" data-state="empty">
+        <Badge variant="secondary">Empty</Badge>
+        <div className="border-border bg-muted/20 rounded-lg border p-6">
+          No nodes in this product model
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="animate-in-fade-up space-y-4">
+    <div className="animate-in-fade-up space-y-4" data-state="ready">
+      <Badge variant="success" role="status">Healthy</Badge>
       <div className="flex flex-wrap items-center gap-4">
         <div className="min-w-[220px]">
           <Select value={selectedGraph?.id ?? ""} onValueChange={setSelectedGraphId}>
