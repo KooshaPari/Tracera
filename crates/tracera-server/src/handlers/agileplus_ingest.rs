@@ -36,7 +36,9 @@ use super::agileplus_contract::{
     constant_time_equal, external_prefix, fingerprint, validate, Rejection, ValidatedEnvelope,
     AGILEPLUS_TOKEN_ENV, AGILEPLUS_TOKEN_HEADER, IDEMPOTENCY_HEADER,
 };
-use crate::store::{AgilePlusIngestRecord, AgilePlusRevision, StoreError};
+use crate::store::{
+    AgilePlusEdgeWrite, AgilePlusIngestRecord, AgilePlusNodeWrite, AgilePlusRevision, StoreError,
+};
 
 use super::super::AppState;
 
@@ -195,10 +197,16 @@ pub(crate) async fn ingest_agileplus(
         }
     }
 
+    // Every graph mutation and the receipt are one unit of work. A duplicate
+    // edge, an invalid reference, or a failed receipt insert therefore rolls
+    // back nodes, edges, revisions, and the receipt together.
     let now = Utc::now();
     let ingestion_id = format!("ING-{}", uuid::Uuid::new_v4());
-    let mut node_ids: HashMap<String, String> = HashMap::new();
-    let mut revisions: Vec<AgilePlusRevision> = Vec::new();
+    let fingerprint = fingerprint(&raw);
+    let mut nodes: Vec<AgilePlusNodeWrite> = Vec::with_capacity(envelope.entities.len());
+    let mut node_ids: HashMap<String, usize> = HashMap::with_capacity(envelope.entities.len());
+    let mut edges: Vec<AgilePlusEdgeWrite> = Vec::with_capacity(envelope.trace_links.len());
+    let mut revisions: Vec<AgilePlusRevision> = Vec::with_capacity(envelope.entities.len());
     for (entity, kind) in envelope.entities.iter().zip(kinds.iter()) {
         let metadata = json!({
             "agileplus_id": entity.agileplus_id,
@@ -215,21 +223,13 @@ pub(crate) async fn ingest_agileplus(
             "ingestion_id": ingestion_id,
             "body": entity.body,
         });
-        let node_id = match state
-            .store
-            .create_swee_node((*kind).to_string(), entity.title.clone(), metadata, now)
-            .await
-        {
-            Ok(node_id) => node_id,
-            Err(err) => return store_failure(err),
-        };
-        node_ids.insert(entity.agileplus_id.clone(), node_id.clone());
-        revisions.push(AgilePlusRevision {
-            agileplus_id: entity.agileplus_id.clone(),
-            entity_type: entity.entity_type.clone(),
-            revision: entity.metadata.version.unwrap_or_default(),
-            node_id,
+        let node_index = nodes.len();
+        nodes.push(AgilePlusNodeWrite {
+            node_type: (*kind).to_string(),
+            label: entity.title.clone(),
+            metadata,
         });
+        node_ids.insert(entity.agileplus_id.clone(), node_index);
     }
 
     // Only fully resolved links become edges. A link whose endpoint is not in
@@ -237,7 +237,7 @@ pub(crate) async fn ingest_agileplus(
     let mut trace_links_created = 0usize;
     let mut unresolved: Vec<Value> = Vec::new();
     for link in &envelope.trace_links {
-        let (Some(source_node), Some(target_node)) =
+        let (Some(source_node_index), Some(target_node_index)) =
             (node_ids.get(&link.source_id), node_ids.get(&link.target_id))
         else {
             unresolved.push(json!({
@@ -253,38 +253,65 @@ pub(crate) async fn ingest_agileplus(
             "agileplus_target_id": link.target_id,
             "ingestion_id": ingestion_id,
         });
-        if let Err(err) = state
-            .store
-            .create_swee_edge(
-                link.relation.clone(),
-                source_node.clone(),
-                target_node.clone(),
-                link.confidence,
-                "agileplus".to_string(),
-                edge_metadata,
-                now,
-            )
-            .await
-        {
-            return store_failure(err);
-        }
+        edges.push(AgilePlusEdgeWrite {
+            edge_type: link.relation.clone(),
+            source_node_index: *source_node_index,
+            target_node_index: *target_node_index,
+            confidence: link.confidence,
+            metadata: edge_metadata,
+        });
         trace_links_created += 1;
+    }
+
+    // Revision records initially carry the node index in place of the database
+    // id. The transactional store resolves that index to the inserted row id.
+    for entity in &envelope.entities {
+        let node_index = node_ids[&entity.agileplus_id];
+        revisions.push(AgilePlusRevision {
+            agileplus_id: entity.agileplus_id.clone(),
+            entity_type: entity.entity_type.clone(),
+            revision: entity.metadata.version.unwrap_or_default(),
+            node_id: format!("index:{node_index}"),
+        });
     }
 
     let record = AgilePlusIngestRecord {
         idempotency_key: key,
-        body_fingerprint: fingerprint(&raw),
+        body_fingerprint: fingerprint,
         ingestion_id: ingestion_id.clone(),
         revisions,
     };
-    if let Err(err) = state.store.record_agileplus_ingest(record, now).await {
-        // Never report acceptance when the provenance receipt did not land.
-        return rejection(
-            StatusCode::CONFLICT,
-            "agileplus_idempotency_key_consumed",
-            &format!("idempotency receipt could not be recorded: {err}"),
-        );
-    }
+    // No database writes occur before this point: unresolved links are
+    // reported, never fabricated, and the accepted subset is still atomic.
+    let outcome = match state
+        .store
+        .ingest_agileplus_atomic(nodes, edges, record, now)
+        .await
+    {
+        Ok(outcome) => outcome,
+        Err(StoreError::Conflict(message)) => {
+            tracing::warn!("AgilePlus ingest store conflict: {message}");
+            let code = if message.contains("UNIQUE constraint failed")
+                || message.contains("idx_swee_edges_unique_pair")
+                || message.contains("duplicate edge")
+            {
+                "agileplus_duplicate_edge"
+            } else {
+                "agileplus_store_conflict"
+            };
+            return rejection(
+                StatusCode::CONFLICT,
+                code,
+                "provenance persistence conflict",
+            );
+        }
+        Err(err) => return store_failure(err),
+    };
+
+    // The store rejects duplicate edges atomically, so an accepted outcome
+    // always created every staged edge.
+    #[cfg(debug_assertions)]
+    debug_assert_eq!(outcome.edges_created, trace_links_created);
 
     (
         StatusCode::OK,

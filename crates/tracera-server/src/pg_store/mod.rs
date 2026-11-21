@@ -1,4 +1,5 @@
 mod agileplus;
+mod agileplus_atomic;
 mod items;
 mod product_observations;
 /// PgStore — Postgres backend implementing `Store`.
@@ -15,6 +16,7 @@ use std::time::Duration;
 use tokio::time::timeout;
 
 use crate::store::{
+    AgilePlusEdgeWrite, AgilePlusIngestOutcome, AgilePlusIngestRecord, AgilePlusNodeWrite,
     BoxFuture, EvidenceItem, IngestOutcome, IngestRecord, ListParams, Problem, ProjectSummary,
     Sprint, Store, StoreError, StoreResult, Story, TeamRow, TraceLink,
 };
@@ -388,18 +390,21 @@ impl Store for PgStore {
         ))
     }
 
-    fn record_agileplus_ingest(
-        &self,
-        record: crate::store::AgilePlusIngestRecord,
-        now: DateTime<Utc>,
-    ) -> BoxFuture<'_, StoreResult<()>> {
-        Box::pin(agileplus::record_agileplus_ingest(&self.pool, record, now))
-    }
-
     fn get_agileplus_revision(
         &self,
         agileplus_id: String,
     ) -> BoxFuture<'_, StoreResult<Option<i64>>> {
         Box::pin(agileplus::get_agileplus_revision(&self.pool, agileplus_id))
+    }
+
+    fn ingest_agileplus_atomic(
+        &self,
+        nodes: Vec<AgilePlusNodeWrite>,
+        edges: Vec<AgilePlusEdgeWrite>,
+        record: AgilePlusIngestRecord,
+        now: DateTime<Utc>,
+    ) -> BoxFuture<'_, StoreResult<AgilePlusIngestOutcome>> {
+        let pool = self.pool.clone();
+        Box::pin(async move { agileplus_atomic::ingest(&pool, nodes, edges, record, now).await })
     }
 }
