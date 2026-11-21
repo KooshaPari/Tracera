@@ -243,7 +243,11 @@ async fn immutable_replay_conflict_is_409_and_invalid_is_422() {
 }
 #[tokio::test]
 async fn mounted_routes_retain_authentication_and_body_limit() {
-    let (app, _, _guard) = fixture_auth(crate::auth::AuthProfile::BearerService, Some(Arc::from("test-only-token"))).await;
+    let (app, _, _guard) = fixture_auth(
+        crate::auth::AuthProfile::BearerService,
+        Some(Arc::from("test-only-token")),
+    )
+    .await;
     let uri = "/api/v1/products/alpha/baselines/1/observations";
     for method in ["GET", "POST"] {
         assert_eq!(
@@ -423,7 +427,11 @@ async fn benchmark_adapter_mounts_preserves_causality_and_rejects_conflicts() {
 
 #[tokio::test]
 async fn product_allowlist_denies_every_foreign_route_with_valid_bearer() {
-    let (app, _, _guard) = fixture_auth(crate::auth::AuthProfile::BearerService, Some(Arc::from("test-only-token"))).await;
+    let (app, _, _guard) = fixture_auth(
+        crate::auth::AuthProfile::BearerService,
+        Some(Arc::from("test-only-token")),
+    )
+    .await;
     assert_eq!(
         call(
             app.clone(),
@@ -465,7 +473,11 @@ async fn product_allowlist_denies_every_foreign_route_with_valid_bearer() {
 }
 #[tokio::test]
 async fn unset_and_empty_product_allowlist_deny_every_route() {
-    let (app, _, _guard) = fixture_auth(crate::auth::AuthProfile::BearerService, Some(Arc::from("test-only-token"))).await;
+    let (app, _, _guard) = fixture_auth(
+        crate::auth::AuthProfile::BearerService,
+        Some(Arc::from("test-only-token")),
+    )
+    .await;
     for allowlist in [None, Some(""), Some(" , ")] {
         match allowlist {
             None => std::env::remove_var("TRACERA_PRODUCT_IDS"),

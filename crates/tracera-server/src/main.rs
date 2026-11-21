@@ -329,11 +329,7 @@ async fn main() {
         );
         std::process::exit(1);
     }
-    let app = router::build_router_with_profile(
-        state,
-        auth_profile,
-        auth_token.clone(),
-    );
+    let app = router::build_router_with_profile(state, auth_profile, auth_token.clone());
 
     let serve_dir = ServeDir::new(&frontend_dist).fallback(ServeFile::new(&index_html));
     let app = app.fallback_service(serve_dir);

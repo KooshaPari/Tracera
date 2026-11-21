@@ -99,11 +99,7 @@ mod tests {
 
     #[tokio::test]
     async fn valid_service_bearer_succeeds_without_browser_csrf() {
-        let app = fixture(
-            AuthProfile::BearerService,
-            Some(Arc::from(SERVICE_TOKEN)),
-        )
-        .await;
+        let app = fixture(AuthProfile::BearerService, Some(Arc::from(SERVICE_TOKEN))).await;
         assert_eq!(
             post(app, Some("Bearer slice-25-service-token"), None).await,
             StatusCode::NOT_IMPLEMENTED
@@ -112,34 +108,40 @@ mod tests {
 
     #[tokio::test]
     async fn invalid_bearer_token_is_rejected() {
-        let app = fixture(
-            AuthProfile::BearerService,
-            Some(Arc::from(SERVICE_TOKEN)),
-        )
-        .await;
+        let app = fixture(AuthProfile::BearerService, Some(Arc::from(SERVICE_TOKEN))).await;
         assert_eq!(
             get(app, Some("Bearer wrong-token"), None).await,
             StatusCode::UNAUTHORIZED
         );
     }
 
+    #[test]
+    fn unset_profile_defaults_to_browser_and_invalid_profile_is_rejected() {
+        let original = std::env::var_os(AuthProfile::ENV);
+        std::env::remove_var(AuthProfile::ENV);
+        let default_profile = AuthProfile::from_env();
+        std::env::set_var(AuthProfile::ENV, "invalid");
+        let invalid_profile = AuthProfile::from_env();
+        match original {
+            Some(value) => std::env::set_var(AuthProfile::ENV, value),
+            None => std::env::remove_var(AuthProfile::ENV),
+        }
+        assert_eq!(default_profile, Ok(AuthProfile::BrowserCsrfOrigin));
+        assert!(invalid_profile.is_err());
+    }
+
     #[tokio::test]
-    async fn request_with_no_profile_is_rejected() {
+    async fn unconfigured_bearer_profile_is_rejected() {
         let app = fixture(AuthProfile::BearerService, None).await;
         assert_eq!(
             get(app, Some("Bearer slice-25-service-token"), None).await,
             StatusCode::SERVICE_UNAVAILABLE
         );
-        assert!(AuthProfile::from_env().is_err());
     }
 
     #[tokio::test]
     async fn service_profile_does_not_accept_browser_origin_as_bypass() {
-        let app = fixture(
-            AuthProfile::BearerService,
-            Some(Arc::from(SERVICE_TOKEN)),
-        )
-        .await;
+        let app = fixture(AuthProfile::BearerService, Some(Arc::from(SERVICE_TOKEN))).await;
         assert_eq!(
             get(app, None, Some("http://127.0.0.1:18000")).await,
             StatusCode::UNAUTHORIZED
@@ -148,11 +150,7 @@ mod tests {
 
     #[tokio::test]
     async fn legacy_auth_routes_stay_unimplemented() {
-        let app = fixture(
-            AuthProfile::BearerService,
-            Some(Arc::from(SERVICE_TOKEN)),
-        )
-        .await;
+        let app = fixture(AuthProfile::BearerService, Some(Arc::from(SERVICE_TOKEN))).await;
         for path in [
             "/api/v1/auth/login",
             "/api/v1/auth/logout",

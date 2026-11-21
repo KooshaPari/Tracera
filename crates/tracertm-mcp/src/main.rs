@@ -11,11 +11,9 @@ fn api_base() -> String {
 }
 
 fn auth_token() -> Result<String, String> {
-    let profile = std::env::var("TRACERA_AUTH_PROFILE")
-        .map_err(|_| {
-            "TRACERA_AUTH_PROFILE must be set to `bearer-service` for this MCP adapter"
-                .to_string()
-        })?;
+    let profile = std::env::var("TRACERA_AUTH_PROFILE").map_err(|_| {
+        "TRACERA_AUTH_PROFILE must be set to `bearer-service` for this MCP adapter".to_string()
+    })?;
     if profile.trim() != "bearer-service" {
         return Err(format!(
             "TRACERA_AUTH_PROFILE `{profile}` is not supported by this MCP adapter; expected `bearer-service`"

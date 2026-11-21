@@ -9,10 +9,11 @@ use std::sync::Arc;
 
 pub(crate) type AuthToken = Option<Arc<str>>;
 
-/// The single explicit authentication profile accepted by this server.
+/// The authentication profile accepted by this server.
 ///
-/// A router must be built with exactly one profile. No profile, or an
-/// unrecognised profile name, is rejected before any request is served.
+/// A router must be built with exactly one of the two supported profiles.
+/// An unset profile explicitly defaults to the browser profile; an
+/// unrecognised profile name is rejected before any request is served.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub(crate) enum AuthProfile {
     /// Browser clients: WorkOS AuthKit at the ingress, canonical Origin and
@@ -35,18 +36,26 @@ impl AuthProfile {
         }
     }
 
-    /// Resolve the profile from the environment. Absence is not a default:
-    /// it is an error, so no implicit bypass profile can be selected.
+    /// Resolve the profile from the environment. An unset profile explicitly
+    /// defaults to the browser profile. An invalid value is still rejected.
     pub(crate) fn from_env() -> Result<Self, String> {
-        let raw = std::env::var(Self::ENV).map_err(|_| {
-            format!(
-                "{} must be set to `{}` or `{}`",
+        match std::env::var(Self::ENV) {
+            Ok(raw) => Self::parse(&raw),
+            Err(std::env::VarError::NotPresent) => {
+                tracing::info!(
+                    env = Self::ENV,
+                    profile = Self::BROWSER_CSRF_ORIGIN,
+                    "auth profile unset; using default browser profile"
+                );
+                Ok(Self::BrowserCsrfOrigin)
+            }
+            Err(std::env::VarError::NotUnicode(_)) => Err(format!(
+                "{} must be valid Unicode when set to `{}` or `{}`",
                 Self::ENV,
                 Self::BROWSER_CSRF_ORIGIN,
                 Self::BEARER_SERVICE
-            )
-        })?;
-        Self::parse(&raw)
+            )),
+        }
     }
 
     pub(crate) fn parse(raw: &str) -> Result<Self, String> {
