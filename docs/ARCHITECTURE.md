@@ -18,12 +18,12 @@ retained as historical migration material only.
 
 Three language surfaces plus a container platform:
 
-| Surface | Location | Role |
-|---------|----------|------|
-| Rust (Cargo workspace) | `crates/*`, `src/` | Server, MCP, edge worker, events, atlas, CLI |
-| TypeScript (bun + Turborepo) | `frontend/` | Web app, desktop shell, shared packages |
-| Go/Python (auxiliary) | `sidecar/go/`, `alembic/`, `migrations/` | Sidecar, legacy migration, schema tooling |
-| Local platform | `docker-compose.dev.yml`, `Taskfile.yml` | 27-service dev stack (DBs, graph, streams, observability) |
+| Surface                      | Location                                 | Role                                                      |
+| ---------------------------- | ---------------------------------------- | --------------------------------------------------------- |
+| Rust (Cargo workspace)       | `crates/*`, `src/`                       | Server, MCP, edge worker, events, atlas, CLI              |
+| TypeScript (bun + Turborepo) | `frontend/`                              | Web app, desktop shell, shared packages                   |
+| Go/Python (auxiliary)        | `sidecar/go/`, `alembic/`, `migrations/` | Sidecar, legacy migration, schema tooling                 |
+| Local platform               | `docker-compose.dev.yml`, `Taskfile.yml` | 27-service dev stack (DBs, graph, streams, observability) |
 
 ## 2. Component Inventory
 
@@ -36,17 +36,17 @@ x86_64-unknown-linux-gnu, aarch64-apple-darwin, x86_64-apple-darwin).
 
 Workspace members:
 
-| Member | Responsibility |
-|--------|----------------|
+| Member           | Responsibility                                                                                                                                                                      |
+| ---------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `tracera-server` | Core HTTP server (axum 0.8): traceability, impact, coverage, evidence, ingest, memory, SWEE graph, dual store (SQLite + Postgres via sqlx 0.9), auth, Redis cache, R2 object store. |
-| `tracera-mcp` | MCP server over stdio exposing SWEE graph read/write/navigate/propose tools backed by the server's `Store` trait. |
-| `tracertm-mcp` | Native Rust MCP stdio server, replacing the legacy `python -m tracertm.mcp`. |
-| `tracera-edge` | Cloudflare Worker edge API (deployed to `tracera-edge.pheno.studio`). |
-| `tracera-cli` | Manages the bundled/local Tracera Compose stack across docker, podman, apple-container, and WSL2 runtimes. |
-| `tracera-events` | ClickHouse-backed ingest/analytics for agent_runs, decisions, deploys, traces, llm_calls. |
-| `tracera-workos` | WorkOS integration: AuthKit hosted login, webhook handling (HMAC), directory sync, audit-log ingest. |
-| `tracera-atlas` | Atlas ALM: WorkItem delegation, SDLC observability, agent-of-record, CI bridge. |
-| `mock-agcord` | Mock AgCord server returning AgCord-compatible JSON for `/ingest/agileplus`. |
+| `tracera-mcp`    | MCP server over stdio exposing SWEE graph read/write/navigate/propose tools backed by the server's `Store` trait.                                                                   |
+| `tracertm-mcp`   | Native Rust MCP stdio server, replacing the legacy `python -m tracertm.mcp`.                                                                                                        |
+| `tracera-edge`   | Cloudflare Worker edge API (deployed to `tracera-edge.pheno.studio`).                                                                                                               |
+| `tracera-cli`    | Manages the bundled/local Tracera Compose stack across docker, podman, apple-container, and WSL2 runtimes.                                                                          |
+| `tracera-events` | ClickHouse-backed ingest/analytics for agent_runs, decisions, deploys, traces, llm_calls.                                                                                           |
+| `tracera-workos` | WorkOS integration: AuthKit hosted login, webhook handling (HMAC), directory sync, audit-log ingest.                                                                                |
+| `tracera-atlas`  | Atlas ALM: WorkItem delegation, SDLC observability, agent-of-record, CI bridge.                                                                                                     |
+| `mock-agcord`    | Mock AgCord server returning AgCord-compatible JSON for `/ingest/agileplus`.                                                                                                        |
 
 Additional `crates/` trees present but **not** in the workspace member list:
 `tracera-graphql` (GraphQL gateway mirroring REST + graph subscriptions),
@@ -65,13 +65,13 @@ until its HTTP/service wiring is complete (see ADR-DEP-001).
 **bun workspaces + Turborepo** (`frontend/package.json` name
 `tracertm-frontend`):
 
-| Workspace | Purpose |
-|-----------|---------|
-| `apps/web` | React 19 + TanStack Router SPA (Vite; OpenAPI types generated from `public/specs/openapi.json` via `openapi-typescript`). |
-| `apps/desktop` | Electrobun desktop viewer (`tracera-desktop`). |
-| `apps/tauri-desktop` | Tauri desktop shell (Rust `Cargo.toml` + `src-tauri/` + `tauri.conf.json`). |
-| `apps/os-service` | Rust crate for OS-level service integration. |
-| `packages/api-client`, `packages/config`, `packages/env-manager`, `packages/state`, `packages/tokens`, `packages/types`, `packages/ui` | Shared client, config, state, design tokens, and UI library. |
+| Workspace                                                                                                                              | Purpose                                                                                                                   |
+| -------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| `apps/web`                                                                                                                             | React 19 + TanStack Router SPA (Vite; OpenAPI types generated from `public/specs/openapi.json` via `openapi-typescript`). |
+| `apps/desktop`                                                                                                                         | Electrobun desktop viewer (`tracera-desktop`).                                                                            |
+| `apps/tauri-desktop`                                                                                                                   | Tauri desktop shell (Rust `Cargo.toml` + `src-tauri/` + `tauri.conf.json`).                                               |
+| `apps/os-service`                                                                                                                      | Rust crate for OS-level service integration.                                                                              |
+| `packages/api-client`, `packages/config`, `packages/env-manager`, `packages/state`, `packages/tokens`, `packages/types`, `packages/ui` | Shared client, config, state, design tokens, and UI library.                                                              |
 
 Tooling: **oxlint** (+ oxlint-tsgolint) and **oxfmt** for lint/format,
 stylelint for CSS, Vitest for unit tests, Playwright for e2e/visual tests,
@@ -117,12 +117,17 @@ authoritative route inventory and mount status live in
 `docs/governance/policy/endpoint_traceability_map.md`; `docs/API_REFERENCE.md`
 is the audit-facing target contract, not a claim that every route is mounted.
 
-Deployment surfaces (canonical URIs):
-- API `https://tracera.pheno.studio/api/*`
-- MCP `https://mcp.tracera.pheno.studio`
+Deployment surfaces (observed/reconciled 2026-10-13):
+
+- Web/Auth `https://tracera.pheno.studio` (Cloudflare Access; shared tunnel)
+- Direct backend `https://t.tracera.pheno.studio` (Cloudflare Access; shared tunnel)
 - Edge `https://tracera-edge.pheno.studio`
-- Web app `https://app.tracera.pheno.studio`
+- Vercel frontend `https://tracera-kappa.vercel.app`
 - Landing `https://phenotype.space` (separate repo)
+
+`api.tracera.pheno.studio` and `mcp.tracera.pheno.studio` are historical/design
+names without live DNS in the 2026-10-13 reconciliation. Shared tunnel lifecycle
+belongs to shared infrastructure IaC, not this repository.
 
 ## 4. Key Dependencies
 
@@ -156,8 +161,9 @@ task stack          # docker compose -f docker-compose.dev.yml up -d
 task stack-seed     # seed fixtures
 task run-server     # cargo run -p tracera-server   (:8080)
 task mcp-server     # cargo run -p tracera-mcp --bin mcp-server
-task tunnel         # hybrid Tailnet-first, Cloudflare fallback
-task prod           # stack + run-server + tunnel
+task tunnel-status  # read-only Tailnet + shared Cloudflare ingress status
+task tunnel         # retired: shared tunnel lifecycle is managed externally
+task prod           # local stack + server; does not mutate shared ingress
 
 # Frontend
 cd frontend && bun install

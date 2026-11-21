@@ -44,3 +44,8 @@ phenotype-telemetry = { git = "https://github.com/KooshaPari/PhenoInfra.git", re
 phenotype-git-core = { git = "https://github.com/KooshaPari/PhenoInfra.git", rev = "dd040ed1" }
 phenotype-health = { git = "https://github.com/KooshaPari/PhenoInfra.git", rev = "dd040ed1" }
 phenotype-observability = { git = "https://github.com/KooshaPari/PhenoInfra.git", rev = "dd040ed1" }
+
+[patch.crates-io]
+# Owner-approved unreleased SQLx support for patched SQLite (RUSTSEC-2026-0459).
+# Keep all workspace SQLx users on one revision until a compatible release ships.
+sqlx = { git = "https://github.com/launchbadge/sqlx.git", rev = "88dbe513cf33383fb7bf980c8059cb5e450c6c19" }

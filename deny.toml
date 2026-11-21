@@ -57,3 +57,6 @@ allow = [
 unknown-registry = "deny"
 unknown-git = "deny"
 allow-registry = ["https://github.com/rust-lang/crates.io-index"]
+
+# Owner-approved, revision-pinned SQLx security update pending a release.
+allow-git = ["https://github.com/launchbadge/sqlx.git"]
