@@ -203,7 +203,6 @@ async fn unimplemented_semantics_return_typed_route_labelled_501() {
         ),
         ("POST", "/api/v1/items", "/api/v1/items"),
         ("PUT", "/api/v1/items/a", "/api/v1/items/{id}"),
-        ("DELETE", "/api/v1/items/a", "/api/v1/items/{id}"),
         (
             "POST",
             "/api/v1/projects/alpha/items",
@@ -225,6 +224,48 @@ async fn unimplemented_semantics_return_typed_route_labelled_501() {
         assert_eq!(body, json!({"error":"not_implemented", "route":template}));
     }
 }
+#[tokio::test]
+async fn delete_requires_browser_csrf_guard() {
+    let (app, store) = fixture().await;
+    let response = app
+        .oneshot(
+            http::Request::builder()
+                .method("DELETE")
+                .uri("/api/v1/items/a")
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(response.status(), StatusCode::FORBIDDEN);
+    assert!(store.get_item("a".into()).await.unwrap().is_some());
+}
+
+#[tokio::test]
+async fn delete_removes_persisted_item_and_reports_missing_records() {
+    let (app, store) = fixture().await;
+    let (status, body) = request(app.clone(), "DELETE", "/api/v1/items/a").await;
+    assert_eq!(status, StatusCode::OK);
+    assert_eq!(body, json!({"deleted":true}));
+    assert!(store.get_item("a".into()).await.unwrap().is_none());
+    let (_, list) = request(app.clone(), "GET", "/api/v1/items").await;
+    assert_eq!(list["total"], 2);
+    assert!(list["items"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .all(|item| item["id"] != "a"));
+    let (status, detail) = request(app.clone(), "GET", "/api/v1/items/a").await;
+    assert_eq!(status, StatusCode::NOT_FOUND);
+    assert_eq!(detail["error"], "item_not_found");
+    let (status, body) = request(app.clone(), "DELETE", "/api/v1/items/a").await;
+    assert_eq!(status, StatusCode::NOT_FOUND);
+    assert_eq!(body["error"], "item_not_found");
+    let (status, body) = request(app, "DELETE", "/api/v1/items/missing").await;
+    assert_eq!(status, StatusCode::NOT_FOUND);
+    assert_eq!(body["error"], "item_not_found");
+}
+
 #[tokio::test]
 async fn store_failures_do_not_become_empty_success() {
     let (app, store) = fixture().await;

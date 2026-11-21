@@ -90,3 +90,10 @@ pub(super) async fn create(pool: &PgPool, item: Item) -> StoreResult<()> {
     query.build().execute(pool).await?;
     Ok(())
 }
+
+pub(super) async fn delete(pool: &PgPool, id: String) -> StoreResult<bool> {
+    let mut query = QueryBuilder::<Postgres>::new("DELETE FROM items WHERE id = ");
+    query.push_bind(id);
+    let result = query.build().execute(pool).await?;
+    Ok(result.rows_affected() > 0)
+}

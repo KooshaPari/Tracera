@@ -395,6 +395,12 @@ pub trait Store: Send + Sync {
     // Wired to HTTP mutation routes in a later package; implemented by the sqlite/pg stores.
     #[allow(dead_code)]
     fn create_item(&self, item: crate::item::Item) -> BoxFuture<'_, StoreResult<()>>;
+    /// Remove one persisted item by id.
+    ///
+    /// Returns `false` when no item exists so the HTTP route can distinguish
+    /// a successful delete from a missing record. Both backends delete from
+    /// the same canonical `items` table that backs `list_items` and `get_item`.
+    fn delete_item(&self, id: String) -> BoxFuture<'_, StoreResult<bool>>;
     // Evidence
     fn list_evidence(&self) -> BoxFuture<'_, StoreResult<Vec<EvidenceItem>>>;
     fn create_evidence(

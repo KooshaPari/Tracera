@@ -73,6 +73,9 @@ impl Store for PgStore {
     fn create_item(&self, item: crate::item::Item) -> BoxFuture<'_, StoreResult<()>> {
         Box::pin(items::create(&self.pool, item))
     }
+    fn delete_item(&self, id: String) -> BoxFuture<'_, StoreResult<bool>> {
+        Box::pin(items::delete(&self.pool, id))
+    }
     fn list_evidence(&self) -> BoxFuture<'_, StoreResult<Vec<EvidenceItem>>> {
         Box::pin(evidence::list_evidence(&self.pool))
     }

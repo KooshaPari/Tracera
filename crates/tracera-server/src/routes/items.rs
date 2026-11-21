@@ -1,6 +1,6 @@
 //! Canonical items persisted through Store; no synthetic SWEE projections.
-//! Queries use SQL pagination and a two-second store budget. Mutations and
-//! equivalence navigation remain typed 501 until their semantics exist.
+//! Queries use SQL pagination and a two-second store budget. Mutations other
+//! than item delete remain typed 501 until their semantics exist.
 use crate::{item::ItemFilter, store::StoreResult, AppState};
 use axum::{
     extract::{Path, Query, State},
@@ -78,6 +78,13 @@ pub(super) async fn get(State(state): State<AppState>, Path(id): Path<String>) -
         .await?
         .ok_or_else(|| error(StatusCode::NOT_FOUND, "item_not_found"))?;
     Ok(Json(json!(item)))
+}
+pub(super) async fn delete(State(state): State<AppState>, Path(id): Path<String>) -> Reply {
+    let deleted = bounded(state.store.delete_item(id)).await?;
+    if !deleted {
+        return Err(error(StatusCode::NOT_FOUND, "item_not_found"));
+    }
+    Ok(Json(json!({"deleted":true})))
 }
 pub(super) async fn project_list(
     State(state): State<AppState>,

@@ -6,16 +6,18 @@ import {
   EyeOff,
   PauseCircle,
   Plus,
-  RefreshCw,
   Search,
   Trash2,
   Webhook,
   XCircle,
 } from "lucide-react";
 import { useState } from "react";
+import { toast } from "sonner";
 
 import type { CreateWebhookData } from "@/hooks/useWebhooks";
 import type { WebhookProvider, WebhookStatus } from "@tracertm/types";
+
+import { copyToClipboard } from "@/utils/helpers";
 
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -29,7 +31,6 @@ import {
 import {
   useCreateWebhook,
   useDeleteWebhook,
-  useRegenerateWebhookSecret,
   useSetWebhookStatus,
   useWebhookStats,
   useWebhooks,
@@ -85,11 +86,6 @@ const statusIcons: Record<WebhookStatus, React.ReactNode> = {
   disabled: <XCircle className="h-4 w-4" />,
   paused: <PauseCircle className="h-4 w-4" />,
 };
-
-function copyToClipboard(text: string): void {
-  undefined;
-}
-
 export function WebhookIntegrationsView({ projectId }: WebhookIntegrationsViewProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<WebhookStatus | "all">("all");
@@ -106,7 +102,6 @@ export function WebhookIntegrationsView({ projectId }: WebhookIntegrationsViewPr
   const { data: stats } = useWebhookStats(projectId);
   const createMutation = useCreateWebhook();
   const setStatusMutation = useSetWebhookStatus();
-  const regenerateSecretMutation = useRegenerateWebhookSecret();
   const deleteMutation = useDeleteWebhook();
 
   // Create form state
@@ -511,7 +506,13 @@ export function WebhookIntegrationsView({ projectId }: WebhookIntegrationsViewPr
                           size="icon"
                           className="h-6 w-6"
                           onClick={() => {
-                            copyToClipboard(webhook.webhookSecret);
+                            void copyToClipboard(webhook.webhookSecret).then((copied) => {
+                              if (copied) {
+                                toast.success("Webhook secret copied");
+                              } else {
+                                toast.error("Could not copy webhook secret");
+                              }
+                            });
                           }}
                         >
                           <Copy className="h-3 w-3" />
@@ -560,17 +561,6 @@ export function WebhookIntegrationsView({ projectId }: WebhookIntegrationsViewPr
                             <CheckCircle2 className="h-4 w-4" />
                           </Button>
                         )}
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8"
-                          onClick={() => {
-                            regenerateSecretMutation.mutate(webhook.id);
-                          }}
-                          title="Regenerate Secret"
-                        >
-                          <RefreshCw className="h-4 w-4" />
-                        </Button>
                         <Button
                           variant="ghost"
                           size="icon"
