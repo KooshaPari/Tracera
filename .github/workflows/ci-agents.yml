@@ -225,7 +225,19 @@ jobs:
         run: bun install --frozen-lockfile
       - name: oxlint
         working-directory: frontend
-        run: bun run lint --silent
+        shell: bash
+        # oxlint 1.43.0 panics with `called `Result::unwrap()` on an `Err` value:
+        # Os { code: 11, kind: WouldBlock }` in crates/oxc_diagnostics/src/service.rs:213
+        # when its stdout is a non-blocking pipe and diagnostic volume is high
+        # (oxc-project/oxc#20239; the writer-error unwrap is fixed upstream in 1.60.0 and
+        # further hardened in later releases). Buffer diagnostics to a regular file so the
+        # writer never sees EAGAIN, then replay the complete log. Lint rules are unchanged.
+        run: |
+          set +e
+          bun run lint --silent > oxlint.log 2>&1
+          status=$?
+          cat oxlint.log
+          exit $status
       - name: biome (root)
         run: npx --yes @biomejs/biome check .
 
