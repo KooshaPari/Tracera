@@ -82,7 +82,7 @@ async fn http_get(path: &str) -> Result<String, String> {
     };
     let url = format!("{}{}", api_base(), path);
     let client = reqwest::Client::new();
-    let mut req = client.get(&url).bearer_auth(token);
+    let req = client.get(&url).bearer_auth(token);
     let resp = req
         .send()
         .await
@@ -105,7 +105,7 @@ async fn http_post(path: &str, payload: &Value) -> Result<String, String> {
     };
     let url = format!("{}{}", api_base(), path);
     let client = reqwest::Client::new();
-    let mut req = client.post(&url).json(payload).bearer_auth(token);
+    let req = client.post(&url).json(payload).bearer_auth(token);
     let resp = req
         .send()
         .await
