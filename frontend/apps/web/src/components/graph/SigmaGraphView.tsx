@@ -83,7 +83,7 @@ export const SigmaGraphView = memo(function SigmaGraphView(props: SigmaGraphView
     <SigmaContainer
       className={`sigma-container ${className}`}
       style={{ height: "100%", width: "100%" }}
-      settings={{
+      options={{
         // Performance optimizations
         renderEdgeLabels: false, // Labels only on zoom
         enableEdgeEvents: false,

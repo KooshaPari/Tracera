@@ -19,6 +19,7 @@
  */
 
 import type Graph from "graphology";
+import type { Attributes } from "graphology-types";
 
 import { SigmaContainer, useLoadGraph, useRegisterEvents, useSigma } from "@react-sigma/core";
 import { memo, useEffect, useMemo, useRef, useState } from "react";
@@ -146,7 +147,7 @@ function SigmaGraphContent({
     const graph = sigma.getGraph();
 
     // Clear all highlights first
-    graph.forEachNode((node) => {
+    graph.forEachNode((node: string) => {
       graph.setNodeAttribute(node, "highlighted", false);
     });
 
@@ -155,7 +156,7 @@ function SigmaGraphContent({
       graph.setNodeAttribute(selectedNodeId, "highlighted", true);
 
       // Highlight neighbors
-      graph.forEachNeighbor(selectedNodeId, (neighbor) => {
+      graph.forEachNeighbor(selectedNodeId, (neighbor: string) => {
         graph.setNodeAttribute(neighbor, "highlighted", true);
       });
     }
@@ -172,7 +173,7 @@ function SigmaGraphContent({
     const graph = sigma.getGraph();
 
     // Clear all hover highlights
-    graph.forEachNode((node) => {
+    graph.forEachNode((node: string) => {
       graph.setNodeAttribute(node, "hovered", false);
     });
 
@@ -262,7 +263,7 @@ function SigmaGraphContent({
       let visibleNodes = 0;
       let visibleEdges = 0;
 
-      graph.forEachNode((_node, attrs) => {
+      graph.forEachNode((_node: string, attrs: Attributes) => {
         const { x, y } = attrs;
         if (typeof x !== "number" || typeof y !== "number") {
           return;
@@ -342,7 +343,7 @@ export const SigmaGraphViewEnhanced = memo(function SigmaGraphViewEnhanced(
         height: "100%",
         width: "100%",
       }}
-      settings={{
+      options={{
         allowInvalidContainer: false,
         defaultEdgeType: "line",
         defaultNodeType: "circle",
