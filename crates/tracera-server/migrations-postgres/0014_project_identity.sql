@@ -24,34 +24,34 @@ SELECT DISTINCT i.project_id, i.project_id, NULL, '{}'::jsonb,
        COALESCE((i.document::jsonb->>'createdAt')::timestamptz, now()),
        COALESCE((i.document::jsonb->>'updatedAt')::timestamptz, now())
 FROM items i
-WHERE i.project_id IS NOT NULL AND i.project_id <> ''
+WHERE i.project_id IS NOT NULL AND coalesce(length(i.project_id), 0) > 0
 ON CONFLICT (id) DO NOTHING;
 
 INSERT INTO projects (id, name, description, metadata, created_at, updated_at)
 SELECT DISTINCT s.metadata->>'project_id', s.metadata->>'project_id', NULL, '{}'::jsonb, s.created_at, s.updated_at
 FROM swee_nodes s
 WHERE s.metadata->>'project_id' IS NOT NULL
-  AND s.metadata->>'project_id' <> ''
+  AND coalesce(length(s.metadata->>'project_id'), 0) > 0
 ON CONFLICT (id) DO NOTHING;
 
 INSERT INTO projects (id, name, description, metadata, created_at, updated_at)
 SELECT DISTINCT b.product_id, b.product_id, 'Canonical product baseline scope',
        jsonb_build_object('kind','product','baseline',b.baseline), now(), now()
 FROM product_observation_baselines b
-WHERE b.product_id IS NOT NULL AND b.product_id <> ''
+WHERE b.product_id IS NOT NULL AND coalesce(length(b.product_id), 0) > 0
 ON CONFLICT (id) DO NOTHING;
 
 INSERT INTO projects (id, name, description, metadata, created_at, updated_at)
 SELECT DISTINCT o.product_id, o.product_id, 'Canonical product observation scope',
        '{"kind":"product"}'::jsonb, now(), now()
 FROM product_observations o
-WHERE o.product_id IS NOT NULL AND o.product_id <> ''
+WHERE o.product_id IS NOT NULL AND coalesce(length(o.product_id), 0) > 0
 ON CONFLICT (id) DO NOTHING;
 
 
 CREATE OR REPLACE FUNCTION projects_register_problem() RETURNS trigger AS $$
 BEGIN
-    IF NEW.project_id IS NOT NULL AND NEW.project_id <> '' THEN
+    IF NEW.project_id IS NOT NULL AND coalesce(length(NEW.project_id), 0) > 0 THEN
         INSERT INTO projects (id, name, description, metadata, created_at, updated_at)
         VALUES (NEW.project_id::text, NEW.project_id::text, NULL, '{}'::jsonb, NEW.created_at, NEW.updated_at)
         ON CONFLICT (id) DO NOTHING;
@@ -66,7 +66,7 @@ FOR EACH ROW EXECUTE FUNCTION projects_register_problem();
 
 CREATE OR REPLACE FUNCTION projects_register_item() RETURNS trigger AS $$
 BEGIN
-    IF NEW.project_id IS NOT NULL AND NEW.project_id <> '' THEN
+    IF NEW.project_id IS NOT NULL AND coalesce(length(NEW.project_id), 0) > 0 THEN
         INSERT INTO projects (id, name, description, metadata, created_at, updated_at)
         VALUES (NEW.project_id, NEW.project_id, NULL, '{}'::jsonb,
                 COALESCE((NEW.document::jsonb->>'createdAt')::timestamptz, now()),
@@ -83,7 +83,7 @@ FOR EACH ROW EXECUTE FUNCTION projects_register_item();
 
 CREATE OR REPLACE FUNCTION projects_register_swee_node() RETURNS trigger AS $$
 BEGIN
-    IF NEW.metadata->>'project_id' IS NOT NULL AND NEW.metadata->>'project_id' <> '' THEN
+    IF NEW.metadata->>'project_id' IS NOT NULL AND coalesce(length(NEW.metadata->>'project_id'), 0) > 0 THEN
         INSERT INTO projects (id, name, description, metadata, created_at, updated_at)
         VALUES (NEW.metadata->>'project_id', NEW.metadata->>'project_id', NULL, '{}'::jsonb, NEW.created_at, NEW.updated_at)
         ON CONFLICT (id) DO NOTHING;
@@ -98,7 +98,7 @@ FOR EACH ROW EXECUTE FUNCTION projects_register_swee_node();
 
 CREATE OR REPLACE FUNCTION projects_register_product() RETURNS trigger AS $$
 BEGIN
-    IF NEW.product_id IS NOT NULL AND NEW.product_id <> '' THEN
+    IF NEW.product_id IS NOT NULL AND coalesce(length(NEW.product_id), 0) > 0 THEN
         INSERT INTO projects (id, name, description, metadata, created_at, updated_at)
         VALUES (NEW.product_id, NEW.product_id, 'Canonical product scope',
                 jsonb_build_object('kind','product'), now(), now())
