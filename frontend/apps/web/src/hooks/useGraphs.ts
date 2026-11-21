@@ -12,6 +12,11 @@ const API_URL = API_ORIGIN;
 type GraphNode = Record<string, unknown>;
 type GraphLink = Record<string, unknown>;
 
+export interface GraphFetchError extends Error {
+  status: number;
+  statusText: string;
+}
+
 interface GraphSummary {
   id: string;
   name: string;
@@ -30,6 +35,17 @@ interface GraphProjection {
 }
 
 type UnknownRecord = Record<string, unknown>;
+
+const toGraphFetchError = (response: Response, operation: string): GraphFetchError => {
+  const statusText = hasText(response.statusText) ? ` ${response.statusText}` : "";
+  const error = new Error(
+    `Failed to ${operation}: ${response.status}${statusText}`,
+  ) as GraphFetchError;
+  error.name = "GraphFetchError";
+  error.status = response.status;
+  error.statusText = response.statusText;
+  return error;
+};
 
 const isRecord = (value: unknown): value is UnknownRecord =>
   typeof value === "object" && value !== null && !Array.isArray(value);
@@ -102,7 +118,7 @@ async function fetchGraphs(projectId: string): Promise<GraphSummary[]> {
     headers: getAuthHeaders(),
   });
   if (!res.ok) {
-    throw new Error("Failed to fetch graphs");
+    throw toGraphFetchError(res, "fetch graphs");
   }
   const payload: unknown = await res.json();
   const payloadRecord = isRecord(payload) ? payload : undefined;
@@ -126,7 +142,7 @@ async function fetchGraphProjection(
     headers: getAuthHeaders(),
   });
   if (!res.ok) {
-    throw new Error("Failed to fetch graph projection");
+    throw toGraphFetchError(res, "fetch graph projection");
   }
   const payload: unknown = await res.json();
   const payloadRecord = isRecord(payload) ? payload : undefined;
