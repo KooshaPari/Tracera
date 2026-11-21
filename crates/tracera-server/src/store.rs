@@ -363,6 +363,29 @@ pub struct Problem {
 // ---------------------------------------------------------------------------
 pub type BoxFuture<'a, T> = Pin<Box<dyn Future<Output = T> + Send + 'a>>;
 
+/// Generates the `Store::delete_item` delegation shared by the Postgres and
+/// SQLite backends.
+///
+/// Both backends delete from the same canonical `items` table through a
+/// module-local `items::delete(pool, id)` helper, so only the pool binding
+/// differs. Keeping one definition stops the two copies from drifting.
+///
+/// Invoke inside `impl Store for <store>` with the backend's `items::delete`
+/// function. The `$pool` argument pins the expected pool type, so a backend
+/// wired to the wrong pool fails to compile.
+macro_rules! impl_store_delete_item {
+    ($delete:path, $pool:ty) => {
+        fn delete_item(
+            &self,
+            id: String,
+        ) -> $crate::store::BoxFuture<'_, $crate::store::StoreResult<bool>> {
+            let pool: &$pool = &self.pool;
+            Box::pin($delete(pool, id))
+        }
+    };
+}
+pub(crate) use impl_store_delete_item;
+
 pub trait Store: Send + Sync {
     fn ingest_product_observations(
         &self,
@@ -395,6 +418,12 @@ pub trait Store: Send + Sync {
     // Wired to HTTP mutation routes in a later package; implemented by the sqlite/pg stores.
     #[allow(dead_code)]
     fn create_item(&self, item: crate::item::Item) -> BoxFuture<'_, StoreResult<()>>;
+    /// Remove one persisted item by id.
+    ///
+    /// Returns `false` when no item exists so the HTTP route can distinguish
+    /// a successful delete from a missing record. Both backends delete from
+    /// the same canonical `items` table that backs `list_items` and `get_item`.
+    fn delete_item(&self, id: String) -> BoxFuture<'_, StoreResult<bool>>;
     // Evidence
     fn list_evidence(&self) -> BoxFuture<'_, StoreResult<Vec<EvidenceItem>>>;
     fn create_evidence(

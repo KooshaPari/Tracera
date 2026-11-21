@@ -194,6 +194,11 @@ mod demo {
             Box::pin(async { Err(StoreError::UnsupportedOperation("DemoStore::create_item")) })
         }
 
+        fn delete_item(&self, _id: String) -> BoxFuture<'_, StoreResult<bool>> {
+            // The demo store has no item storage, so every id is unknown.
+            Box::pin(async { Ok(false) })
+        }
+
         fn list_evidence(&self) -> BoxFuture<'_, StoreResult<Vec<EvidenceItem>>> {
             Box::pin(async { Ok(vec![]) })
         }

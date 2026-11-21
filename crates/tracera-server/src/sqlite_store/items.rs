@@ -88,6 +88,13 @@ pub(super) async fn create(pool: &SqlitePool, item: Item) -> StoreResult<()> {
     Ok(())
 }
 
+pub(super) async fn delete(pool: &SqlitePool, id: String) -> StoreResult<bool> {
+    let mut query = QueryBuilder::<Sqlite>::new("DELETE FROM items WHERE id = ");
+    query.push_bind(id);
+    let result = query.build().execute(pool).await?;
+    Ok(result.rows_affected() > 0)
+}
+
 /// SQLite LIKE is ASCII case insensitive; wildcard characters are literal input.
 pub(super) async fn search(
     pool: &SqlitePool,

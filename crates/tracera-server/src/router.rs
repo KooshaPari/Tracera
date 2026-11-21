@@ -212,7 +212,9 @@ pub(crate) fn build_router_with_profile(
         .route("/api/v1/items/bulk-update", any(not_implemented))
         .route(
             "/api/v1/items/{id}",
-            get(item_routes::get).fallback(not_implemented),
+            get(item_routes::get)
+                .delete(item_routes::delete)
+                .fallback(not_implemented),
         )
         .route(
             "/api/v1/items/{item_id}/pivot-targets",
