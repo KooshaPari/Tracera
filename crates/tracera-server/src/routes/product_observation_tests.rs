@@ -101,6 +101,68 @@ async fn request(
         serde_json::from_slice(&bytes).unwrap_or(Value::Null),
     )
 }
+// ---------------------------------------------------------------------------
+// `/findings` assessment wiring (slice 2.4)
+// ---------------------------------------------------------------------------
+
+const OBSERVATIONS_URI: &str = "/api/v1/products/alpha/baselines/1/observations";
+const FINDINGS_URI: &str = "/api/v1/products/alpha/baselines/1/findings";
+
+/// RFC 3339 timestamp that is inside the 24h freshness window.
+fn fresh_at() -> String {
+    chrono::Utc::now().to_rfc3339_opts(chrono::SecondsFormat::Secs, true)
+}
+
+fn capability(id: &str) -> Value {
+    json!({
+        "id": id,
+        "kind": "Capability",
+        "title": id,
+        "description": "",
+        "status": "Accepted",
+        "baseline": 1,
+    })
+}
+
+fn observation(id: &str, capability_id: &str, result: &str, recorded_at: &str) -> Value {
+    json!({
+        "id": id,
+        "product_id": "alpha",
+        "baseline": 1,
+        "kind": "TestResult",
+        "result": result,
+        "source": {"collector": "cargo-test", "version": "1", "artifact_ref": null},
+        "recorded_at": recorded_at,
+        "capability_id": capability_id,
+    })
+}
+
+async fn post_batch(app: &Router, batch: Value) {
+    let (status, body) = call(app.clone(), "POST", OBSERVATIONS_URI, batch).await;
+    assert_eq!(status, StatusCode::OK, "ingest rejected: {body}");
+}
+
+async fn get_findings(app: &Router) -> Value {
+    let (status, body) = call(app.clone(), "GET", FINDINGS_URI, Value::Null).await;
+    assert_eq!(status, StatusCode::OK, "findings failed: {body}");
+    body
+}
+
+fn assessment_finding<'a>(body: &'a Value, capability_id: &str) -> &'a Value {
+    body["assessment"]["findings"]
+        .as_array()
+        .expect("assessment.findings must be an array")
+        .iter()
+        .find(|finding| finding["capability_id"] == json!(capability_id))
+        .unwrap_or_else(|| panic!("no assessment finding for '{capability_id}'"))
+}
+
+fn explanation(finding: &Value) -> &str {
+    finding["explanation"]
+        .as_str()
+        .expect("explanation must be a string")
+}
+
 #[tokio::test]
 async fn mounted_ingest_read_detect_and_foreign_scope() {
     let (app, _, _guard) = fixture().await;
@@ -429,4 +491,186 @@ async fn unset_and_empty_product_allowlist_deny_every_route() {
             assert_eq!(body, json!({"error":"product_access_denied"}));
         }
     }
+}
+
+// ---------------------------------------------------------------------------
+// Assessment wiring: every status must be reachable and explained.
+// ---------------------------------------------------------------------------
+
+#[tokio::test]
+async fn findings_explain_fresh_failure_as_violation() {
+    let (app, _, _guard) = fixture().await;
+    post_batch(
+        &app,
+        json!({
+            "product_id": "alpha",
+            "baseline": 1,
+            "idempotency_key": "fresh-failure",
+            "intents": [capability("storage")],
+            "observations": [observation("obs-1", "storage", "Failed", &fresh_at())],
+        }),
+    )
+    .await;
+
+    let body = get_findings(&app).await;
+    assert_eq!(body["status"], "Violated");
+    // Detector report keeps its previous shape at the top level.
+    assert_eq!(body["products_scanned"], 1);
+    assert!(body["findings"].is_array());
+
+    let storage = assessment_finding(&body, "storage");
+    assert_eq!(storage["status"], "Violated");
+    assert_eq!(storage["severity"], "High");
+    assert_eq!(storage["observation_ids"], json!(["obs-1"]));
+    assert!(
+        explanation(storage).contains("failed observations"),
+        "{}",
+        explanation(storage)
+    );
+    assert!(explanation(storage).contains("obs-1"));
+}
+
+#[tokio::test]
+async fn findings_distinguish_contradiction_from_missing_evidence() {
+    let (app, _, _guard) = fixture().await;
+    post_batch(
+        &app,
+        json!({
+            "product_id": "alpha",
+            "baseline": 1,
+            "idempotency_key": "contradiction",
+            "intents": [capability("storage"), capability("cache")],
+            "observations": [
+                observation("obs-pass", "storage", "Passed", &fresh_at()),
+                observation("obs-fail", "storage", "Failed", &fresh_at()),
+            ],
+        }),
+    )
+    .await;
+
+    let body = get_findings(&app).await;
+    assert_eq!(body["status"], "Inconclusive");
+
+    let storage = assessment_finding(&body, "storage");
+    assert_eq!(storage["status"], "Inconclusive");
+    assert!(
+        explanation(storage).contains("conflicting"),
+        "{}",
+        explanation(storage)
+    );
+
+    let cache = assessment_finding(&body, "cache");
+    assert_eq!(cache["status"], "Unknown");
+    assert!(
+        explanation(cache).contains("No observations found"),
+        "{}",
+        explanation(cache)
+    );
+    assert_eq!(cache["observation_ids"], json!([]));
+    // The contradiction detector still reports the same conflict.
+    assert!(body["findings"]
+        .as_array()
+        .expect("findings must be an array")
+        .iter()
+        .any(|finding| finding["kind"] == "Contradiction"));
+}
+
+#[tokio::test]
+async fn findings_distinguish_stale_from_missing_and_satisfied() {
+    let (app, _, _guard) = fixture().await;
+    post_batch(
+        &app,
+        json!({
+            "product_id": "alpha",
+            "baseline": 1,
+            "idempotency_key": "stale-evidence",
+            "intents": [
+                capability("storage"),
+                capability("cache"),
+                capability("search"),
+            ],
+            "observations": [
+                observation("obs-old", "storage", "Passed", "2026-01-01T00:00:00Z"),
+                observation("obs-new", "search", "Passed", &fresh_at()),
+            ],
+        }),
+    )
+    .await;
+
+    let body = get_findings(&app).await;
+    let storage = assessment_finding(&body, "storage");
+    assert_eq!(storage["status"], "Stale");
+    assert!(
+        explanation(storage).contains("older than the freshness threshold"),
+        "{}",
+        explanation(storage)
+    );
+    assert_eq!(assessment_finding(&body, "cache")["status"], "Unknown");
+    assert_eq!(assessment_finding(&body, "search")["status"], "Satisfied");
+    // Worst status wins for the product verdict.
+    assert_eq!(body["status"], "Stale");
+}
+
+#[tokio::test]
+async fn findings_report_satisfied_when_all_evidence_passes() {
+    let (app, _, _guard) = fixture().await;
+    post_batch(
+        &app,
+        json!({
+            "product_id": "alpha",
+            "baseline": 1,
+            "idempotency_key": "satisfied",
+            "intents": [capability("storage")],
+            "observations": [observation("obs-1", "storage", "Passed", &fresh_at())],
+        }),
+    )
+    .await;
+
+    let body = get_findings(&app).await;
+    assert_eq!(body["status"], "Satisfied");
+    let storage = assessment_finding(&body, "storage");
+    assert_eq!(storage["status"], "Satisfied");
+    assert_eq!(storage["severity"], "Info");
+    assert!(
+        explanation(storage).contains("passing observation"),
+        "{}",
+        explanation(storage)
+    );
+}
+
+#[tokio::test]
+async fn findings_report_unknown_result_separately_from_missing_evidence() {
+    let (app, _, _guard) = fixture().await;
+    post_batch(
+        &app,
+        json!({
+            "product_id": "alpha",
+            "baseline": 1,
+            "idempotency_key": "unknown-result",
+            "intents": [capability("storage"), capability("cache")],
+            "observations": [observation("obs-1", "storage", "Unknown", &fresh_at())],
+        }),
+    )
+    .await;
+
+    let body = get_findings(&app).await;
+    assert_eq!(body["status"], "Unknown");
+
+    let storage = assessment_finding(&body, "storage");
+    assert_eq!(storage["status"], "Unknown");
+    assert!(
+        explanation(storage).contains("incomplete evidence"),
+        "{}",
+        explanation(storage)
+    );
+    assert_eq!(storage["observation_ids"], json!(["obs-1"]));
+
+    let cache = assessment_finding(&body, "cache");
+    assert_eq!(cache["status"], "Unknown");
+    assert!(
+        explanation(cache).contains("No observations found"),
+        "{}",
+        explanation(cache)
+    );
+    assert_ne!(explanation(storage), explanation(cache));
 }
