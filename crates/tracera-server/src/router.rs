@@ -46,9 +46,12 @@ pub(crate) const MAX_REQUEST_BODY_BYTES: usize = 10 * 1024 * 1024;
 
 use crate::not_implemented::not_implemented;
 
+/// Every router is built from exactly one declared authentication profile.
+/// This test-only helper selects the browser profile; callers that exercise
+/// the bearer service profile must pass it explicitly.
 #[allow(dead_code)]
 pub(crate) fn build_router(state: AppState) -> Router {
-    build_router_with_auth(state, None)
+    build_router_with_profile(state, crate::auth::AuthProfile::BrowserCsrfOrigin, None)
 }
 
 /// Browser origins that must always be permitted, even when `TRACERA_ALLOWED_ORIGINS` is set.
@@ -132,12 +135,13 @@ where
     axum::Router::new().fallback(not_configured)
 }
 
-pub(crate) fn build_router_with_auth(
+pub(crate) fn build_router_with_profile(
     state: AppState,
+    profile: crate::auth::AuthProfile,
     auth_token: crate::auth::AuthToken,
 ) -> Router {
     let workos_router = build_workos_router::<AppState>(state.workos_client.clone());
-    Router::new()
+    let mut router = Router::new()
         .merge(product_observation_routes::routes())
         .merge(benchmark_observation_routes::routes())
         .merge(export_import_routes::routes())
@@ -371,10 +375,6 @@ pub(crate) fn build_router_with_auth(
             crate::legacy_forward::Legacy::from_env(),
             crate::legacy_forward::forward_on_stub,
         ))
-        .layer(axum::middleware::from_fn_with_state(
-            auth_token,
-            crate::auth::require_bearer,
-        ))
         .layer(DefaultBodyLimit::max(MAX_REQUEST_BODY_BYTES))
         .layer(
             tower_http::set_header::SetResponseHeaderLayer::if_not_present(
@@ -399,8 +399,23 @@ pub(crate) fn build_router_with_auth(
                 header::CACHE_CONTROL,
                 HeaderValue::from_static("no-store"),
             ),
-        )
-        .layer(axum::middleware::from_fn(csrf_protection))
+        );
+
+    // Exactly one set of auth middleware is attached. The two profiles are
+    // mutually exclusive; there is no router where a missing guard is tolerated.
+    match profile {
+        crate::auth::AuthProfile::BearerService => {
+            router = router.layer(axum::middleware::from_fn_with_state(
+                auth_token,
+                crate::auth::require_bearer,
+            ));
+        }
+        crate::auth::AuthProfile::BrowserCsrfOrigin => {
+            router = router.layer(axum::middleware::from_fn(csrf_protection));
+        }
+    }
+
+    router
         .layer(
             tower_http::cors::CorsLayer::new()
                 .allow_origin(HeaderValue::from_static(CANONICAL_BROWSER_ORIGIN))
