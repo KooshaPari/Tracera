@@ -20,9 +20,9 @@ use serde_json::Value;
 use sqlx::{Row, SqlitePool};
 
 use crate::store::{
-    AgilePlusEdgeWrite, AgilePlusIngestOutcome, AgilePlusIngestRecord, AgilePlusNodeWrite,
-    BoxFuture, EvidenceItem, IngestOutcome, IngestRecord, ListParams, Problem, ProjectSummary,
-    Sprint, Store, StoreError, StoreResult, Story, TeamRow, TraceLink,
+    impl_store_delete_item, AgilePlusEdgeWrite, AgilePlusIngestOutcome, AgilePlusIngestRecord,
+    AgilePlusNodeWrite, BoxFuture, EvidenceItem, IngestOutcome, IngestRecord, ListParams, Problem,
+    ProjectSummary, Sprint, Store, StoreError, StoreResult, Story, TeamRow, TraceLink,
 };
 
 #[derive(Clone)]
@@ -100,9 +100,7 @@ impl Store for SqliteStore {
     fn create_item(&self, item: crate::item::Item) -> BoxFuture<'_, StoreResult<()>> {
         Box::pin(items::create(&self.pool, item))
     }
-    fn delete_item(&self, id: String) -> BoxFuture<'_, StoreResult<bool>> {
-        Box::pin(items::delete(&self.pool, id))
-    }
+    impl_store_delete_item!(items::delete, SqlitePool);
     fn list_evidence(&self) -> BoxFuture<'_, StoreResult<Vec<EvidenceItem>>> {
         evidence::list_evidence(&self.pool)
     }
