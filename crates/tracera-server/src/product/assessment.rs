@@ -236,10 +236,16 @@ impl AssessmentEngine {
             };
         }
 
-        // Check for failures
-        let has_failed = obs.iter().any(|o| o.result == ObservationResult::Failed);
-        let has_passed = obs.iter().any(|o| o.result == ObservationResult::Passed);
-        let has_inconclusive = obs
+        // Stale observations are not current proof. Now that the all-stale
+        // case is handled above, base the current verdict only on evidence
+        // recorded within the freshness threshold.
+        let fresh: Vec<&Observation> = obs
+            .iter()
+            .filter(|o| (now - o.recorded_at).num_seconds() <= self.freshness_threshold_secs)
+            .collect();
+        let has_failed = fresh.iter().any(|o| o.result == ObservationResult::Failed);
+        let has_passed = fresh.iter().any(|o| o.result == ObservationResult::Passed);
+        let has_inconclusive = fresh
             .iter()
             .any(|o| o.result == ObservationResult::Inconclusive);
 
@@ -259,7 +265,7 @@ impl AssessmentEngine {
         }
 
         if has_failed {
-            let failed_ids: Vec<String> = obs
+            let failed_ids: Vec<String> = fresh
                 .iter()
                 .filter(|o| o.result == ObservationResult::Failed)
                 .map(|o| o.id.clone())
@@ -290,8 +296,8 @@ impl AssessmentEngine {
         // A fresh `Unknown` or `Stale` result is not passing evidence (issue
         // #1098). This branch sits below the failure and conflict checks so
         // `Failed` and `Inconclusive` keep their existing precedence.
-        let has_unknown = obs.iter().any(|o| o.result == ObservationResult::Unknown);
-        let has_stale_result = obs.iter().any(|o| o.result == ObservationResult::Stale);
+        let has_unknown = fresh.iter().any(|o| o.result == ObservationResult::Unknown);
+        let has_stale_result = fresh.iter().any(|o| o.result == ObservationResult::Stale);
         if has_unknown || has_stale_result {
             let status = if has_passed || (has_unknown && has_stale_result) {
                 AssessmentStatus::Inconclusive
@@ -777,6 +783,45 @@ mod tests {
             FindingSeverity::from_status(AssessmentStatus::Satisfied),
             FindingSeverity::Info
         );
+    }
+
+    #[test]
+    fn stale_failure_does_not_produce_current_violation() {
+        let engine = AssessmentEngine::new(100);
+        let stale_failure = Observation {
+            id: "stale-failure".to_string(),
+            product_id: ProductId::new("cap-1"),
+            baseline: BaselineRevision(1),
+            kind: ObservationKind::TestResult,
+            result: ObservationResult::Failed,
+            source: ObservationSource {
+                collector: "test".to_string(),
+                version: "0.1.0".to_string(),
+                causality: None,
+                artifact_ref: None,
+            },
+            recorded_at: DateTime::from_timestamp(1_000, 0).unwrap(),
+            capability_id: None,
+        };
+        let fresh_unknown = Observation {
+            id: "fresh-unknown".to_string(),
+            product_id: ProductId::new("cap-1"),
+            baseline: BaselineRevision(1),
+            kind: ObservationKind::TestResult,
+            result: ObservationResult::Unknown,
+            source: ObservationSource {
+                collector: "test".to_string(),
+                version: "0.1.0".to_string(),
+                causality: None,
+                artifact_ref: None,
+            },
+            recorded_at: Utc::now(),
+            capability_id: None,
+        };
+
+        let finding = engine.assess_capability("cap-1", &[stale_failure, fresh_unknown]);
+        assert_ne!(finding.status, AssessmentStatus::Violated);
+        assert_ne!(finding.severity, FindingSeverity::High);
     }
 
     #[test]
