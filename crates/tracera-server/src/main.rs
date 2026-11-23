@@ -13,6 +13,7 @@ mod not_implemented;
 mod observability;
 mod observation_store;
 mod pg_store;
+mod postgres_migration_root;
 use tracera_server::product;
 #[cfg(feature = "phenodag-queue")]
 mod queue;
@@ -239,8 +240,7 @@ async fn main() {
                     eprintln!("FATAL: Cannot connect to Postgres: {e}");
                     std::process::exit(1);
                 });
-            sqlx::migrate!("./migrations-postgres")
-                .run(&pool)
+            postgres_migration_root::apply_root(&pool)
                 .await
                 .unwrap_or_else(|e| {
                     eprintln!("FATAL: Postgres migration failed: {e}");

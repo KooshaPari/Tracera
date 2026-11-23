@@ -9,10 +9,11 @@
 
 use super::*;
 use crate::sqlite_store::SqliteStore;
-use crate::store::Store;
+use crate::store::{AgilePlusEdgeWrite, AgilePlusIngestRecord, Store};
 use axum::body::{to_bytes, Body};
 use axum::Router;
 use serde_json::json;
+use sqlx::Row;
 use std::sync::{Arc, Mutex};
 use std::time::Instant;
 use tower::ServiceExt;
@@ -481,6 +482,208 @@ async fn accepted_ingestion_maps_and_persists_without_verifying_capabilities() {
     assert_eq!(edges.len(), 1);
     assert_eq!(edges[0]["edge_type"], "specifies");
     assert_eq!(edges[0]["metadata"]["agileplus_target_id"], "AP-WI-1087");
+}
+
+async fn count_rows(store: &SqliteStore, table: &'static str) -> i64 {
+    let statement = match table {
+        "swee_nodes" => "SELECT COUNT(*) AS count FROM swee_nodes",
+        "swee_edges" => "SELECT COUNT(*) AS count FROM swee_edges",
+        "agileplus_revisions" => "SELECT COUNT(*) AS count FROM agileplus_revisions",
+        "agileplus_ingest_keys" => "SELECT COUNT(*) AS count FROM agileplus_ingest_keys",
+        other => panic!("unexpected table: {other}"),
+    };
+    sqlx::query(statement)
+        .fetch_one(&store.pool)
+        .await
+        .unwrap()
+        .get::<i64, _>("count")
+}
+
+async fn assert_empty_tables(store: &SqliteStore) {
+    for table in [
+        "swee_nodes",
+        "swee_edges",
+        "agileplus_revisions",
+        "agileplus_ingest_keys",
+    ] {
+        assert_eq!(count_rows(store, table).await, 0, "{table} should be empty");
+    }
+}
+
+#[tokio::test]
+async fn duplicate_edge_rejects_batch_without_writing_rows() {
+    let (app, store) = fixture().await;
+    let _guard = with_token();
+
+    let key = uuid::Uuid::new_v4().to_string();
+    let accepted = post(
+        app.clone(),
+        "/api/v1/ingest/agileplus",
+        &auth_headers(&key),
+        envelope(
+            "agileplus",
+            vec![
+                entity("spec", "AP-SEED-1", "approved", 1),
+                entity("work_item", "AP-SEED-2", "done", 1),
+            ],
+            vec![json!({
+                "source_id": "AP-SEED-1",
+                "target_id": "AP-SEED-2",
+                "relation": "specifies",
+                "confidence": 1.0,
+            })],
+        ),
+    )
+    .await;
+    assert_eq!(accepted.status, StatusCode::OK, "{:?}", accepted.body);
+
+    let duplicate = post(
+        app,
+        "/api/v1/ingest/agileplus",
+        &auth_headers(&uuid::Uuid::new_v4().to_string()),
+        envelope(
+            "agileplus",
+            vec![
+                entity("spec", "AP-DUP-1", "approved", 1),
+                entity("work_item", "AP-DUP-2", "done", 1),
+            ],
+            vec![
+                json!({
+                    "source_id": "AP-DUP-1",
+                    "target_id": "AP-DUP-2",
+                    "relation": "specifies",
+                    "confidence": 1.0,
+                }),
+                json!({
+                    "source_id": "AP-DUP-1",
+                    "target_id": "AP-DUP-2",
+                    "relation": "specifies",
+                    "confidence": 1.0,
+                }),
+            ],
+        ),
+    )
+    .await;
+    assert_eq!(
+        duplicate.status,
+        StatusCode::CONFLICT,
+        "{:?}",
+        duplicate.body
+    );
+    assert_eq!(duplicate.body["error"], "agileplus_duplicate_edge");
+    assert_eq!(count_rows(&store, "swee_nodes").await, 2);
+    assert_eq!(count_rows(&store, "swee_edges").await, 1);
+    assert_eq!(count_rows(&store, "agileplus_revisions").await, 2);
+    assert_eq!(count_rows(&store, "agileplus_ingest_keys").await, 1);
+}
+
+#[tokio::test]
+async fn valid_batch_replay_keeps_same_receipt_and_row_counts() {
+    let (app, store) = fixture().await;
+    let _guard = with_token();
+    let key = uuid::Uuid::new_v4().to_string();
+    let body = full_envelope(1);
+
+    let first = post(
+        app.clone(),
+        "/api/v1/ingest/agileplus",
+        &auth_headers(&key),
+        body.clone(),
+    )
+    .await;
+    assert_eq!(first.status, StatusCode::OK, "{:?}", first.body);
+    let counts = [
+        count_rows(&store, "swee_nodes").await,
+        count_rows(&store, "swee_edges").await,
+        count_rows(&store, "agileplus_revisions").await,
+        count_rows(&store, "agileplus_ingest_keys").await,
+    ];
+    assert_eq!(counts, [4, 1, 4, 1]);
+
+    let replay = post(app, "/api/v1/ingest/agileplus", &auth_headers(&key), body).await;
+    assert_eq!(replay.status, StatusCode::CONFLICT);
+    assert_eq!(replay.body["identical_replay"], true);
+    assert_eq!(replay.body["ingestion_id"], first.body["ingestion_id"]);
+    assert_eq!(
+        [
+            count_rows(&store, "swee_nodes").await,
+            count_rows(&store, "swee_edges").await,
+            count_rows(&store, "agileplus_revisions").await,
+            count_rows(&store, "agileplus_ingest_keys").await,
+        ],
+        counts
+    );
+
+    let receipt = sqlx::query(
+        "SELECT idempotency_key, ingestion_id FROM agileplus_ingest_keys \
+         WHERE idempotency_key = ?1",
+    )
+    .bind(&key)
+    .fetch_one(&store.pool)
+    .await
+    .unwrap();
+    assert_eq!(
+        receipt.get::<String, _>("ingestion_id"),
+        first.body["ingestion_id"]
+    );
+}
+
+#[tokio::test]
+async fn unknown_node_reference_does_not_create_edges() {
+    let (app, store) = fixture().await;
+    let _guard = with_token();
+
+    let reply = post(
+        app,
+        "/api/v1/ingest/agileplus",
+        &auth_headers(&uuid::Uuid::new_v4().to_string()),
+        envelope(
+            "agileplus",
+            vec![entity("spec", "AP-LATE-1", "approved", 1)],
+            vec![json!({
+                "source_id": "AP-LATE-1",
+                "target_id": "AP-MISSING-1",
+                "relation": "specifies",
+                "confidence": 1.0,
+            })],
+        ),
+    )
+    .await;
+    assert_eq!(reply.status, StatusCode::OK, "{:?}", reply.body);
+    assert_eq!(reply.body["trace_links_created"], 0);
+    assert_eq!(
+        reply.body["trace_links_unresolved"][0]["reason"],
+        "endpoint_not_in_this_request"
+    );
+    assert_eq!(count_rows(&store, "swee_nodes").await, 1);
+    assert_eq!(count_rows(&store, "swee_edges").await, 0);
+}
+
+#[tokio::test]
+async fn late_store_failure_rolls_back_every_table() {
+    let (_app, store) = fixture().await;
+
+    let direct = store
+        .ingest_agileplus_atomic(
+            vec![],
+            vec![AgilePlusEdgeWrite {
+                edge_type: "specifies".into(),
+                source_node_index: 99,
+                target_node_index: 99,
+                confidence: 1.0,
+                metadata: json!({}),
+            }],
+            AgilePlusIngestRecord {
+                idempotency_key: uuid::Uuid::new_v4().to_string(),
+                body_fingerprint: "late-failure".into(),
+                ingestion_id: "ING-late".into(),
+                revisions: vec![],
+            },
+            Utc::now(),
+        )
+        .await;
+    assert!(direct.is_err());
+    assert_empty_tables(&store).await;
 }
 
 #[test]

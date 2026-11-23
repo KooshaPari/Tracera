@@ -27,6 +27,7 @@ pub mod item;
 pub mod neo4j;
 pub mod observation_store;
 pub mod pg_store;
+pub mod postgres_migration_root;
 pub mod product;
 pub mod r2;
 pub mod sqlite_store;

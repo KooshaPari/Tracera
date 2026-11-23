@@ -291,13 +291,3 @@ pub(super) async fn unsupported(Query(p): Query<Params>) -> Reply {
 #[cfg(test)]
 #[path = "graph_tests.rs"]
 mod tests;
-
-// W9 unavailable routes (generated).
-pub(super) const W9_ROUTES: &[&str] = &[
-    "/api/v1/graph/analysis/cache/invalidate",
-    "/api/v1/projects/{project_id}/graph",
-    "/api/v1/projects/{project_id}/graph/viewport",
-];
-pub(super) fn w9_routes() -> axum::Router<AppState> {
-    super::w9_routes::unavailable_routes(W9_ROUTES)
-}

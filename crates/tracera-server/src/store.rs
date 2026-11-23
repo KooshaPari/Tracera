@@ -68,6 +68,32 @@ pub struct AgilePlusRevision {
     pub node_id: String,
 }
 
+/// One staged SWEE node write for an atomic AgilePlus ingest batch.
+#[derive(Debug, Clone)]
+pub struct AgilePlusNodeWrite {
+    pub node_type: String,
+    pub label: String,
+    pub metadata: Value,
+}
+
+/// One staged SWEE edge write. Indices refer to the staged node vector.
+#[derive(Debug, Clone)]
+pub struct AgilePlusEdgeWrite {
+    pub edge_type: String,
+    pub source_node_index: usize,
+    pub target_node_index: usize,
+    pub confidence: f64,
+    pub metadata: Value,
+}
+
+/// Per-row accounting for an atomic AgilePlus ingest batch.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
+pub struct AgilePlusIngestOutcome {
+    pub nodes_created: usize,
+    pub edges_created: usize,
+    pub revisions_written: usize,
+}
+
 /// A complete AgilePlus ingestion receipt: the consumed key plus every
 /// revision the ingestion advanced.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -596,24 +622,27 @@ pub trait Store: Send + Sync {
         Box::pin(async { Err(StoreError::UnsupportedOperation("get_agileplus_ingest_key")) })
     }
 
-    /// Atomically consume an idempotency key and advance entity revisions.
-    ///
-    /// A duplicate key must fail (unique-constraint error) rather than
-    /// overwrite the earlier receipt.
-    fn record_agileplus_ingest(
-        &self,
-        _record: AgilePlusIngestRecord,
-        _now: DateTime<Utc>,
-    ) -> BoxFuture<'_, StoreResult<()>> {
-        Box::pin(async { Err(StoreError::UnsupportedOperation("record_agileplus_ingest")) })
-    }
-
     /// Last accepted revision for one AgilePlus entity id.
     fn get_agileplus_revision(
         &self,
         _agileplus_id: String,
     ) -> BoxFuture<'_, StoreResult<Option<i64>>> {
         Box::pin(async { Err(StoreError::UnsupportedOperation("get_agileplus_revision")) })
+    }
+
+    /// Apply a complete AgilePlus ingest batch in one transaction.
+    ///
+    /// Nodes, edges, revisions and the idempotency receipt are all staged by
+    /// the handler and committed together. Any failure, including a duplicate
+    /// edge or a constrained reference, rolls the entire batch back.
+    fn ingest_agileplus_atomic(
+        &self,
+        _nodes: Vec<AgilePlusNodeWrite>,
+        _edges: Vec<AgilePlusEdgeWrite>,
+        _record: AgilePlusIngestRecord,
+        _now: DateTime<Utc>,
+    ) -> BoxFuture<'_, StoreResult<AgilePlusIngestOutcome>> {
+        Box::pin(async { Err(StoreError::UnsupportedOperation("ingest_agileplus_atomic")) })
     }
 }
 

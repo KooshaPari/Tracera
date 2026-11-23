@@ -33,7 +33,7 @@ mod execution_config;
 #[path = "executions.rs"]
 mod executions;
 #[path = "graphs.rs"]
-mod graphs;
+pub(super) mod graphs;
 #[path = "integrations.rs"]
 mod integrations;
 #[path = "item_specs.rs"]
@@ -41,7 +41,7 @@ mod item_specs;
 #[path = "libraries.rs"]
 mod libraries;
 #[path = "matrix.rs"]
-mod matrix;
+pub(super) mod matrix;
 #[path = "mcp.rs"]
 mod mcp;
 #[path = "metrics.rs"]
@@ -111,14 +111,12 @@ pub(super) fn routes() -> Router<AppState> {
         .merge(events::routes())
         .merge(execution_config::routes())
         .merge(executions::routes())
-        .merge(super::graph_routes::w9_routes())
-        .merge(graphs::routes())
+        .merge(graphs::w9_routes())
         .merge(integrations::routes())
         .merge(item_specs::routes())
         .merge(super::item_routes::w9_routes())
         .merge(super::journeys_routes::w9_routes())
         .merge(libraries::routes())
-        .merge(matrix::routes())
         .merge(mcp::routes())
         .merge(metrics::routes())
         .merge(mutations::routes())
@@ -163,14 +161,12 @@ fn templates() -> Vec<&'static str> {
         events::ROUTES,
         execution_config::ROUTES,
         executions::ROUTES,
-        super::graph_routes::W9_ROUTES,
-        graphs::ROUTES,
+        graphs::W9_ROUTES,
         integrations::ROUTES,
         item_specs::ROUTES,
         super::item_routes::W9_ROUTES,
         super::journeys_routes::ROUTES,
         libraries::ROUTES,
-        matrix::ROUTES,
         mcp::ROUTES,
         metrics::ROUTES,
         mutations::ROUTES,

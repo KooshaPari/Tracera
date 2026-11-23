@@ -23,7 +23,7 @@ jobs:
   mutants:
     name: mutation-testing
     runs-on: ubuntu-latest
-    timeout-minutes: 120
+    timeout-minutes: 180
 
     steps:
       - uses: actions/checkout@v4
@@ -46,46 +46,56 @@ jobs:
           restore-keys: mutants-${{ runner.os }}-
 
       - name: Install cargo-mutants
-        run: cargo install cargo-mutants
+        # Pin the tool: v27 renamed `--test-timeout` to `--minimum-test-timeout`
+        # and started creating the `--output` directory, so an unpinned `cargo
+        # install cargo-mutants` silently changes the CLI contract under us.
+        run: cargo install cargo-mutants --version 27.1.0 --locked
 
-      - name: Run mutants (baseline — changed files only)
+      - name: Run mutants (baseline enabled)
         if: github.event.inputs.baseline != 'false'
         run: |
-          cargo mutants --baseline \
+          set -euo pipefail
+          cargo mutants --baseline=run \
             --timeout 120 \
-            --test-timeout 60 \
-            --jobs 2 \
-            --output mutants-report.json \
+            --minimum-test-timeout 60 \
+            --jobs 4 \
+            --output mutants.out \
             --no-shuffle 2>&1 | tee mutants.log
 
       - name: Run mutants (full sweep)
         if: github.event.inputs.baseline == 'false'
         run: |
+          set -euo pipefail
           cargo mutants \
             --timeout 120 \
-            --test-timeout 60 \
-            --jobs 2 \
-            --output mutants-report.json \
+            --minimum-test-timeout 60 \
+            --jobs 4 \
+            --output mutants.out \
             --no-shuffle 2>&1 | tee mutants.log
 
       - name: Summarise results
         if: always()
         run: |
-          if [ -f mutants-report.json ]; then
+          if [ -f mutants.out/mutants.json ]; then
             {
               echo "## Mutation Testing Results"
-              echo '```json'
+              echo '```'
               python3 -c "
-          import json, sys
-          with open('mutants-report.json') as f:
+          import json
+          from collections import Counter
+          with open('mutants.out/mutants.json') as f:
               data = json.load(f)
-          total = data.get('total', 0)
-          caught = data.get('caught', 0)
-          unviable = data.get('unviable', 0)
-          missed = total - caught - unviable
+          outcomes = data.get('outcomes', []) if isinstance(data, dict) else []
+          counts = Counter(o.get('summary') for o in outcomes)
+          total = len(outcomes)
+          caught = counts.get('Caught', 0)
+          unviable = counts.get('Unviable', 0)
+          missed = counts.get('Missed', 0)
+          timed_out = counts.get('Timeout', 0)
           print(f'Total mutants: {total}')
           print(f'Caught:         {caught}')
           print(f'Unviable:       {unviable}')
+          print(f'Timeout:        {timed_out}')
           print(f'Missed:         {missed}')
           if total - unviable > 0:
               rate = caught / (total - unviable) * 100
@@ -101,6 +111,6 @@ jobs:
         with:
           name: mutants-report
           path: |
-            mutants-report.json
+            mutants.out/
             mutants.log
           retention-days: 30
