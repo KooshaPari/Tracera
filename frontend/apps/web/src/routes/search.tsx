@@ -9,7 +9,9 @@ import { useEffect } from "react";
 function SearchRedirectComponent() {
   const navigate = useNavigate();
 
-  useEffect(() => {}, [navigate]);
+  useEffect(() => {
+    void navigate({ replace: true, to: "/projects" });
+  }, [navigate]);
 
   return (
     <div className="bg-background flex min-h-screen flex-col items-center justify-center">

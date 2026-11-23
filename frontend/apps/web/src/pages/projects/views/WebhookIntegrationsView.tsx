@@ -15,6 +15,7 @@ import {
 import { useState } from "react";
 
 import type { CreateWebhookData } from "@/hooks/useWebhooks";
+import { copyToClipboard } from "@/utils/helpers";
 import type { WebhookProvider, WebhookStatus } from "@tracertm/types";
 
 import { Checkbox } from "@/components/ui/checkbox";
@@ -85,10 +86,6 @@ const statusIcons: Record<WebhookStatus, React.ReactNode> = {
   disabled: <XCircle className="h-4 w-4" />,
   paused: <PauseCircle className="h-4 w-4" />,
 };
-
-function copyToClipboard(text: string): void {
-  undefined;
-}
 
 export function WebhookIntegrationsView({ projectId }: WebhookIntegrationsViewProps) {
   const [searchTerm, setSearchTerm] = useState("");
@@ -511,7 +508,7 @@ export function WebhookIntegrationsView({ projectId }: WebhookIntegrationsViewPr
                           size="icon"
                           className="h-6 w-6"
                           onClick={() => {
-                            copyToClipboard(webhook.webhookSecret);
+                            void copyToClipboard(webhook.webhookSecret);
                           }}
                         >
                           <Copy className="h-3 w-3" />
