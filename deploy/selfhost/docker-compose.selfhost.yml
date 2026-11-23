@@ -11,8 +11,11 @@ services:
       - ../..:/workspace
       - tracera-cargo-cache:/usr/local/cargo/registry
       - tracera-target-cache:/workspace/target
-    expose:
-      - "8080"
+    # Host-loopback only: the separately managed shared cloudflared connector
+    # runs outside this Compose project and reaches t.tracera through localhost:8080.
+    # Never widen this to 0.0.0.0 or an unqualified host port.
+    ports:
+      - "127.0.0.1:8080:8080"
     restart: unless-stopped
 
   caddy:
@@ -28,20 +31,6 @@ services:
     ports:
       - "80:80"
       - "443:443"
-    restart: unless-stopped
-
-  cloudflared:
-    image: cloudflare/cloudflared:latest
-    depends_on:
-      - caddy
-    command:
-      - tunnel
-      - --no-autoupdate
-      - run
-      - --token
-      - ${CF_TUNNEL_TOKEN:?CF_TUNNEL_TOKEN is required}
-    environment:
-      CF_TUNNEL_TOKEN: ${CF_TUNNEL_TOKEN}
     restart: unless-stopped
 
 volumes:
