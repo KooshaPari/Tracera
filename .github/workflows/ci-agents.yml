@@ -50,8 +50,13 @@ on:
           - ubuntu-latest
 
 concurrency:
-  group: ci-agents-${{ github.ref }}
-  cancel-in-progress: true
+  # Scope by workflow + PR number (or commit when there is no PR) so a
+  # superseded push cannot cancel a run belonging to a different commit.
+  # merge_group runs must never be cancelled mid-flight: cancelling them
+  # strands their queued jobs and leaves `ci-agents / required` pending
+  # forever on the merge queue entry.
+  group: ci-agents-${{ github.workflow }}-${{ github.event.pull_request.number || github.sha }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 env:
   CARGO_TERM_COLOR: always
@@ -68,6 +73,7 @@ jobs:
   detect-changes:
     name: "ci-agents / detect"
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     permissions: {}
     outputs:
       rust: ${{ steps.filter.outputs.rust }}
@@ -127,6 +133,7 @@ jobs:
     needs: detect-changes
     if: needs.detect-changes.outputs.rust == 'true' || needs.detect-changes.outputs.typescript == 'true'
     runs-on: ${{ inputs.runner || 'ubuntu-latest' }}
+    timeout-minutes: 20
     permissions: {}
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
@@ -176,6 +183,7 @@ jobs:
     needs: detect-changes
     if: needs.detect-changes.outputs.rust == 'true'
     runs-on: ${{ inputs.runner || 'ubuntu-latest' }}
+    timeout-minutes: 20
     permissions: {}
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
@@ -209,6 +217,7 @@ jobs:
     needs: detect-changes
     if: needs.detect-changes.outputs.typescript == 'true'
     runs-on: ${{ inputs.runner || 'ubuntu-latest' }}
+    timeout-minutes: 20
     permissions: {}
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
@@ -246,6 +255,7 @@ jobs:
     needs: detect-changes
     if: needs.detect-changes.outputs.python == 'true'
     runs-on: ${{ inputs.runner || 'ubuntu-latest' }}
+    timeout-minutes: 20
     permissions: {}
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
@@ -275,6 +285,7 @@ jobs:
     needs: detect-changes
     if: needs.detect-changes.outputs.rust == 'true'
     runs-on: ${{ inputs.runner || 'ubuntu-latest' }}
+    timeout-minutes: 20
     permissions: {}
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
@@ -321,6 +332,7 @@ jobs:
     needs: detect-changes
     if: needs.detect-changes.outputs.typescript == 'true'
     runs-on: ${{ inputs.runner || 'ubuntu-latest' }}
+    timeout-minutes: 20
     permissions: {}
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
@@ -355,6 +367,7 @@ jobs:
     needs: detect-changes
     if: needs.detect-changes.outputs.python == 'true'
     runs-on: ${{ inputs.runner || 'ubuntu-latest' }}
+    timeout-minutes: 20
     permissions: {}
     strategy:
       fail-fast: false
@@ -395,6 +408,7 @@ jobs:
     needs: [format, lint-rust, lint-js, lint-py, test-rust, test-js, test-py]
     if: always() && !failure() && !cancelled()
     runs-on: ${{ inputs.runner || 'ubuntu-latest' }}
+    timeout-minutes: 20
     permissions: {}
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
@@ -449,6 +463,7 @@ jobs:
     name: "ci-agents / security-scan"
     needs: detect-changes
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     permissions:
       contents: read
       security-events: write
@@ -481,6 +496,7 @@ jobs:
     name: "ci-agents / secrets"
     needs: detect-changes
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     permissions:
       contents: read
       pull-requests: write
@@ -521,6 +537,7 @@ jobs:
       - security-scan
       - secrets
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     permissions: {}
     steps:
       - name: Aggregate job status
