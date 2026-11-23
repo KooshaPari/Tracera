@@ -43,6 +43,12 @@ jobs:
       env: ${{ steps.derive.outputs.env }}
     steps:
       - id: derive
+        # Bind the input to the step environment instead of interpolating it
+        # into the script. GitHub expands ${{ }} before bash runs, so a crafted
+        # workflow_dispatch value would be executed as shell (Sonar
+        # githubactions:S7630). As an env var it is data.
+        env:
+          INPUT_ENVIRONMENT: ${{ inputs.environment }}
         run: |
           set -euo pipefail
           if [ "${{ github.event_name }}" = "pull_request" ]; then
@@ -50,8 +56,8 @@ jobs:
           elif [ "${GITHUB_REF#refs/tags/}" != "${GITHUB_REF}" ]; then
             # A release tag is always production; an input must not downgrade it.
             target=prod
-          elif [ -n "${{ inputs.environment }}" ]; then
-            target="${{ inputs.environment }}"
+          elif [ -n "$INPUT_ENVIRONMENT" ]; then
+            target="$INPUT_ENVIRONMENT"
           else
             target=dev
           fi
