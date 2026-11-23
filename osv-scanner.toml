@@ -36,3 +36,23 @@ reason = "paste 1.0.15 is unmaintained; pulled in by neo4rs 0.8.0."
 id = "RUSTSEC-2025-0134"
 ignoreUntil = 2027-03-01
 reason = "rustls-pemfile 2.2.0 is unmaintained; transitive via rustls-native-certs 0.7 <- neo4rs 0.8.0."
+
+# The chrono family was marked unmaintained across every published version in
+# the 2026-11 advisories (chronotope/chrono#1768). All three arrive via neo4rs
+# 0.8.0, the newest stable Neo4j driver, so there is no safe upgrade path until
+# that dependency moves. See the matching deny.toml block.
+
+[[IgnoredVulns]]
+id = "RUSTSEC-2026-0543"
+ignoreUntil = 2027-03-01
+reason = "chrono 0.4.45 is unmaintained (all versions affected); pulled in by neo4rs 0.8.0."
+
+[[IgnoredVulns]]
+id = "RUSTSEC-2026-0555"
+ignoreUntil = 2027-03-01
+reason = "chrono-tz 0.8.6 is unmaintained (all versions affected); transitive via neo4rs 0.8.0."
+
+[[IgnoredVulns]]
+id = "RUSTSEC-2026-0559"
+ignoreUntil = 2027-03-01
+reason = "chrono-tz-build 0.2.1 is unmaintained (build script of chrono-tz); transitive via neo4rs 0.8.0."

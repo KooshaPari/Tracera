@@ -12,6 +12,8 @@ mod item_routes;
 mod journeys_routes;
 #[path = "routes/product_observations.rs"]
 mod product_observation_routes;
+#[path = "routes/project_graph_data.rs"]
+pub(super) mod project_graph_data;
 #[path = "routes/search.rs"]
 mod search_routes;
 #[path = "routes/specs.rs"]
@@ -221,6 +223,27 @@ pub(crate) fn build_router_with_auth(
         // Links
         .merge(crate::handlers::dashboard::summary::routes())
         .route("/api/v1/links/grouped", any(not_implemented))
+        // Project-scoped graph/matrix views backed by canonical storage.
+        .route(
+            "/api/v1/projects/{project_id}/graph",
+            get(w9_routes::graphs::project_graph),
+        )
+        .route(
+            "/api/v1/projects/{project_id}/graph/viewport",
+            post(w9_routes::graphs::viewport_graph),
+        )
+        .route(
+            "/api/v1/projects/{project_id}/graphs",
+            get(w9_routes::graphs::graphs),
+        )
+        .route(
+            "/api/v1/projects/{project_id}/matrix",
+            get(w9_routes::matrix::matrix),
+        )
+        .route(
+            "/api/v1/projects/{project_id}/matrix/export",
+            get(w9_routes::matrix::export),
+        )
         // Graph
         .route("/api/v1/graph/ancestors/{id}", get(graph_routes::ancestors))
         .route(

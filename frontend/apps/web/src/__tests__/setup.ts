@@ -174,6 +174,22 @@ if (typeof navigator !== "undefined") {
     writable: true,
   });
 }
+
+// Pin navigator.hardwareConcurrency to a stable data property. jsdom 28 exposes
+// it through a generated IDL accessor that re-reads `esValue[implSymbol]`, and
+// that accessor can recurse indefinitely (RangeError: Maximum call stack size
+// exceeded) when the jsdom globals are proxied by the test runtime. A plain own
+// value shadows the accessor, so consumers such as the worker pool read a fixed
+// number instead of walking that chain.
+if (typeof navigator !== "undefined") {
+  Object.defineProperty(navigator, "hardwareConcurrency", {
+    configurable: true,
+    enumerable: true,
+    value: 4,
+    writable: false,
+  });
+}
+
 // Mock IntersectionObserver
 const IntersectionObserverMock = class {
   disconnect() {}
