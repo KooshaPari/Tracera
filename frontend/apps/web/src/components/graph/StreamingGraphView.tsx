@@ -66,8 +66,10 @@ export function StreamingGraphView({
     zoom,
   });
 
-  // Load graph on mount and viewport change
-  useEffect(() => {}, [loadGraph]);
+  // Load graph on mount
+  useEffect(() => {
+    void loadGraph();
+  }, [loadGraph]);
 
   // Update previous viewport reference
   useEffect(() => {
@@ -77,7 +79,11 @@ export function StreamingGraphView({
 
   // Handle viewport changes
   const handleViewportChange = useCallback(
-    (newViewport: ViewportBounds) => {},
+    (newViewport: ViewportBounds) => {
+      setViewport(newViewport);
+      onViewportChange?.(newViewport);
+      void loadViewport(newViewport);
+    },
     [onViewportChange, loadViewport],
   );
 
@@ -124,7 +130,11 @@ export function StreamingGraphView({
   }, []);
 
   // Reset handler
-  const handleReset = useCallback(() => {}, [reset, initialViewport, loadGraph]);
+  const handleReset = useCallback(() => {
+    reset();
+    setViewport(initialViewport);
+    void loadGraph();
+  }, [reset, initialViewport, loadGraph]);
 
   return (
     <div className={`relative ${className}`}>
@@ -269,12 +279,7 @@ export function StreamingGraphViewExample() {
         </p>
       </div>
 
-      <StreamingGraphView
-        projectId={projectId}
-        showProgress
-        enablePrefetch
-        onViewportChange={(_viewport) => {}}
-      />
+      <StreamingGraphView projectId={projectId} showProgress enablePrefetch />
     </div>
   );
 }

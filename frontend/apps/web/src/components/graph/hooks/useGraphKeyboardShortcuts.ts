@@ -65,7 +65,7 @@ export function useGraphKeyboardShortcuts({
         if (onZoomIn) {
           onZoomIn();
         } else {
-          undefined;
+          void zoomIn();
         }
         return;
       }
@@ -76,7 +76,7 @@ export function useGraphKeyboardShortcuts({
         if (onZoomOut) {
           onZoomOut();
         } else {
-          undefined;
+          void zoomOut();
         }
         return;
       }
@@ -87,7 +87,7 @@ export function useGraphKeyboardShortcuts({
         if (onFitView) {
           onFitView();
         } else {
-          undefined;
+          void fitView();
         }
         return;
       }
