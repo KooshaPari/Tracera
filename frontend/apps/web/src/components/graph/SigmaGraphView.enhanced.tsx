@@ -343,7 +343,7 @@ export const SigmaGraphViewEnhanced = memo(function SigmaGraphViewEnhanced(
         height: "100%",
         width: "100%",
       }}
-      options={{
+      settings={{
         allowInvalidContainer: false,
         defaultEdgeType: "line",
         defaultNodeType: "circle",
