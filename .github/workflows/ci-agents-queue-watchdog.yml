@@ -1,0 +1,100 @@
+name: ci-agents queue watchdog
+
+# `jobs.<job_id>.timeout-minutes` bounds job EXECUTION, not runner-queue
+# waiting: GitHub starts that clock only once a runner is assigned. When
+# hosted-runner capacity is saturated, a `ci-agents` job (and therefore the
+# required `ci-agents / required` check) can sit in `queued` indefinitely and
+# a merge-queue entry waits on it forever.
+#
+# This watchdog bounds that wait from outside the workflow it watches: a
+# scheduled run lists `ci-agents` runs still in `queued` and cancels any whose
+# age exceeds the limit, so the merge-queue entry fails fast and can be
+# retried instead of pending without a verdict.
+#
+# Honest limits: the watchdog itself needs a runner, so under total pool
+# exhaustion it is best-effort and queues too. The hard backstop remains the
+# merge-queue entry timeout configured in repository settings.
+
+on:
+  schedule:
+    # Every 10 minutes. Scheduled runs are the cheapest possible job (one
+    # GitHub API fan-out, no checkout, no toolchain).
+    - cron: "*/10 * * * *"
+  workflow_dispatch:
+    inputs:
+      max_queue_minutes:
+        description: "Cancel ci-agents runs queued longer than this"
+        required: false
+        default: "20"
+        type: string
+      dry_run:
+        description: "Report stale runs without cancelling them"
+        required: false
+        default: "false"
+        type: choice
+        options:
+          - "false"
+          - "true"
+
+permissions:
+  contents: read
+  actions: write
+
+concurrency:
+  # Never supersede an in-flight sweep: two reapers cancelling the same run
+  # produce a 409 and a noisy log.
+  group: ci-agents-queue-watchdog
+  cancel-in-progress: false
+
+jobs:
+  reap:
+    name: "ci-agents / queue watchdog"
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      actions: write
+    steps:
+      - name: Cancel ci-agents runs stuck in the runner queue
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          MAX_QUEUE_MINUTES: ${{ inputs.max_queue_minutes || '20' }}
+          DRY_RUN: ${{ inputs.dry_run || 'false' }}
+        run: |
+          set -euo pipefail
+          case "$MAX_QUEUE_MINUTES" in
+            ''|*[!0-9]*) echo "invalid max_queue_minutes"; exit 2 ;;
+          esac
+          now=$(date -u +%s)
+          total=0
+          stale=0
+          while IFS=$'\t' read -r id created event branch; do
+            [ -n "${id:-}" ] || continue
+            total=$((total + 1))
+            created_s=$(date -u -d "$created" +%s)
+            age_min=$(( (now - created_s) / 60 ))
+            echo "queued run $id ($event $branch) age=${age_min}m"
+            if [ "$age_min" -lt "$MAX_QUEUE_MINUTES" ]; then
+              continue
+            fi
+            stale=$((stale + 1))
+            if [ "$DRY_RUN" = "true" ]; then
+              echo "  would cancel $id (age ${age_min}m >= ${MAX_QUEUE_MINUTES}m)"
+              continue
+            fi
+            echo "  cancelling $id (age ${age_min}m >= ${MAX_QUEUE_MINUTES}m)"
+            gh api -X POST "repos/$REPO/actions/runs/$id/cancel" >/dev/null || \
+              echo "  cancel request failed for $id (already started or finished)"
+          done <<EOF
+          $(gh api --paginate \
+                "repos/$REPO/actions/workflows/ci-agents.yml/runs?status=queued&per_page=100" \
+                --jq '.workflow_runs[] | [.id, .created_at, .event, .head_branch] | @tsv')
+          EOF
+          {
+            echo "### ci-agents queue watchdog"
+            echo ""
+            echo "- queued ci-agents runs seen: ${total}"
+            echo "- stale (>= ${MAX_QUEUE_MINUTES}m): ${stale}"
+            echo "- dry run: ${DRY_RUN}"
+          } >> "$GITHUB_STEP_SUMMARY"
