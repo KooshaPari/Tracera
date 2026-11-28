@@ -58,6 +58,12 @@ concurrency:
   group: ci-agents-${{ github.workflow }}-${{ github.event.pull_request.number || github.sha }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
+permissions:
+  # Workflow default is the least privilege any job here needs; jobs that
+  # require more (security-scan, secrets) declare their own block. An explicit
+  # default also clears zizmor's excessive-permissions finding.
+  contents: read
+
 env:
   CARGO_TERM_COLOR: always
   RUST_BACKTRACE: 1
